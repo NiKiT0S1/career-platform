@@ -5,10 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "students")
+@Table(name = "admins")
 @Getter
 @Setter
-public class Student {
+public class Admin {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,28 +17,9 @@ public class Student {
     @Column(nullable = false)
     private String fullName;
 
-    @Column(nullable = false)
-    private String groupName;
-
-    @Column(nullable = false)
-    private Integer course;
-
-    @Column(name = "educational_program")
-    private String educationalProgram;
-
     @Column(nullable = false, unique = true)
     private String email;
 
-    private String phone;
-
-    private Double gpa;
-
-    private String companyName;
-
-    private String practiceStatus;
-
     @Column(nullable = false)
     private String password;
-
-    private String resumePath;
 }
