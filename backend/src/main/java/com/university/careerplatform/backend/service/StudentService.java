@@ -2,6 +2,7 @@ package com.university.careerplatform.backend.service;
 
 import com.university.careerplatform.backend.entity.Student;
 import com.university.careerplatform.backend.repository.StudentRepository;
+import com.university.careerplatform.backend.specification.StudentSpecification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -66,5 +67,19 @@ public class StudentService {
 
         student.setPracticeStatus(practiceStatus);
         return studentRepository.save(student);
+    }
+
+    public List<Student> filterStudents(String educationalProgram,
+                                        Integer course,
+                                        String practiceStatus,
+                                        Double minGpa) {
+        return studentRepository.findAll(
+                StudentSpecification.filterStudents(
+                        educationalProgram,
+                        course,
+                        practiceStatus,
+                        minGpa
+                )
+        );
     }
 }

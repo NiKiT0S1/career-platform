@@ -32,20 +32,14 @@ public class AdminController {
                                                         @RequestParam(required = false) Integer course,
                                                         @RequestParam(required = false) String practiceStatus,
                                                         @RequestParam(required = false) Double minGpa) {
-        if (educationalProgram != null) {
-            return ResponseEntity.ok(studentService.getStudentsByEducationalProgram(educationalProgram));
-        }
-        if (course != null) {
-            return ResponseEntity.ok(studentService.getStudentsByCourse(course));
-        }
-        if (practiceStatus != null) {
-            return ResponseEntity.ok(studentService.getStudentsByPracticeStatus(practiceStatus));
-        }
-        if (minGpa != null) {
-            return ResponseEntity.ok(studentService.getStudentsByMinGpa(minGpa));
-        }
-
-        return ResponseEntity.ok(studentService.getAllStudents());
+        return ResponseEntity.ok(
+                studentService.filterStudents(
+                        educationalProgram,
+                        course,
+                        practiceStatus,
+                        minGpa
+                )
+        );
     }
 
     @PostMapping("/notifications/send")
