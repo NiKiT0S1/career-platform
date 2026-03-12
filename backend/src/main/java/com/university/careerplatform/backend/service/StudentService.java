@@ -44,6 +44,10 @@ public class StudentService {
         return studentRepository.findByGpaGreaterThanEqual(gpa);
     }
 
+    public List<Student> getStudentsByPracticeStatus(String practiceStatus) {
+        return studentRepository.findByPracticeStatus(practiceStatus);
+    }
+
     public Student saveStudent(Student student) {
         return studentRepository.save(student);
     }
