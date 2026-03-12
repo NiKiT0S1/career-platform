@@ -29,6 +29,7 @@ public class Notification {
     @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
+    @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
     }
