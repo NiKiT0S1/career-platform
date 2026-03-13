@@ -7,6 +7,7 @@ import com.university.careerplatform.backend.entity.Student;
 import com.university.careerplatform.backend.repository.AdminRepository;
 import com.university.careerplatform.backend.repository.StudentRepository;
 import com.university.careerplatform.backend.security.JwtService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -17,13 +18,16 @@ public class AuthService {
     private final StudentRepository studentRepository;
     private final AdminRepository adminRepository;
     private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthService(StudentRepository studentRepository,
                        AdminRepository adminRepository,
-                       JwtService jwtService) {
+                       JwtService jwtService,
+                       PasswordEncoder passwordEncoder) {
         this.studentRepository = studentRepository;
         this.adminRepository = adminRepository;
         this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -31,7 +35,7 @@ public class AuthService {
         if (adminOptional.isPresent()) {
             Admin admin = adminOptional.get();
 
-            if (!admin.getPassword().equals(request.getPassword())) {
+            if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
                 throw new RuntimeException("Invalid password");
             }
 
@@ -43,7 +47,7 @@ public class AuthService {
         if (studentOptional.isPresent()) {
             Student student = studentOptional.get();
 
-            if (!student.getPassword().equals(request.getPassword())) {
+            if (!passwordEncoder.matches(request.getPassword(), student.getPassword())) {
                 throw new RuntimeException("Invalid password");
             }
 
