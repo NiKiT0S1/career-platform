@@ -3,7 +3,11 @@ package com.university.careerplatform.backend.controller;
 import com.university.careerplatform.backend.dto.SendNotificationRequest;
 import com.university.careerplatform.backend.entity.Student;
 import com.university.careerplatform.backend.service.NotificationService;
+import com.university.careerplatform.backend.service.ResumeService;
 import com.university.careerplatform.backend.service.StudentService;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,11 +19,14 @@ public class AdminController {
 
     private final StudentService studentService;
     private final NotificationService notificationService;
+    private final ResumeService resumeService;
 
     public AdminController(StudentService studentService,
-                           NotificationService notificationService) {
+                           NotificationService notificationService,
+                           ResumeService resumeService) {
         this.studentService = studentService;
         this.notificationService = notificationService;
+        this.resumeService = resumeService;
     }
 
     @GetMapping("/students")
@@ -57,5 +64,22 @@ public class AdminController {
         );
 
         return ResponseEntity.ok("Notification sent successfully");
+    }
+
+    @GetMapping("/students/{studentId}/resume")
+    public ResponseEntity<Resource> downloadStudentResume(@PathVariable Long studentId) {
+        try {
+            Resource resource = resumeService.downloadResume(studentId);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"student-resume.pdf\"")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(resource);
+        }
+        catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }
