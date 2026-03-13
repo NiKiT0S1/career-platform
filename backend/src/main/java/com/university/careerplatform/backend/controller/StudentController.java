@@ -89,7 +89,8 @@ public class StudentController {
             Resource resource = resumeService.downloadContractTemplate("three-sided-contract.docx");
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"three-sided-contract.docx\"")
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .contentType(MediaType.parseMediaType(
+                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
                     .body(resource);
         }
         catch (Exception e) {
