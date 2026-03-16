@@ -1,2 +1,0 @@
-New-Item backend/uploads/resumes/.gitkeep -ItemType File
-New-Item backend/uploads/contracts/.gitkeep -ItemType File
