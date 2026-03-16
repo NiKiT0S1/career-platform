@@ -50,6 +50,9 @@ It provides student profile management, filtering, notifications, resume upload,
 
 ```text
 src/main/java/com/university/careerplatform/backend
+├── config
+│   └──CorsConfig.java
+│
 ├── controller
 │   ├── AdminController.java
 │   ├── AuthController.java
