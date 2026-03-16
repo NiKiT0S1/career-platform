@@ -26,3 +26,9 @@ replay_pid*
 # Frontend directories
 frontend/node_modules
 frontend/dist
+
+backend/uploads/resumes/*
+backend/uploads/contracts/*
+
+!backend/uploads/resumes/.gitkeep
+!backend/uploads/contracts/.gitkeep
