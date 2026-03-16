@@ -1,3 +1,8 @@
+/**
+ * Repository for student database operations.
+ * Supports filtering, search and authentication queries.
+ */
+
 package com.university.careerplatform.backend.repository;
 
 import com.university.careerplatform.backend.entity.Student;

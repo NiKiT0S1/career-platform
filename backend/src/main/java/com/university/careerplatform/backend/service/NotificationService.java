@@ -1,3 +1,7 @@
+/**
+ * Service responsible for sending and managing notifications.
+ */
+
 package com.university.careerplatform.backend.service;
 
 import com.university.careerplatform.backend.entity.Notification;

@@ -1,3 +1,8 @@
+/**
+ * REST API for student actions:
+ * profile access, updates, resume upload, notifications.
+ */
+
 package com.university.careerplatform.backend.controller;
 
 import com.university.careerplatform.backend.dto.CompanyUpdateRequest;

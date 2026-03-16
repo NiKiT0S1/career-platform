@@ -1,3 +1,7 @@
+/**
+ * Utility service for JWT creation and validation.
+ */
+
 package com.university.careerplatform.backend.security;
 
 import io.jsonwebtoken.Claims;

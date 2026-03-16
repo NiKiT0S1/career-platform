@@ -1,3 +1,8 @@
+/**
+ * Spring Security configuration:
+ * JWT authentication and role-based endpoint protection.
+ */
+
 package com.university.careerplatform.backend.security;
 
 import org.springframework.context.annotation.Bean;

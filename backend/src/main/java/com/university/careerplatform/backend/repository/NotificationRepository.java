@@ -1,3 +1,7 @@
+/**
+ * Repository for notification retrieval and status updates.
+ */
+
 package com.university.careerplatform.backend.repository;
 
 import com.university.careerplatform.backend.entity.Notification;

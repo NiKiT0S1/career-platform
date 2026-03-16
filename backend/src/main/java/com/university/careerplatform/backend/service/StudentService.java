@@ -1,3 +1,8 @@
+/**
+ * Service layer for student profile operations.
+ * Handles profile updates, filtering and business logic.
+ */
+
 package com.university.careerplatform.backend.service;
 
 import com.university.careerplatform.backend.entity.Student;

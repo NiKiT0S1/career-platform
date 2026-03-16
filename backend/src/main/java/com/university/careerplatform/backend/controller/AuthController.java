@@ -1,3 +1,7 @@
+/**
+ * REST API for login and JWT authentication.
+ */
+
 package com.university.careerplatform.backend.controller;
 
 import com.university.careerplatform.backend.dto.AuthResponse;

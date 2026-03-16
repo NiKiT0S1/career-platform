@@ -1,3 +1,7 @@
+/**
+ * DTO for updating student's company name.
+ */
+
 package com.university.careerplatform.backend.dto;
 
 import lombok.Getter;

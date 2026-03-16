@@ -1,3 +1,8 @@
+/**
+ * REST API for administrator actions:
+ * student filtering, notifications, management.
+ */
+
 package com.university.careerplatform.backend.controller;
 
 import com.university.careerplatform.backend.dto.SendNotificationRequest;

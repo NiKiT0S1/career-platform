@@ -1,3 +1,8 @@
+/**
+ * Utility class for generating BCrypt password hashes.
+ * Used to prepare encoded passwords for initial database setup and testing.
+ */
+
 package com.university.careerplatform.backend.util;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

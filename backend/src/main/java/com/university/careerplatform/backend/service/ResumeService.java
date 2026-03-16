@@ -1,3 +1,7 @@
+/**
+ * Service for storing uploaded resumes and contract templates.
+ */
+
 package com.university.careerplatform.backend.service;
 
 import com.university.careerplatform.backend.entity.Student;

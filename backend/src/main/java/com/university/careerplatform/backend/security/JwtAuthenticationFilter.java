@@ -1,3 +1,7 @@
+/**
+ * Security filter that extracts JWT token and sets authentication context.
+ */
+
 package com.university.careerplatform.backend.security;
 
 import jakarta.servlet.FilterChain;

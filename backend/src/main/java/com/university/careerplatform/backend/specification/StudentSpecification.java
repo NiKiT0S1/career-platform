@@ -1,3 +1,8 @@
+/**
+ * Specification class for dynamic multi-parameter student filtering.
+ * Builds flexible database queries for admin search and filtering.
+ */
+
 package com.university.careerplatform.backend.specification;
 
 import com.university.careerplatform.backend.entity.Student;

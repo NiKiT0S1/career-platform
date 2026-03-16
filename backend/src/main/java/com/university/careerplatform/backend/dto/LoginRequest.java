@@ -1,3 +1,7 @@
+/**
+ * DTO for login request payload.
+ */
+
 package com.university.careerplatform.backend.dto;
 
 import lombok.Getter;

@@ -1,3 +1,8 @@
+/**
+ * Entity representing platform administrator.
+ * Used for authentication and student management.
+ */
+
 package com.university.careerplatform.backend.entity;
 
 import jakarta.persistence.*;

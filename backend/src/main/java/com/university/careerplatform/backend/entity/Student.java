@@ -1,3 +1,8 @@
+/**
+ * Entity representing a student in the platform.
+ * Contains profile data, academic information and internship status.
+ */
+
 package com.university.careerplatform.backend.entity;
 
 import jakarta.persistence.*;

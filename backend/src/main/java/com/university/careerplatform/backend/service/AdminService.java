@@ -1,3 +1,8 @@
+/**
+ * Service layer for administrator operations.
+ * Handles admin retrieval and management-related business logic.
+ */
+
 package com.university.careerplatform.backend.service;
 
 import com.university.careerplatform.backend.entity.Admin;

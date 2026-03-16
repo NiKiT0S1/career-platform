@@ -1,3 +1,7 @@
+/**
+ * Main entry point of the Spring Boot backend application.
+ */
+
 package com.university.careerplatform.backend;
 
 import org.springframework.boot.SpringApplication;

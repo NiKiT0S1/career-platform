@@ -1,3 +1,8 @@
+/**
+ * DTO for sending notifications to one or multiple students.
+ * Contains target student IDs and message text.
+ */
+
 package com.university.careerplatform.backend.dto;
 
 import lombok.Getter;

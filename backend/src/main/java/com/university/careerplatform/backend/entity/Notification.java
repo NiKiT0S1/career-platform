@@ -1,3 +1,8 @@
+/**
+ * Entity representing notifications sent to students.
+ * Stores message text, read status and creation time.
+ */
+
 package com.university.careerplatform.backend.entity;
 
 import jakarta.persistence.*;

@@ -1,3 +1,8 @@
+/**
+ * Authentication service for login and JWT generation.
+ * Supports both students and admins.
+ */
+
 package com.university.careerplatform.backend.service;
 
 import com.university.careerplatform.backend.dto.AuthResponse;
