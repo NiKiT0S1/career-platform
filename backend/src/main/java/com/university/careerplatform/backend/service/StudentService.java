@@ -1,6 +1,6 @@
 /**
  * Service layer for student profile operations.
- * Handles profile updates, filtering and business logic.
+ * Handles profile updates, filtering, changing password and business logic.
  */
 
 package com.university.careerplatform.backend.service;
@@ -8,6 +8,7 @@ package com.university.careerplatform.backend.service;
 import com.university.careerplatform.backend.entity.Student;
 import com.university.careerplatform.backend.repository.StudentRepository;
 import com.university.careerplatform.backend.specification.StudentSpecification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,8 +19,11 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
 
-    public StudentService(StudentRepository studentRepository) {
+    private final PasswordEncoder passwordEncoder;
+
+    public StudentService(StudentRepository studentRepository,  PasswordEncoder passwordEncoder) {
         this.studentRepository = studentRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<Student> getAllStudents() {
@@ -86,5 +90,17 @@ public class StudentService {
                         minGpa
                 )
         );
+    }
+
+    public void changePassword(Long studentId, String currentPassword, String newPassword) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        if (!passwordEncoder.matches(currentPassword, student.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+
+        student.setPassword(passwordEncoder.encode(newPassword));
+        studentRepository.save(student);
     }
 }

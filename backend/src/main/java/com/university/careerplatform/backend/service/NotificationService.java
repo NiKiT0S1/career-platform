@@ -52,6 +52,16 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
+    public void markAllAsRead(Long studentId) {
+        List<Notification> notifications = notificationRepository.findByStudentIdAndIsReadFalse(studentId);
+
+        for (Notification notification : notifications) {
+            notification.setIsRead(true);
+        }
+
+        notificationRepository.saveAll(notifications);
+    }
+
     public void sendNotificationToMultipleStudents(List<Long> studentIds, String message) {
         for (Long studentId : studentIds) {
             createNotification(studentId, message);

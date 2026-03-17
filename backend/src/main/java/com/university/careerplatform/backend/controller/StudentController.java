@@ -1,10 +1,11 @@
 /**
  * REST API for student actions:
- * profile access, updates, resume upload, notifications.
+ * profile access, updates, resume upload and preview, notifications, change password.
  */
 
 package com.university.careerplatform.backend.controller;
 
+import com.university.careerplatform.backend.dto.ChangePasswordRequest;
 import com.university.careerplatform.backend.dto.CompanyUpdateRequest;
 import com.university.careerplatform.backend.entity.Notification;
 import com.university.careerplatform.backend.entity.Student;
@@ -73,6 +74,17 @@ public class StudentController {
         }
     }
 
+    @PutMapping("/notifications/read-all/{studentId}")
+    public ResponseEntity<String> markAllNotificationsAsRead(@PathVariable Long studentId) {
+        try {
+            notificationService.markAllAsRead(studentId);
+            return ResponseEntity.ok("All notifications marked as read");
+        }
+        catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PostMapping(value = "/resume/{studentId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Student> uploadResume(@PathVariable Long studentId,
                                                 @RequestParam("file") MultipartFile file) {
@@ -82,6 +94,23 @@ public class StudentController {
         }
         catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
+        }
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/resume/{studentId}")
+    public ResponseEntity<Resource> previewResume(@PathVariable Long studentId) {
+        try {
+            Resource resource = resumeService.downloadResume(studentId);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"student-resume.pdf\"")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(resource);
+        }
+        catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
         catch (Exception e) {
             return ResponseEntity.internalServerError().build();
@@ -100,6 +129,22 @@ public class StudentController {
         }
         catch (Exception e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/change-password/{studentId}")
+    public ResponseEntity<String> changePassword(@PathVariable Long studentId,
+                                                 @RequestBody ChangePasswordRequest request) {
+        try {
+            studentService.changePassword(
+                    studentId,
+                    request.getCurrentPassword(),
+                    request.getNewPassword()
+            );
+            return ResponseEntity.ok("Password changed successfully");
+        }
+        catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

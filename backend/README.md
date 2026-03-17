@@ -60,6 +60,7 @@ src/main/java/com/university/careerplatform/backend
 │
 ├── dto
 │   ├── AuthResponse.java
+│   ├── ChangePasswordRequest.java
 │   ├── CompanyUpdateRequest.java
 │   ├── LoginRequest.java
 │   └── SendNotificationRequest.java
@@ -149,6 +150,7 @@ Examples:
 
 * `LoginRequest`
 * `AuthResponse`
+* `ChangePasswordRequest`
 * `CompanyUpdateRequest`
 * `SendNotificationRequest`
 
@@ -355,7 +357,9 @@ GET    /api/student/profile/{studentId}
 PUT    /api/student/company/{studentId}
 GET    /api/student/notifications/{studentId}
 PUT    /api/student/notifications/read/{notificationId}
+PUT    /api/student/notifications/read-all/{notificationId}
 POST   /api/student/resume/{studentId}
+GET   /api/student/resume/{studentId}
 GET    /api/student/contracts/three-sided
 ```
 
