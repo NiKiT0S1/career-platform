@@ -5,7 +5,10 @@ import {
     getStudentNotifications,
     markNotificationAsRead ,
     uploadStudentResume,
-    downloadThreeSidedContract
+    downloadThreeSidedContract,
+    changeStudentPassword,
+    markAllNotificationsAsRead,
+    previewStudentResume
 } from "../api/studentApi";
 
 export default function StudentDashboard() {
@@ -15,6 +18,13 @@ export default function StudentDashboard() {
     const [notifications, setNotifications] = useState([]);
     const [resumeFile, setResumeFile] = useState(null);
     const [resumeMessage, setResumeMessage] = useState("");
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [passwordMessage, setPasswordMessage] = useState("");
+    const [resumePreviewUrl, setResumePreviewUrl] = useState("");
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     useEffect(() => {
         loadStudent();
@@ -64,6 +74,16 @@ export default function StudentDashboard() {
         }
     };
 
+    const handleMarkAllAsRead = async () => {
+        try {
+            await markAllNotificationsAsRead(2424);
+            loadNotifications();
+        } 
+        catch (error) {
+            console.error(error);
+        }
+    };
+
     const handleResumeUpload = async () => {
         if (!resumeFile) {
             setResumeMessage("Please select a PDF file first");
@@ -78,6 +98,27 @@ export default function StudentDashboard() {
         catch (error) {
             console.error(error);
             setResumeMessage("Failed to upload resume");
+        }
+    };
+
+    const handlePreviewResume = async () => {
+        try {
+            const blob = await previewStudentResume(2424);
+            const url = window.URL.createObjectURL(blob);
+            setResumePreviewUrl(url);
+            setIsPreviewOpen(true);
+        } 
+        catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleClosePreview = () => {
+        setIsPreviewOpen(false);
+
+        if (resumePreviewUrl) {
+            window.URL.revokeObjectURL(resumePreviewUrl);
+            setResumePreviewUrl("");
         }
     };
 
@@ -97,6 +138,19 @@ export default function StudentDashboard() {
         } 
         catch (error) {
             console.error(error);
+        }
+    };
+
+    const handleChangePassword = async () => {
+        try {
+            const response = await changeStudentPassword(2424, currentPassword, newPassword);
+            setPasswordMessage(response);
+            setCurrentPassword("");
+            setNewPassword("");
+        } 
+        catch (error) {
+            console.error(error);
+            setPasswordMessage(error?.response?.data || "Failed to change password");
         }
     };
 
@@ -138,6 +192,7 @@ export default function StudentDashboard() {
 
 
             <h3>Resume Upload</h3>
+            <p>Resume status: {student.resumePath ? "Uploaded" : "Not uploaded"}</p>
 
             <input
                 type="file"
@@ -145,9 +200,80 @@ export default function StudentDashboard() {
                 onChange={(e) => setResumeFile(e.target.files[0])}
             />
             <br /><br />
-            <button onClick={handleResumeUpload}>Upload Resume</button>
+            <button onClick={handleResumeUpload}>
+                {student.resumePath ? "Replace Resume" : "Upload Resume"}
+            </button>
 
             {resumeMessage && <p>{resumeMessage}</p>}
+
+            {student.resumePath && (
+                <>
+                    <br /><br />
+                    <button onClick={handlePreviewResume}>Preview Resume</button>
+                </>
+            )}
+
+            {isPreviewOpen && resumePreviewUrl && (
+                <div
+                    style={{
+                    position: "fixed",
+                    inset: 0,
+                    backgroundColor: "rgba(0, 0, 0, 0.45)",
+                    backdropFilter: "blur(4px)",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    zIndex: 1000,
+                    }}
+                >
+                    <div
+                        style={{
+                            position: "relative",
+                            width: "85%",
+                            height: "85%",
+                            backgroundColor: "#fff",
+                            borderRadius: "12px",
+                            padding: "16px",
+                        }}
+                        >
+                        <button
+                            onClick={handleClosePreview}
+                            style={{
+                                position: "absolute",
+                                top: "-14px",
+                                right: "-14px",
+                                width: "42px",
+                                height: "42px",
+                                borderRadius: "50%",
+                                border: "none",
+                                backgroundColor: "#ffffff",
+                                color: "#222",
+                                fontSize: "26px",
+                                fontWeight: "bold",
+                                cursor: "pointer",
+                                boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+                                zIndex: 1001,
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                lineHeight: "1",
+                            }}
+                        >
+                            ×
+                        </button>
+
+                        <iframe
+                            src={resumePreviewUrl}
+                            width="100%"
+                            height="100%"
+                            title="Resume Preview"
+                            style={{ 
+                                border: "none", 
+                            }}
+                        />
+                    </div>
+                </div>
+            )}
 
 
             <h3>Contract Template</h3>
@@ -158,6 +284,13 @@ export default function StudentDashboard() {
             
 
             <h3>Notifications</h3>
+
+            {notifications.length > 0 && (
+                <>
+                    <button onClick={handleMarkAllAsRead}>Mark All as Read</button>
+                    <br /><br />
+                </>
+            )}
 
             {notifications.length === 0 ? (
                 <p>No notifications</p>
@@ -175,6 +308,41 @@ export default function StudentDashboard() {
                     </div>
                 ))
             )}
+
+
+            <h3>Change Password</h3>
+
+            <input 
+                type={showCurrentPassword ? "text" : "password"}
+                placeholder="Current Password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+            <br /><br />
+
+            <button type="button" onClick={() => setShowCurrentPassword((prev) => !prev)}>
+                {showCurrentPassword ? "Hide Current Password" : "Show Current Password"}
+            </button>
+
+            <br /><br />
+
+            <input 
+                type={showNewPassword ? "text" : "password"}
+                placeholder="New Password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+            />
+            <br /><br />
+
+            <button type="button" onClick={() => setShowNewPassword((prev) => !prev)}>
+                {showNewPassword ? "Hide New Password" : "Show New Password"}
+            </button>
+
+            <br /><br />
+
+            <button onClick={handleChangePassword}>Change Password</button>
+
+            {passwordMessage && <p>{passwordMessage}</p>}
         </div>
     );
 }

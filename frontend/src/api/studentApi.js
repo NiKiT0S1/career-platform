@@ -25,11 +25,16 @@ export const markNotificationAsRead = async (notificationId) => {
     return response.data;
 };
 
+export const markAllNotificationsAsRead = async (studentId) => {
+    const response = await api.put(`/api/student/notifications/read-all/${studentId}`);
+    return response.data;
+}
+
 export const uploadStudentResume = async (studentId, file) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await api.post(`api/student/resume/${studentId}`, formData, {
+    const response = await api.post(`/api/student/resume/${studentId}`, formData, {
         headers : {
             "Content-Type": "multipart/form-data",
         },
@@ -38,9 +43,26 @@ export const uploadStudentResume = async (studentId, file) => {
     return response.data;
 };
 
+export const previewStudentResume = async (studentId) => {
+    const response = await api.get(`/api/student/resume/${studentId}`, {
+        responseType: "blob",
+    });
+
+    return response.data; 
+};
+
 export const downloadThreeSidedContract = async () => {
     const response = await api.get("/api/student/contracts/three-sided", {
         responseType: "blob",
+    });
+
+    return response.data;
+};
+
+export const changeStudentPassword = async (studentId, currentPassword, newPassword) => {
+    const response = await api.put(`/api/student/change-password/${studentId}`, {
+        currentPassword,
+        newPassword,
     });
 
     return response.data;

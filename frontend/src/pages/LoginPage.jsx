@@ -6,6 +6,7 @@ import {saveToken, saveRole} from "../auth/auth";
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
 
     const navigate = useNavigate();
@@ -43,12 +44,18 @@ export default function LoginPage() {
             <br /><br />
 
             <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
             />
 
+            <br /><br />
+
+            <button type="button" onClick={() => setShowPassword((prev) => !prev)}>
+                {showPassword ? "Hide Password" : "Show Password"}
+            </button>
+            
             <br /><br />
 
             <button onClick={handleLogin}>
