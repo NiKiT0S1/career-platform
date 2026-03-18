@@ -33,6 +33,20 @@ public class StudentService {
         return studentRepository.findAll();
     }
 
+    public List<Student> getAllFilteredStudents(String educationalProgram,
+                                                Integer course,
+                                                String practiceStatus,
+                                                Double minGpa) {
+        return studentRepository.findAll(
+                StudentSpecification.filterStudents(
+                        educationalProgram,
+                        course,
+                        practiceStatus,
+                        minGpa
+                )
+        );
+    }
+
     public Optional<Student> getStudentById(Long id) {
         return studentRepository.findById(id);
     }

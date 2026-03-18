@@ -5,6 +5,7 @@
 
 package com.university.careerplatform.backend.controller;
 
+import com.university.careerplatform.backend.dto.SendNotificationByFilterRequest;
 import com.university.careerplatform.backend.dto.SendNotificationRequest;
 import com.university.careerplatform.backend.entity.Student;
 import com.university.careerplatform.backend.service.NotificationService;
@@ -79,6 +80,34 @@ public class AdminController {
         );
 
         return ResponseEntity.ok("Notification sent successfully");
+    }
+
+    @PostMapping("/notifications/send-by-filter")
+    public ResponseEntity<String> sendNotificationByFilter(
+            @RequestBody SendNotificationByFilterRequest request
+    ) {
+        if (request.getMessage() == null || request.getMessage().isBlank()) {
+            return ResponseEntity.badRequest().body("Message cannot be empty");
+        }
+
+        List<Student> filteredStudents = studentService.getAllFilteredStudents(
+                request.getEducationalProgram(),
+                request.getCourse(),
+                request.getPracticeStatus(),
+                request.getMinGpa()
+        );
+
+        if (filteredStudents.isEmpty()) {
+            return ResponseEntity.badRequest().body("No students found for current filters");
+        }
+
+        List<Long> studentIds = filteredStudents.stream()
+                .map(Student::getId)
+                .toList();
+
+        notificationService.sendNotificationToMultipleStudents(studentIds, request.getMessage());
+
+        return ResponseEntity.ok("Notification sent to filtered students successfully");
     }
 
     @GetMapping("/students/{studentId}/resume")
