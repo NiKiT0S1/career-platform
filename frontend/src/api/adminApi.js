@@ -8,7 +8,7 @@ export const getStudentsPage = async (page = 0, size = 20) => {
     return response.data;
 };
 
-export const filterStudents = async (filter, page = 0, size = 20) => {
+export const filterStudents = async (filters, page = 0, size = 20) => {
     const response = await api.get("/api/admin/students/filter", {
         params: {...filters, page, size},
     });
@@ -16,9 +16,21 @@ export const filterStudents = async (filter, page = 0, size = 20) => {
     return response.data;
 };
 
-export const sendNotification = async (studentsIds, message) => {
+export const sendNotification = async (studentIds, message) => {
     const response = await api.post("/api/admin/notifications/send", {
-        studentsIds,
+        studentIds,
+        message,
+    });
+
+    return response.data;
+};
+
+export const sendNotificationByFilter = async (filters, message) => {
+    const response = await api.post("/api/admin/notifications/send-by-filter", {
+        educationalProgram: filters.educationalProgram || null,
+        course: filters.course ? Number(filters.course) : null,
+        practiceStatus: filters.practiceStatus || null,
+        minGpa: filters.minGpa ? Number(filters.minGpa) : null,
         message,
     });
 

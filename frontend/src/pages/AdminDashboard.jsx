@@ -3,15 +3,12 @@ import {
     getStudentsPage,
     filterStudents,
     sendNotification,
+    sendNotificationByFilter,
     downloadStudentResume,
 } from "../api/adminApi";
 
 export default function AdminDashboard() {
     const [students, setStudents] = useState([]);
-    const [currentPage, setCurrentPage] = useState(0);
-    const [totalPages, setTotalPages] = useState(0);
-    const studentsPerPage = 20;
-    const [isFilterMode, setIsFilterMode] = useState(false);
     const [selectedStudentIds, setSelectedStudentIds] = useState([]);
     const [message, setMessage] = useState("");
     const [statusMessage, setStatusMessage] = useState("");
@@ -22,6 +19,13 @@ export default function AdminDashboard() {
         practiceStatus: "",
         minGpa: "",
     });
+
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const [isFilterMode, setIsFilterMode] = useState(false);
+
+    const studentsPerPage = 20;
+    const pagesPerBlock = 15;
 
     useEffect(() => {
         loadStudentsPage(0);
@@ -54,6 +58,7 @@ export default function AdminDashboard() {
             setCurrentPage(data.number);
             setTotalPages(data.totalPages);
             setIsFilterMode(true);
+            setSelectedStudentIds([]);
         } 
         catch (error) {
             console.error(error);
@@ -74,6 +79,8 @@ export default function AdminDashboard() {
     };
 
     const handlePageChange = async (page) => {
+        if (page < 0 || page >= totalPages) return;
+
         if (isFilterMode) {
             await handleFilter(page);
         }
@@ -82,7 +89,7 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleSelectedStudent = (studentId) => {
+    const handleSelectStudent = (studentId) => {
         setSelectedStudentIds((prev) => 
             prev.includes(studentId)
                 ? prev.filter((id) => id !== studentId)
@@ -102,13 +109,35 @@ export default function AdminDashboard() {
         }
 
         try {
+            console.log("Selected students: ", selectedStudentIds);
+            console.log("Message:", message);
+
             const response = await sendNotification(selectedStudentIds, message);
             setStatusMessage(response);
             setMessage("");
         } 
         catch (error) {
             console.error(error);
-            setStatusMessage("Failed to send notification");
+            setStatusMessage(
+                error?.response?.data ||"Failed to send notification"
+            );
+        }
+    };
+
+    const handleSendNotificationToFiltered = async () => {
+        if (!message.trim()) {
+            setStatusMessage("Message cannot be empty");
+            return;
+        }
+
+        try {
+            const response = await sendNotificationByFilter(filters, message);
+            setStatusMessage(response);
+            setMessage("");
+        } 
+        catch (error) {
+            console.error(error);
+            setStatusMessage(error?.response?.data || "Failed to send notification");
         }
     };
 
@@ -117,9 +146,12 @@ export default function AdminDashboard() {
             const blob = await downloadStudentResume(studentId);
             const url = window.URL.createObjectURL(blob);
 
+            const student = students.find((s) => s.id === studentId);
+            const safeName = student.fullName.replace(/\s+/g, "_");
+
             const link = document.createElement("a");
             link.href = url;
-            link.download = `student-${studentId}-resume.pdf`;
+            link.download = `student-${safeName}-resume.pdf`;
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -131,6 +163,10 @@ export default function AdminDashboard() {
             setStatusMessage("Resume not found or failed to download");
         }
     };
+
+    const currentBlock = Math.floor(currentPage / pagesPerBlock);
+    const startPage = currentBlock * pagesPerBlock;
+    const endPage = Math.min(startPage + pagesPerBlock, totalPages);
 
     return (
         <div style={{padding: "40px"}}>
@@ -157,14 +193,16 @@ export default function AdminDashboard() {
             />
             <br /><br />
 
-            <input 
-                type="text"
-                placeholder="Practice Status"
+            <select 
                 value={filters.practiceStatus}
                 onChange={(e) => 
                     setFilters({...filters, practiceStatus: e.target.value})
                 }
-            />
+            >
+                <option value="">All statuses</option>
+                <option value="EMPLOYED">EMPLOYED</option>
+                <option value="NOT_FOUND">NOT FOUND</option>
+            </select>
             <br /><br />
 
             <input 
@@ -178,67 +216,131 @@ export default function AdminDashboard() {
             />
             <br /><br />
 
-            <button onClick={handleFilter}>Apply Filters</button>
+            <button onClick={() => handleFilter(0)}>Apply Filters</button>
             <button onClick={handleResetFilters} style={{marginLeft: "10px"}}>
                 Reset Filters
             </button>
 
             <h3 style={{marginTop: "30px"}}>Students</h3>
 
+            <p>Selected students: {selectedStudentIds.length}</p>
+
             {students.length === 0 ? (
                 <p>No students found</p>
             ) : (
-                students.map((student) => (
-                    <div
-                        key={student.id}
+                <div style={{ overflowX: "auto" }}>
+                    <table
+                        border="1"
+                        cellPadding="8"
+                        cellSpacing="0"
                         style={{
-                            border: "1px solid #ccc",
-                            padding: "12px",
-                            marginBottom: "12px",
+                            width: "100%",
+                            borderCollapse: "collapse",
+                            textAlign: "left",
                         }}
                     >
-                        <input 
-                            type="checkbox"
-                            checked={selectedStudentIds.includes(student.id)}
-                            onChange={() => handleSelectedStudent(student.id)}
-                        />
-                        <span style={{marginLeft: "10px"}}>
-                            <strong>{student.fullName}</strong>
-                        </span>
+                        <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Group</th>
+                            <th>Course</th>
+                            <th>Educational Program</th>
+                            <th>Phone</th>
+                            <th>GPA</th>
+                            <th>Company</th>
+                            <th>Status</th>
+                            <th>Resume</th>
+                        </tr>
+                        </thead>
 
-                        <p>Email: {student.email}</p>
-                        <p>Group: {student.groupName}</p>
-                        <p>Course: {student.course}</p>
-                        <p>Educational Program: {student.educationalProgram}</p>
-                        <p>Phone: {student.phone}</p>
-                        <p>GPA: {student.gpa}</p>
-                        <p>Company: {student.companyName || "Not specified"}</p>
-                        <p>Status: {student.practiceStatus || "Not specified"}</p>
-
-                        <button onClick={() => handleDownloadResume(student.id)}>
-                            Download Resume
-                        </button>
-                    </div>
-                ))
+                        <tbody>
+                            {students.map((student) => (
+                                <tr key={student.id}>
+                                    <td>
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedStudentIds.includes(student.id)}
+                                            onChange={() => handleSelectStudent(student.id)}
+                                        />
+                                    </td>
+                                    <td>{student.fullName}</td>
+                                    <td>{student.email}</td>
+                                    <td>{student.groupName}</td>
+                                    <td>{student.course}</td>
+                                    <td>{student.educationalProgram}</td>
+                                    <td>{student.phone || "Not specified"}</td>
+                                    <td>{student.gpa ?? "Not specified"}</td>
+                                    <td>{student.companyName || "Not specified"}</td>
+                                    <td>{student.practiceStatus || "Not specified"}</td>
+                                    <td>
+                                        {student.resumePath ? (
+                                            <button onClick={() => handleDownloadResume(student.id)}>
+                                                Download
+                                            </button>
+                                        ) : (
+                                            "No resume"
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
 
-        {totalPages > 1 && (
-            <div style={{marginTop: "20px"}}>
-                {Array.from({length: totalPages}, (_, index) => (
+            {totalPages > 1 && (
+                <div style={{ marginTop: "20px" }}>
                     <button
-                        key={index}
-                        onClick={() => handlePageChange(index)}
-                        style={{
-                            marginRight: "8px",
-                            marginBottom: "8px",
-                            fontWeight: currentPage === index ? "bold" : "normal"
-                        }}
+                        onClick={() => handlePageChange(0)}
+                        disabled={currentPage === 0}
                     >
-                        {index + 1}
+                        First
                     </button>
-                ))}
-            </div>
-        )}
+
+                    <button
+                        onClick={() => handlePageChange(Math.max(startPage - pagesPerBlock, 0))}
+                        disabled={startPage === 0}
+                        style={{ marginLeft: "8px" }}
+                    >
+                        Previous
+                    </button>
+
+                    {Array.from({ length: endPage - startPage }, (_, index) => {
+                        const pageNumber = startPage + index;
+
+                        return (
+                            <button
+                                key={pageNumber}
+                                onClick={() => handlePageChange(pageNumber)}
+                                style={{
+                                marginLeft: "8px",
+                                fontWeight: currentPage === pageNumber ? "bold" : "normal",
+                                }}
+                            >
+                                {pageNumber + 1}
+                            </button>
+                        );
+                    })}
+
+                    <button
+                        onClick={() => handlePageChange(endPage)}
+                        disabled={endPage >= totalPages}
+                        style={{ marginLeft: "8px" }}
+                    >
+                        Next
+                    </button>
+
+                    <button
+                        onClick={() => handlePageChange(totalPages - 1)}
+                        disabled={currentPage === totalPages - 1}
+                        style={{ marginLeft: "8px" }}
+                    >
+                        Last
+                    </button>
+                </div>
+            )}
 
             <h3 style={{marginTop: "30px"}}>Send Notification</h3>
 
@@ -249,11 +351,14 @@ export default function AdminDashboard() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
             />
-
             <br /><br />
 
             <button onClick={handleSendNotification}>
                 Send Notifications
+            </button>
+        
+            <button onClick={handleSendNotificationToFiltered} style={{marginLeft: "10px"}}>
+                Send to Current Filter
             </button>
 
             {statusMessage && <p>{statusMessage}</p>}
