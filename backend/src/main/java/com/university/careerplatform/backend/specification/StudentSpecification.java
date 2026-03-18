@@ -22,7 +22,10 @@ public class StudentSpecification {
             if (educationalProgram != null && !educationalProgram.isBlank()) {
                 predicate = criteriaBuilder.and(
                         predicate,
-                        criteriaBuilder.equal(root.get("educationalProgram"), educationalProgram)
+                        criteriaBuilder.like(
+                                criteriaBuilder.lower(root.get("educationalProgram")),
+                                "%" + educationalProgram.toLowerCase() + "%"
+                        )
                 );
             }
 
