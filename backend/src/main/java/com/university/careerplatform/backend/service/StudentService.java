@@ -8,6 +8,9 @@ package com.university.careerplatform.backend.service;
 import com.university.careerplatform.backend.entity.Student;
 import com.university.careerplatform.backend.repository.StudentRepository;
 import com.university.careerplatform.backend.specification.StudentSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -78,18 +81,27 @@ public class StudentService {
         return studentRepository.save(student);
     }
 
-    public List<Student> filterStudents(String educationalProgram,
+    public Page<Student> filterStudents(String educationalProgram,
                                         Integer course,
                                         String practiceStatus,
-                                        Double minGpa) {
+                                        Double minGpa,
+                                        int page,
+                                        int size) {
+        Pageable pageable = PageRequest.of(page, size);
         return studentRepository.findAll(
                 StudentSpecification.filterStudents(
                         educationalProgram,
                         course,
                         practiceStatus,
                         minGpa
-                )
+                ),
+                pageable
         );
+    }
+
+    public Page<Student> getStudentPage(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return studentRepository.findAll(pageable);
     }
 
     public void changePassword(Long studentId, String currentPassword, String newPassword) {

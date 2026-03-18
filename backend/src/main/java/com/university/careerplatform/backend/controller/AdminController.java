@@ -11,6 +11,7 @@ import com.university.careerplatform.backend.service.NotificationService;
 import com.university.careerplatform.backend.service.ResumeService;
 import com.university.careerplatform.backend.service.StudentService;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -35,21 +36,30 @@ public class AdminController {
     }
 
     @GetMapping("/students")
-    public ResponseEntity<List<Student>> getAllStudents() {
-        return ResponseEntity.ok(studentService.getAllStudents());
+    public ResponseEntity<Page<Student>> getStudents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return ResponseEntity.ok(studentService.getStudentPage(page, size));
     }
 
     @GetMapping("/students/filter")
-    public ResponseEntity<List<Student>> filterStudents(@RequestParam(required = false) String educationalProgram,
-                                                        @RequestParam(required = false) Integer course,
-                                                        @RequestParam(required = false) String practiceStatus,
-                                                        @RequestParam(required = false) Double minGpa) {
+    public ResponseEntity<Page<Student>> filterStudents(
+            @RequestParam(required = false) String educationalProgram,
+            @RequestParam(required = false) Integer course,
+            @RequestParam(required = false) String practiceStatus,
+            @RequestParam(required = false) Double minGpa,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
         return ResponseEntity.ok(
                 studentService.filterStudents(
                         educationalProgram,
                         course,
                         practiceStatus,
-                        minGpa
+                        minGpa,
+                        page,
+                        size
                 )
         );
     }
