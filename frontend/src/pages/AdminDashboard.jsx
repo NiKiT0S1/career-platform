@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import {
-    getAllStudents,
+    getStudentsPage,
     filterStudents,
     sendNotification,
     downloadStudentResume,
@@ -8,6 +8,10 @@ import {
 
 export default function AdminDashboard() {
     const [students, setStudents] = useState([]);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const studentsPerPage = 20;
+    const [isFilterMode, setIsFilterMode] = useState(false);
     const [selectedStudentIds, setSelectedStudentIds] = useState([]);
     const [message, setMessage] = useState("");
     const [statusMessage, setStatusMessage] = useState("");
@@ -20,20 +24,23 @@ export default function AdminDashboard() {
     });
 
     useEffect(() => {
-        loadAllStudents();
+        loadStudentsPage(0);
     }, []);
 
-    const loadAllStudents = async () => {
+    const loadStudentsPage = async (page = 0) => {
         try {
-            const data = await getAllStudents();
-            setStudents(data);
+            const data = await getStudentsPage(page, studentsPerPage);
+            setStudents(data.content);
+            setCurrentPage(data.number);
+            setTotalPages(data.totalPages);
+            setIsFilterMode(false);
         } 
         catch (error) {
             console.error(error);
         }
     };
 
-    const handleFilter = async () => {
+    const handleFilter = async (page = 0) => {
         try {
             const preparedFilters = {
                 educationalProgram: filters.educationalProgram || undefined,
@@ -42,8 +49,11 @@ export default function AdminDashboard() {
                 minGpa: filters.minGpa ? Number(filters.minGpa) : undefined,
             };
 
-            const data = await filterStudents(preparedFilters);
-            setStudents(data);
+            const data = await filterStudents(preparedFilters, page, studentsPerPage);
+            setStudents(data.content);
+            setCurrentPage(data.number);
+            setTotalPages(data.totalPages);
+            setIsFilterMode(true);
         } 
         catch (error) {
             console.error(error);
@@ -60,7 +70,16 @@ export default function AdminDashboard() {
         setSelectedStudentIds([]);
         setMessage("");
         setStatusMessage("");
-        await loadAllStudents();
+        await loadStudentsPage(0);
+    };
+
+    const handlePageChange = async (page) => {
+        if (isFilterMode) {
+            await handleFilter(page);
+        }
+        else {
+            await loadStudentsPage(page);
+        }
     };
 
     const handleSelectedStudent = (studentId) => {
@@ -166,7 +185,7 @@ export default function AdminDashboard() {
 
             <h3 style={{marginTop: "30px"}}>Students</h3>
 
-            {/* {students.length === 0 ? (
+            {students.length === 0 ? (
                 <p>No students found</p>
             ) : (
                 students.map((student) => (
@@ -201,9 +220,25 @@ export default function AdminDashboard() {
                         </button>
                     </div>
                 ))
-            )} */}
+            )}
 
-            <h4 style={{color: "red"}}>Students List In Development...</h4>
+        {totalPages > 1 && (
+            <div style={{marginTop: "20px"}}>
+                {Array.from({length: totalPages}, (_, index) => (
+                    <button
+                        key={index}
+                        onClick={() => handlePageChange(index)}
+                        style={{
+                            marginRight: "8px",
+                            marginBottom: "8px",
+                            fontWeight: currentPage === index ? "bold" : "normal"
+                        }}
+                    >
+                        {index + 1}
+                    </button>
+                ))}
+            </div>
+        )}
 
             <h3 style={{marginTop: "30px"}}>Send Notification</h3>
 

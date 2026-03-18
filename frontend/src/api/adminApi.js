@@ -1,13 +1,16 @@
 import api from "./axios";
 
-export const getAllStudents = async () => {
-    const response = await api.get("/api/admin/students");
+export const getStudentsPage = async (page = 0, size = 20) => {
+    const response = await api.get("/api/admin/students", {
+        params: {page, size},
+    });
+
     return response.data;
 };
 
-export const filterStudents = async (filter) => {
+export const filterStudents = async (filter, page = 0, size = 20) => {
     const response = await api.get("/api/admin/students/filter", {
-        params: filters,
+        params: {...filters, page, size},
     });
 
     return response.data;
