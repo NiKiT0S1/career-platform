@@ -27,6 +27,13 @@ export default function AdminDashboard() {
     const studentsPerPage = 20;
     const pagesPerBlock = 15;
 
+    const [appliedFilters, setAppliedFilters] = useState({
+        educationalProgram: "",
+        course: "",
+        practiceStatus: "",
+        minGpa: "",
+    });
+
     useEffect(() => {
         loadStudentsPage(0);
     }, []);
@@ -54,11 +61,19 @@ export default function AdminDashboard() {
             };
 
             const data = await filterStudents(preparedFilters, page, studentsPerPage);
+
             setStudents(data.content);
             setCurrentPage(data.number);
             setTotalPages(data.totalPages);
             setIsFilterMode(true);
             setSelectedStudentIds([]);
+
+            setAppliedFilters({
+                educationalProgram: filters.educationalProgram,
+                course: filters.course,
+                practiceStatus: filters.practiceStatus,
+                minGpa: filters.minGpa,
+            });
         } 
         catch (error) {
             console.error(error);
@@ -67,6 +82,12 @@ export default function AdminDashboard() {
 
     const handleResetFilters = async () => {
         setFilters({
+            educationalProgram: "",
+            course: "",
+            practiceStatus: "",
+            minGpa: "",
+        });
+        setAppliedFilters({
             educationalProgram: "",
             course: "",
             practiceStatus: "",
@@ -185,10 +206,10 @@ export default function AdminDashboard() {
     const hasSelectedStudent = selectedStudentIds.length > 0;
 
     const hasActiveFilters = 
-        !!filters.educationalProgram ||
-        !!filters.course ||
-        !!filters.practiceStatus ||
-        !!filters.minGpa;
+        !!appliedFilters.educationalProgram ||
+        !!appliedFilters.course ||
+        !!appliedFilters.practiceStatus ||
+        !!appliedFilters.minGpa;
 
     const getNotificationsButtonText = () => {
         if (!hasActiveFilters && !hasSelectedStudent) {
