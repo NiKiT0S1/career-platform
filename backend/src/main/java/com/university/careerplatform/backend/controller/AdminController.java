@@ -7,8 +7,10 @@ package com.university.careerplatform.backend.controller;
 
 import com.university.careerplatform.backend.dto.SendNotificationByFilterRequest;
 import com.university.careerplatform.backend.dto.SendNotificationRequest;
+import com.university.careerplatform.backend.entity.Admin;
 import com.university.careerplatform.backend.entity.Notification;
 import com.university.careerplatform.backend.entity.Student;
+import com.university.careerplatform.backend.service.AdminService;
 import com.university.careerplatform.backend.service.NotificationService;
 import com.university.careerplatform.backend.service.ResumeService;
 import com.university.careerplatform.backend.service.StudentService;
@@ -17,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,13 +31,24 @@ public class AdminController {
     private final StudentService studentService;
     private final NotificationService notificationService;
     private final ResumeService resumeService;
+    private final AdminService adminService;
 
     public AdminController(StudentService studentService,
                            NotificationService notificationService,
-                           ResumeService resumeService) {
+                           ResumeService resumeService, AdminService adminService) {
         this.studentService = studentService;
         this.notificationService = notificationService;
         this.resumeService = resumeService;
+        this.adminService = adminService;
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<Admin> getCurrentAdmin(Authentication authentication) {
+        String email = authentication.getName();
+
+        return adminService.getAdminByEmail(email)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/students")

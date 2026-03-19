@@ -17,6 +17,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,6 +37,15 @@ public class StudentController {
         this.notificationService = notificationService;
         this.resumeService = resumeService;
 
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<Student> getCurrentStudent(Authentication authentication) {
+        String email = authentication.getName();
+
+        return studentService.getStudentByEmail(email)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/profile/{studentId}")

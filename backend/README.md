@@ -360,6 +360,7 @@ POST /api/auth/login
 ### Student API
 
 ```http
+GET    /api/student/me
 GET    /api/student/profile/{studentId}
 PUT    /api/student/company/{studentId}
 PUT    /api/student/practice-status/{studentId}
@@ -375,6 +376,7 @@ PUT    /api/student/change-password/{studentId}
 ### Admin API
 
 ```http
+GET    /api/admin/me
 GET    /api/admin/students
 GET    /api/admin/students/filter
 POST   /api/admin/notifications/send
