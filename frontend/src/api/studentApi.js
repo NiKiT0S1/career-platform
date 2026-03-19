@@ -1,5 +1,10 @@
 import api from "./axios";
 
+export const getCurrentStudent = async () => {
+    const response = await api.get("/api/student/me");
+    return response.data
+};
+
 export const getStudentProfile = async (studentId) => {
     const response = await api.get(`/api/student/profile/${studentId}`);
 

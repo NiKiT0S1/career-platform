@@ -7,9 +7,11 @@ import {
     sendNotificationByFilter,
     downloadStudentResume,
     getStudentNotificationsForAdmin,
+    getCurrentAdmin,
 } from "../api/adminApi";
 
 export default function AdminDashboard() {
+    const [admin, setAdmin] = useState(null);
     const [students, setStudents] = useState([]);
     const [selectedStudentIds, setSelectedStudentIds] = useState([]);
     const [message, setMessage] = useState("");
@@ -41,9 +43,20 @@ export default function AdminDashboard() {
     const [currentStudentName, setCurrentStudentName] = useState("");
 
     useEffect(() => {
+        loadCurrentAdmin();
         loadStudentsPage(0);
     }, []);
 
+    const loadCurrentAdmin = async () => {
+        try {
+            const data = await getCurrentAdmin();
+            setAdmin(data);
+        } 
+        catch (error) {
+            console.error(error);
+        }
+    };
+    
     const loadStudentsPage = async (page = 0) => {
         try {
             const data = await getStudentsPage(page, studentsPerPage);
@@ -255,6 +268,10 @@ export default function AdminDashboard() {
     return (
         <div style={{padding: "40px"}}>
             <h1>Admin Dashboard</h1>
+
+            {admin && (
+                <p>Logged in as: {admin.fullName} ({admin.email})</p>
+            )}
 
             <h3>Filters</h3>
 

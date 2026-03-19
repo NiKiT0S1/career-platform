@@ -1,5 +1,10 @@
 import api from "./axios";
 
+export const getCurrentAdmin = async () => {
+    const response = await api.get("/api/admin/me");
+    return response.data
+};
+
 export const getStudentsPage = async (page = 0, size = 20) => {
     const response = await api.get("/api/admin/students", {
         params: {page, size},
