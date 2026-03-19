@@ -141,6 +141,20 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleNotificationAction = async () => {
+        if (!message.trim()) {
+            setStatusMessage("Message cannot be empty");
+            return;
+        }
+
+        if (hasSelectedStudent) {
+            await handleSendNotification();
+        }
+        else {
+            await handleSendNotificationToFiltered();
+        }
+    };
+
     const handleDownloadResume = async (studentId) => {
         try {
             const blob = await downloadStudentResume(studentId);
@@ -167,6 +181,30 @@ export default function AdminDashboard() {
     const currentBlock = Math.floor(currentPage / pagesPerBlock);
     const startPage = currentBlock * pagesPerBlock;
     const endPage = Math.min(startPage + pagesPerBlock, totalPages);
+
+    const hasSelectedStudent = selectedStudentIds.length > 0;
+
+    const hasActiveFilters = 
+        !!filters.educationalProgram ||
+        !!filters.course ||
+        !!filters.practiceStatus ||
+        !!filters.minGpa;
+
+    const getNotificationsButtonText = () => {
+        if (!hasActiveFilters && !hasSelectedStudent) {
+            return "Send Notification For All Students";
+        }
+
+        if (!hasActiveFilters && hasSelectedStudent) {
+            return "Send Notification For Current Students";
+        }
+
+        if (hasActiveFilters && !hasSelectedStudent) {
+            return "Send Notification For All Students By Filter";
+        }
+
+        return "Send Notification For Current Students By Filter";
+    };
 
     return (
         <div style={{padding: "40px"}}>
@@ -353,12 +391,8 @@ export default function AdminDashboard() {
             />
             <br /><br />
 
-            <button onClick={handleSendNotification}>
-                Send Notifications
-            </button>
-        
-            <button onClick={handleSendNotificationToFiltered} style={{marginLeft: "10px"}}>
-                Send to Current Filter
+            <button onClick={handleNotificationAction}>
+                {getNotificationsButtonText()}
             </button>
 
             {statusMessage && <p>{statusMessage}</p>}
