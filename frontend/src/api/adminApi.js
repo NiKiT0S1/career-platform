@@ -44,3 +44,8 @@ export const downloadStudentResume = async (studentId) => {
 
     return response.data;
 };
+
+export const getStudentNotificationsForAdmin = async (studentId) => {
+    const response = await api.get(`/api/admin/students/${studentId}/notifications`);
+    return response.data;
+};
