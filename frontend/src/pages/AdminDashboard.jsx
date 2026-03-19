@@ -233,23 +233,43 @@ export default function AdminDashboard() {
 
             <h3>Filters</h3>
 
-            <input
-                type="text"
-                placeholder="Educational Program"
+            <select
                 value={filters.educationalProgram}
                 onChange={(e) => 
-                    setFilters({...filters, educationalProgram: e.target.value})}
-            />
+                    setFilters({...filters, educationalProgram: e.target.value})
+                }
+            >
+                <option value="">All programs</option>
+                <option value="Software Engineering">Software Engineering</option>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Big Data Analysis">Big Data Analysis</option>
+                <option value="Mathematical and Computational Science">Mathematical and Computational Science</option>
+                <option value="Big Data in Healthcare">Big Data in Healthcare</option>
+                <option value="Cybersecurity">Cybersecurity</option>
+                <option value="Smart Security Technologies">Smart Security Technologies</option>
+                <option value="Industrial Internet of Things">Industrial Internet of Things</option>
+                <option value="Electronic Engineering">Electronic Engineering</option>
+                <option value="Smart Technologies">Smart Technologies</option>
+                <option value="Digital Technologies in Nuclear Power Engineering">Digital Technologies in Nuclear Power Engineering</option>
+                <option value="IT Management">IT Management</option>
+                <option value="IT Entrepreneurship">IT Entrepreneurship</option>
+                <option value="AI Business">AI Business</option>
+                <option value="Media Technologies">Media Technologies</option>
+                <option value="Digital Journalism">Digital Journalism</option>
+                <option value="Digital Public Administration">Digital Public Administration</option>
+            </select>
             <br /><br />
 
-            <input 
-                type="number"
-                placeholder="Course"
+            <select
                 value={filters.course}
                 onChange={(e) => 
                     setFilters({...filters, course: e.target.value})
                 }
-            />
+            >
+                <option value="">All courses</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+            </select>
             <br /><br />
 
             <select 
@@ -260,7 +280,7 @@ export default function AdminDashboard() {
             >
                 <option value="">All statuses</option>
                 <option value="EMPLOYED">EMPLOYED</option>
-                <option value="NOT_FOUND">NOT FOUND</option>
+                <option value="NOT FOUND">NOT FOUND</option>
             </select>
             <br /><br />
 
