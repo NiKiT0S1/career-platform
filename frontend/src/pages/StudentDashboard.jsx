@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { 
     getStudentProfile, 
     updateStudentCompany,
+    updateStudentPracticeStatus,
     getStudentNotifications,
     markNotificationAsRead ,
     uploadStudentResume,
@@ -14,6 +15,7 @@ import {
 export default function StudentDashboard() {
     const [student, setStudent] = useState(null);
     const [companyName, setCompanyName] = useState("");
+    const [practiceStatus, setPracticeStatus] = useState("");
     const [message, setMessage] = useState("");
     const [notifications, setNotifications] = useState([]);
     const [resumeFile, setResumeFile] = useState(null);
@@ -36,6 +38,7 @@ export default function StudentDashboard() {
             const data = await getStudentProfile(2424);
             setStudent(data);
             setCompanyName(data.companyName || "");
+            setPracticeStatus(data.practiceStatus || "");
         } 
         catch (error) {
             console.error(error);
@@ -61,6 +64,18 @@ export default function StudentDashboard() {
         catch (error) {
             console.error(error);
             setMessage("Failed to update company");
+        }
+    };
+
+    const handleUpdatePracticeStatus = async () => {
+        try {
+            const updateStudent = await updateStudentPracticeStatus(2424, practiceStatus);
+            setStudent(updateStudent);
+            setMessage("Practice status updated successfully");
+        } 
+        catch (error) {
+            console.error(error);
+            setMessage("Failed to update practice status");
         }
     };
 
@@ -189,6 +204,19 @@ export default function StudentDashboard() {
             <br /><br />
             <button onClick={handleUpdateCompany}>Save Company</button>
             {message && <p>{message}</p>}
+
+            <h3>Update Practice Status</h3>
+            <select
+                value={practiceStatus}
+                onChange={(e) => setPracticeStatus(e.target.value)}
+            >
+                <option value="">Select status</option>
+                <option value="EMPLOYED">EMPLOYED</option>
+                <option value="NOT FOUND">NOT FOUND</option>
+            </select>
+            <br /><br />
+
+            <button onClick={handleUpdatePracticeStatus}>Save Practice Status</button>
 
 
             <h3>Resume Upload</h3>

@@ -15,6 +15,14 @@ export const updateStudentCompany = async (studentId, companyName) => {
     return response.data;
 };
 
+export const updateStudentPracticeStatus = async (studentId, practiceStatus) => {
+    const response = await api.put(`/api/student/practice-status/${studentId}`, {
+        practiceStatus,
+    });
+
+    return response.data;
+};
+
 export const getStudentNotifications = async (studentId) => {
     const response = await api.get(`/api/student/notifications/${studentId}`);
     return response.data;
