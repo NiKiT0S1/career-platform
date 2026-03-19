@@ -27,10 +27,12 @@ It provides student profile management, filtering, notifications, resume upload,
 - View personal profile
 - View GPA
 - Update internship company name
+- Update practice status
 - View notifications
 - Mark notifications as read
 - Upload PDF resume
 - Download internship contract template
+- Change password
 
 ### Admin features
 - Login with email and password
@@ -63,6 +65,8 @@ src/main/java/com/university/careerplatform/backend
 │   ├── ChangePasswordRequest.java
 │   ├── CompanyUpdateRequest.java
 │   ├── LoginRequest.java
+│   ├── PracticeStatusUpdateRequest.java
+│   ├── SendNotificationByFilterRequest.java
 │   └── SendNotificationRequest.java
 │
 ├── entity
@@ -153,6 +157,8 @@ Examples:
 * `ChangePasswordRequest`
 * `CompanyUpdateRequest`
 * `SendNotificationRequest`
+* `SendNotificationByFilterRequest`
+* `PracticeStatusUpdateRequest`
 
 ### Security
 
@@ -355,12 +361,14 @@ POST /api/auth/login
 ```http
 GET    /api/student/profile/{studentId}
 PUT    /api/student/company/{studentId}
+PUT    /api/student/practice-status/{studentId}
 GET    /api/student/notifications/{studentId}
 PUT    /api/student/notifications/read/{notificationId}
 PUT    /api/student/notifications/read-all/{notificationId}
 POST   /api/student/resume/{studentId}
-GET   /api/student/resume/{studentId}
+GET    /api/student/resume/{studentId}
 GET    /api/student/contracts/three-sided
+PUT    /api/student/change-password/{studentId}
 ```
 
 ### Admin API
@@ -369,6 +377,7 @@ GET    /api/student/contracts/three-sided
 GET    /api/admin/students
 GET    /api/admin/students/filter
 POST   /api/admin/notifications/send
+POST   /api/admin/notifications/send-by-filter
 GET    /api/admin/students/{studentId}/resume
 ```
 
