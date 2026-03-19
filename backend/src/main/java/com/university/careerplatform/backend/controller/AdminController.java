@@ -7,6 +7,7 @@ package com.university.careerplatform.backend.controller;
 
 import com.university.careerplatform.backend.dto.SendNotificationByFilterRequest;
 import com.university.careerplatform.backend.dto.SendNotificationRequest;
+import com.university.careerplatform.backend.entity.Notification;
 import com.university.careerplatform.backend.entity.Student;
 import com.university.careerplatform.backend.service.NotificationService;
 import com.university.careerplatform.backend.service.ResumeService;
@@ -125,5 +126,10 @@ public class AdminController {
         catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    @GetMapping("/students/{studentId}/notifications")
+    public ResponseEntity<List<Notification>> getStudentNotifications(@PathVariable Long studentId) {
+        return ResponseEntity.ok(notificationService.getNotificationsByStudentId(studentId));
     }
 }

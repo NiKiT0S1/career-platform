@@ -10,6 +10,7 @@ import com.university.careerplatform.backend.repository.NotificationRepository;
 import com.university.careerplatform.backend.repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -49,6 +50,7 @@ public class NotificationService {
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
 
         notification.setIsRead(true);
+        notification.setReadAt(LocalDateTime.now());
         return notificationRepository.save(notification);
     }
 

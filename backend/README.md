@@ -40,6 +40,7 @@ It provides student profile management, filtering, notifications, resume upload,
 - Filter students by multiple parameters
 - Send notifications to one or multiple students
 - Download student resume
+- Show notification's story with each student
 
 ### Security
 - JWT authentication
@@ -379,6 +380,7 @@ GET    /api/admin/students/filter
 POST   /api/admin/notifications/send
 POST   /api/admin/notifications/send-by-filter
 GET    /api/admin/students/{studentId}/resume
+GET    /api/admin/students/{studentId}/notifications
 ```
 
 ---

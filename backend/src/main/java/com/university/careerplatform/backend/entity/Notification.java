@@ -30,6 +30,9 @@ public class Notification {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @Column
+    private LocalDateTime readAt;
+
     @ManyToOne
     @JoinColumn(name = "student_id", nullable = false)
     private Student student;
