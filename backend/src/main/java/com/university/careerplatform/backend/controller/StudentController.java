@@ -7,6 +7,7 @@ package com.university.careerplatform.backend.controller;
 
 import com.university.careerplatform.backend.dto.ChangePasswordRequest;
 import com.university.careerplatform.backend.dto.CompanyUpdateRequest;
+import com.university.careerplatform.backend.dto.PracticeStatusUpdateRequest;
 import com.university.careerplatform.backend.entity.Notification;
 import com.university.careerplatform.backend.entity.Student;
 import com.university.careerplatform.backend.service.NotificationService;
@@ -50,6 +51,18 @@ public class StudentController {
                                                      @RequestBody CompanyUpdateRequest request) {
         try {
             Student updatedStudent = studentService.updateCompanyName(studentId, request.getCompanyName());
+            return ResponseEntity.ok(updatedStudent);
+        }
+        catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/practice-status/{studentId}")
+    public ResponseEntity<Student> updatePracticeStatus(@PathVariable Long studentId,
+                                                        @RequestBody PracticeStatusUpdateRequest request) {
+        try {
+            Student updatedStudent = studentService.updatePracticeStatus(studentId, request.getPracticeStatus());
             return ResponseEntity.ok(updatedStudent);
         }
         catch (RuntimeException e) {
