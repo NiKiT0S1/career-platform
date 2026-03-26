@@ -5,6 +5,7 @@
 
 package com.university.careerplatform.backend.controller;
 
+import com.university.careerplatform.backend.dto.ChangePasswordRequest;
 import com.university.careerplatform.backend.dto.SendNotificationByFilterRequest;
 import com.university.careerplatform.backend.dto.SendNotificationRequest;
 import com.university.careerplatform.backend.entity.Admin;
@@ -145,5 +146,21 @@ public class AdminController {
     @GetMapping("/students/{studentId}/notifications")
     public ResponseEntity<List<Notification>> getStudentNotifications(@PathVariable Long studentId) {
         return ResponseEntity.ok(notificationService.getNotificationsByStudentId(studentId));
+    }
+
+    @PutMapping("/change-password/{adminId}")
+    public ResponseEntity<String> changePassword(@PathVariable Long adminId,
+                                                 @RequestBody ChangePasswordRequest request) {
+        try {
+            adminService.changePassword(
+                    adminId,
+                    request.getCurrentPassword(),
+                    request.getNewPassword()
+            );
+            return ResponseEntity.ok("Password changed successfully");
+        }
+        catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
