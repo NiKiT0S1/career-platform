@@ -12,6 +12,8 @@ import {
     previewStudentResume,
     getCurrentStudent
 } from "../api/studentApi";
+import { logout } from "../auth/auth";
+import { useNavigate } from "react-router-dom";
 
 export default function StudentDashboard() {
     const [studentId, setStudentId] = useState(null);
@@ -30,12 +32,6 @@ export default function StudentDashboard() {
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-    useEffect(() => {
-        loadCurrentStudent();
-        // loadStudent();
-        loadNotifications();
-    }, []);
-
     const loadCurrentStudent = async () => {
         try {
             const currentStudent = await getCurrentStudent();
@@ -44,12 +40,18 @@ export default function StudentDashboard() {
             setCompanyName(currentStudent.companyName || "");
             setPracticeStatus(currentStudent.practiceStatus || "");
 
-            await loadNotifications();
+            await loadNotifications(currentStudent.id);
         } 
         catch (error) {
             console.error(error);
         }
     };
+
+    useEffect(() => {
+        loadCurrentStudent();
+        // loadStudent();
+        // loadNotifications();
+    }, []);
     
     // const loadStudent = async () => {
     //     try {
@@ -187,12 +189,35 @@ export default function StudentDashboard() {
         }
     };
 
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
+    };
+
     if (!student) {
         return <h2>Loading...</h2>;
     }
 
     return (
-        <div style={{padding: "40px"}}>
+        <div style={{position: "relative", padding: "40px"}}>
+            <button 
+            onClick={handleLogout}
+            style={{
+                position: "absolute",
+                top: "20px",
+                right: "20px",
+                padding: "10px 16px",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                backgroundColor: "red",
+            }}
+            >
+                Logout
+            </button>
+
             <h1>Student Dashboard</h1>
 
             <h3>Profile</h3>

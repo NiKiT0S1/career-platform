@@ -8,7 +8,10 @@ import {
     downloadStudentResume,
     getStudentNotificationsForAdmin,
     getCurrentAdmin,
+    changeAdminPassword
 } from "../api/adminApi";
+import { logout } from "../auth/auth";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminDashboard() {
     const [admin, setAdmin] = useState(null);
@@ -41,6 +44,12 @@ export default function AdminDashboard() {
     const [notificationViewerOpen, setNotificationViewerOpen] = useState(false);
     const [currentStudentNotifications, setCurrentStudentNotifications] = useState([]);
     const [currentStudentName, setCurrentStudentName] = useState("");
+
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [passwordMessage, setPasswordMessage] = useState("");
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
 
     useEffect(() => {
         loadCurrentAdmin();
@@ -265,8 +274,44 @@ export default function AdminDashboard() {
         return "Send Notification For Current Students By Filter";
     };
 
+    const handleChangePassword = async () => {
+        try {
+            const response = await changeAdminPassword(admin.id, currentPassword, newPassword);
+            setPasswordMessage(response);
+            setCurrentPassword("");
+            setNewPassword("");
+        } 
+        catch (error) {
+            console.error(error);
+            setPasswordMessage(error?.response?.data || "Failed to change password");
+        }
+    };
+
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
+    };
+
     return (
-        <div style={{padding: "40px"}}>
+        <div style={{position: "relative", padding: "40px"}}>
+            <button 
+            onClick={handleLogout}
+            style={{
+                position: "absolute",
+                top: "20px",
+                right: "20px",
+                padding: "10px 16px",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                backgroundColor: "red",
+            }}
+            >
+                Logout
+            </button>
+
             <h1>Admin Dashboard</h1>
 
             {admin && (
@@ -571,6 +616,41 @@ export default function AdminDashboard() {
             </button>
 
             {statusMessage && <p>{statusMessage}</p>}
+
+
+            <h3>Change Password</h3>
+
+            <input 
+                type={showCurrentPassword ? "text" : "password"}
+                placeholder="Current Password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+            <br /><br />
+
+            <button type="button" onClick={() => setShowCurrentPassword((prev) => !prev)}>
+                {showCurrentPassword ? "Hide Current Password" : "Show Current Password"}
+            </button>
+
+            <br /><br />
+
+            <input 
+                type={showNewPassword ? "text" : "password"}
+                placeholder="New Password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+            />
+            <br /><br />
+
+            <button type="button" onClick={() => setShowNewPassword((prev) => !prev)}>
+                {showNewPassword ? "Hide New Password" : "Show New Password"}
+            </button>
+
+            <br /><br />
+
+            <button onClick={handleChangePassword}>Change Password</button>
+
+            {passwordMessage && <p>{passwordMessage}</p>}
         </div>
     );
 }
