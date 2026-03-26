@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { loginRequest } from "../api/authApi";
-import {saveToken, saveRole} from "../auth/auth";
+import {saveToken, saveRole, getToken, getRole} from "../auth/auth";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -10,6 +10,17 @@ export default function LoginPage() {
     const [error, setError] = useState("");
 
     const navigate = useNavigate();
+
+    const token = getToken();
+    const role = getRole();
+
+    if (token && role === "STUDENT") {
+        return <Navigate to="/student" replace />;
+    }
+
+    if (token && role === "ADMIN") {
+        return <Navigate to="/admin" replace />;
+    }
 
     const handleLogin = async () => {
         try {
