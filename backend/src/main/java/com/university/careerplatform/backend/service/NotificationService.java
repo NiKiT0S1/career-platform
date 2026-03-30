@@ -29,6 +29,13 @@ public class NotificationService {
         return notificationRepository.findByStudentIdOrderByCreatedAtDesc(studentId);
     }
 
+    public List<Notification> getNotificationsByStudentEmail(String email) {
+        Student student = studentRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        return notificationRepository.findByStudentIdOrderByCreatedAtDesc(student.getId());
+    }
+
     public List<Notification> getUnreadNotificationsByStudentId(Long studentId) {
         return notificationRepository.findByStudentIdAndIsReadFalse(studentId);
     }
@@ -59,6 +66,20 @@ public class NotificationService {
 
         for (Notification notification : notifications) {
             notification.setIsRead(true);
+        }
+
+        notificationRepository.saveAll(notifications);
+    }
+
+    public void markAllAsReadByEmail(String email) {
+        Student student = studentRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        List<Notification> notifications = notificationRepository.findByStudentIdAndIsReadFalse(student.getId());
+
+        for (Notification notification : notifications) {
+            notification.setIsRead(true);
+            notification.setReadAt(LocalDateTime.now());
         }
 
         notificationRepository.saveAll(notifications);

@@ -51,6 +51,11 @@ public class StudentService {
         return studentRepository.findById(id);
     }
 
+    public Student getCurrentStudent(String email) {
+        return studentRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+    }
+
     public Optional<Student> getStudentByEmail(String email) {
         return studentRepository.findByEmail(email);
     }
@@ -87,10 +92,22 @@ public class StudentService {
         return studentRepository.save(student);
     }
 
+    public Student updateCompanyByEmail(String email, String companyName) {
+        Student student = getCurrentStudent(email);
+        student.setCompanyName(companyName);
+        return studentRepository.save(student);
+    }
+
     public Student updatePracticeStatus(Long studentId, String practiceStatus) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
+        student.setPracticeStatus(practiceStatus);
+        return studentRepository.save(student);
+    }
+
+    public Student updatePracticeStatusByEmail(String email, String practiceStatus) {
+        Student student = getCurrentStudent(email);
         student.setPracticeStatus(practiceStatus);
         return studentRepository.save(student);
     }
@@ -121,6 +138,17 @@ public class StudentService {
     public void changePassword(Long studentId, String currentPassword, String newPassword) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        if (!passwordEncoder.matches(currentPassword, student.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+
+        student.setPassword(passwordEncoder.encode(newPassword));
+        studentRepository.save(student);
+    }
+
+    public void changePasswordByEmail(String email, String currentPassword, String newPassword) {
+        Student student = getCurrentStudent(email);
 
         if (!passwordEncoder.matches(currentPassword, student.getPassword())) {
             throw new RuntimeException("Current password is incorrect");

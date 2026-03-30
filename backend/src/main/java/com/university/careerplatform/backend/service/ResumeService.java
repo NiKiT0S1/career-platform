@@ -56,6 +56,24 @@ public class ResumeService {
         return studentRepository.save(student);
     }
 
+    public Student uploadResumeByEmail(String email, MultipartFile file) throws IOException {
+        Student student = studentRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        validatePdf(file);
+
+        String originalFilename = Objects.requireNonNull(file.getOriginalFilename());
+        String fileExtension = getFileExtension(originalFilename);
+
+        String generatedFilename = UUID.randomUUID() + fileExtension;
+        Path targetLocation = resumeUploadPath.resolve(generatedFilename);
+
+        Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+
+        student.setResumePath(targetLocation.toString());
+        return studentRepository.save(student);
+    }
+
     public Resource downloadResume(Long studentId) throws IOException {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
@@ -69,6 +87,24 @@ public class ResumeService {
 
         if (!resource.exists()) {
             throw new RuntimeException("Resume file does not exist");
+        }
+
+        return resource;
+    }
+
+    public Resource downloadResumeByEmail(String email) throws IOException {
+        Student student = studentRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        if (student.getResumePath() == null || student.getResumePath().isBlank()) {
+            throw new RuntimeException("Resume not found");
+        }
+
+        Path filePath = Paths.get(student.getResumePath()).normalize();
+        Resource resource = new UrlResource(filePath.toUri());
+
+        if (!resource.exists()) {
+            throw new RuntimeException("Resume file does not exits");
         }
 
         return resource;
