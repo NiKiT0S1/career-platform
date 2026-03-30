@@ -5,6 +5,7 @@
 
 package com.university.careerplatform.backend.entity;
 
+import com.university.careerplatform.backend.model.PracticeStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,6 +41,7 @@ public class Student {
 
     private String companyName;
 
+//    @Enumerated(EnumType.STRING)
     private String practiceStatus;
 
     @Column(nullable = false)

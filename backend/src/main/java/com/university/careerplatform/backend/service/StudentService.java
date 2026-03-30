@@ -108,6 +108,11 @@ public class StudentService {
 
     public Student updatePracticeStatusByEmail(String email, String practiceStatus) {
         Student student = getCurrentStudent(email);
+
+        if (!"EMPLOYED".equals(practiceStatus) && !"NOT FOUND".equals(practiceStatus)) {
+            throw new RuntimeException("Invalid practice status");
+        }
+
         student.setPracticeStatus(practiceStatus);
         return studentRepository.save(student);
     }

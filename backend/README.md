@@ -75,6 +75,9 @@ src/main/java/com/university/careerplatform/backend
 │   ├── Notification.java
 │   └── Student.java
 │
+├── model
+│   └── PracticeStatus.java
+│
 ├── repository
 │   ├── AdminRepository.java
 │   ├── NotificationRepository.java
