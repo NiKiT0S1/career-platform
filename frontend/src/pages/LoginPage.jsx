@@ -26,6 +26,9 @@ export default function LoginPage() {
         try {
             const data = await loginRequest(email, password);
 
+            localStorage.removeItem("token");
+            localStorage.removeItem("role");
+
             saveToken(data.token);
             saveRole(data.role);
 
