@@ -276,7 +276,7 @@ export default function AdminDashboard() {
 
     const handleChangePassword = async () => {
         try {
-            const response = await changeAdminPassword(admin.id, currentPassword, newPassword);
+            const response = await changeAdminPassword(currentPassword, newPassword);
             setPasswordMessage(response);
             setCurrentPassword("");
             setNewPassword("");

@@ -55,8 +55,8 @@ export const getStudentNotificationsForAdmin = async (studentId) => {
     return response.data;
 };
 
-export const changeAdminPassword = async (adminId, currentPassword, newPassword) => {
-    const response = await api.put(`/api/admin/change-password/${adminId}`, {
+export const changeAdminPassword = async (currentPassword, newPassword) => {
+    const response = await api.put("/api/admin/change-password", {
         currentPassword,
         newPassword,
     });
