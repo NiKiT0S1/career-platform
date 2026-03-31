@@ -5,31 +5,23 @@ export const getCurrentStudent = async () => {
     return response.data
 };
 
-export const getStudentProfile = async (studentId) => {
-    const response = await api.get(`/api/student/profile/${studentId}`);
-
-    // ВРЕМЕННЫЙ ФИКСИРОВАННЫЙ ID
-    // const response = await api.get(`/api/student/profile/2424`);
-    return response.data;
-};
-
-export const updateStudentCompany = async (studentId, companyName) => {
-    const response = await api.put(`/api/student/company/${studentId}`, {
+export const updateStudentCompany = async (companyName) => {
+    const response = await api.put("/api/student/company", {
         companyName,
     });
     return response.data;
 };
 
-export const updateStudentPracticeStatus = async (studentId, practiceStatus) => {
-    const response = await api.put(`/api/student/practice-status/${studentId}`, {
+export const updateStudentPracticeStatus = async (practiceStatus) => {
+    const response = await api.put("/api/student/practice-status", {
         practiceStatus,
     });
 
     return response.data;
 };
 
-export const getStudentNotifications = async (studentId) => {
-    const response = await api.get(`/api/student/notifications/${studentId}`);
+export const getStudentNotifications = async () => {
+    const response = await api.get("/api/student/notifications");
     return response.data;
 };
 
@@ -38,16 +30,16 @@ export const markNotificationAsRead = async (notificationId) => {
     return response.data;
 };
 
-export const markAllNotificationsAsRead = async (studentId) => {
-    const response = await api.put(`/api/student/notifications/read-all/${studentId}`);
+export const markAllNotificationsAsRead = async () => {
+    const response = await api.put("/api/student/notifications/read-all");
     return response.data;
 }
 
-export const uploadStudentResume = async (studentId, file) => {
+export const uploadStudentResume = async (file) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await api.post(`/api/student/resume/${studentId}`, formData, {
+    const response = await api.post("/api/student/resume", formData, {
         headers : {
             "Content-Type": "multipart/form-data",
         },
@@ -56,8 +48,8 @@ export const uploadStudentResume = async (studentId, file) => {
     return response.data;
 };
 
-export const previewStudentResume = async (studentId) => {
-    const response = await api.get(`/api/student/resume/${studentId}`, {
+export const previewStudentResume = async () => {
+    const response = await api.get("/api/student/resume", {
         responseType: "blob",
     });
 
@@ -72,8 +64,8 @@ export const downloadThreeSidedContract = async () => {
     return response.data;
 };
 
-export const changeStudentPassword = async (studentId, currentPassword, newPassword) => {
-    const response = await api.put(`/api/student/change-password/${studentId}`, {
+export const changeStudentPassword = async (currentPassword, newPassword) => {
+    const response = await api.put("/api/student/change-password", {
         currentPassword,
         newPassword,
     });

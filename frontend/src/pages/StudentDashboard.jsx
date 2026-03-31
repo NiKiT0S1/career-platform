@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { 
-    getStudentProfile, 
+    getCurrentStudent, 
     updateStudentCompany,
     updateStudentPracticeStatus,
     getStudentNotifications,
@@ -9,14 +9,12 @@ import {
     downloadThreeSidedContract,
     changeStudentPassword,
     markAllNotificationsAsRead,
-    previewStudentResume,
-    getCurrentStudent
+    previewStudentResume
 } from "../api/studentApi";
 import { logout } from "../auth/auth";
 import { useNavigate } from "react-router-dom";
 
 export default function StudentDashboard() {
-    const [studentId, setStudentId] = useState(null);
     const [student, setStudent] = useState(null);
     const [companyName, setCompanyName] = useState("");
     const [practiceStatus, setPracticeStatus] = useState("");
@@ -36,11 +34,10 @@ export default function StudentDashboard() {
         try {
             const currentStudent = await getCurrentStudent();
             setStudent(currentStudent);
-            setStudentId(currentStudent.id);
             setCompanyName(currentStudent.companyName || "");
             setPracticeStatus(currentStudent.practiceStatus || "");
 
-            await loadNotifications(currentStudent.id);
+            await loadNotifications();
         } 
         catch (error) {
             console.error(error);
@@ -49,25 +46,11 @@ export default function StudentDashboard() {
 
     useEffect(() => {
         loadCurrentStudent();
-        // loadStudent();
-        // loadNotifications();
     }, []);
-    
-    // const loadStudent = async () => {
-    //     try {
-    //         const data = await getStudentProfile(2424);
-    //         setStudent(data);
-    //         setCompanyName(data.companyName || "");
-    //         setPracticeStatus(data.practiceStatus || "");
-    //     } 
-    //     catch (error) {
-    //         console.error(error);
-    //     }
-    // };
 
-    const loadNotifications = async (id) => {
+    const loadNotifications = async () => {
         try {
-            const data = await getStudentNotifications(id);
+            const data = await getStudentNotifications();
             setNotifications(data);
         } 
         catch (error) {
@@ -77,7 +60,7 @@ export default function StudentDashboard() {
 
     const handleUpdateCompany = async () => {
         try {
-            const updateStudent = await updateStudentCompany(studentId, companyName);
+            const updateStudent = await updateStudentCompany(companyName);
             setStudent(updateStudent);
             setMessage("Company updated successfully");
         } 
@@ -89,7 +72,7 @@ export default function StudentDashboard() {
 
     const handleUpdatePracticeStatus = async () => {
         try {
-            const updateStudent = await updateStudentPracticeStatus(studentId, practiceStatus);
+            const updateStudent = await updateStudentPracticeStatus(practiceStatus);
             setStudent(updateStudent);
             setMessage("Practice status updated successfully");
         } 
@@ -111,7 +94,7 @@ export default function StudentDashboard() {
 
     const handleMarkAllAsRead = async () => {
         try {
-            await markAllNotificationsAsRead(studentId);
+            await markAllNotificationsAsRead();
             loadNotifications();
         } 
         catch (error) {
@@ -126,7 +109,7 @@ export default function StudentDashboard() {
         }
 
         try {
-            const updateStudent = await uploadStudentResume(studentId, resumeFile);
+            const updateStudent = await uploadStudentResume(resumeFile);
             setStudent(updateStudent);
             setResumeMessage("Resume uploaded successfully");
         } 
@@ -138,7 +121,7 @@ export default function StudentDashboard() {
 
     const handlePreviewResume = async () => {
         try {
-            const blob = await previewStudentResume(studentId);
+            const blob = await previewStudentResume();
             const url = window.URL.createObjectURL(blob);
             setResumePreviewUrl(url);
             setIsPreviewOpen(true);
@@ -178,7 +161,7 @@ export default function StudentDashboard() {
 
     const handleChangePassword = async () => {
         try {
-            const response = await changeStudentPassword(studentId, currentPassword, newPassword);
+            const response = await changeStudentPassword(currentPassword, newPassword);
             setPasswordMessage(response);
             setCurrentPassword("");
             setNewPassword("");
