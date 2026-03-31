@@ -148,12 +148,28 @@ public class AdminController {
         return ResponseEntity.ok(notificationService.getNotificationsByStudentId(studentId));
     }
 
-    @PutMapping("/change-password/{adminId}")
-    public ResponseEntity<String> changePassword(@PathVariable Long adminId,
+//    @PutMapping("/change-password/{adminId}")
+//    public ResponseEntity<String> changePassword(@PathVariable Long adminId,
+//                                                 @RequestBody ChangePasswordRequest request) {
+//        try {
+//            adminService.changePassword(
+//                    adminId,
+//                    request.getCurrentPassword(),
+//                    request.getNewPassword()
+//            );
+//            return ResponseEntity.ok("Password changed successfully");
+//        }
+//        catch (RuntimeException e) {
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        }
+//    }
+    @PutMapping("/change-password")
+    public ResponseEntity<String> changePassword(Authentication authentication,
                                                  @RequestBody ChangePasswordRequest request) {
         try {
-            adminService.changePassword(
-                    adminId,
+            String email = authentication.getName();
+            adminService.changePasswordByEmail(
+                    email,
                     request.getCurrentPassword(),
                     request.getNewPassword()
             );

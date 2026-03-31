@@ -34,6 +34,11 @@ public class AdminService {
         return adminRepository.findById(id);
     }
 
+    public Admin getCurrentAdmin(String email) {
+        return adminRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+    }
+
     public Optional<Admin> getAdminByEmail(String email) {
         return adminRepository.findByEmail(email);
     }
@@ -45,6 +50,17 @@ public class AdminService {
     public void changePassword(Long adminId, String currentPassword, String newPassword) {
         Admin admin = adminRepository.findById(adminId)
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        if (!passwordEncoder.matches(currentPassword, admin.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+
+        admin.setPassword(passwordEncoder.encode(newPassword));
+        adminRepository.save(admin);
+    }
+
+    public void changePasswordByEmail(String email, String currentPassword, String newPassword) {
+        Admin admin = getCurrentAdmin(email);
 
         if (!passwordEncoder.matches(currentPassword, admin.getPassword())) {
             throw new RuntimeException("Current password is incorrect");
