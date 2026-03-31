@@ -62,10 +62,15 @@ public class ResumeService {
 
         validatePdf(file);
 
+        if (student.getResumePath() != null && !student.getResumePath().isBlank()) {
+            Path oldFilePath = Paths.get(student.getResumePath()).normalize();
+            Files.deleteIfExists(oldFilePath);
+        }
+
         String originalFilename = Objects.requireNonNull(file.getOriginalFilename());
         String fileExtension = getFileExtension(originalFilename);
 
-        String generatedFilename = UUID.randomUUID() + fileExtension;
+        String generatedFilename = generateResumeFilename(student, fileExtension);
         Path targetLocation = resumeUploadPath.resolve(generatedFilename);
 
         Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
@@ -135,5 +140,15 @@ public class ResumeService {
     private String getFileExtension(String filename) {
         int lastDotIndex = filename.lastIndexOf('.');
         return lastDotIndex == -1 ? "" : filename.substring(lastDotIndex);
+    }
+
+    private String generateResumeFilename(Student student, String extension) {
+        String fullName = student.getFullName().replaceAll("[^a-zA-Zа-яА-Я0-9]", "_");
+        String group = student.getGroupName().replaceAll("[^a-zA-Z0-9]", "_");
+        int course = student.getCourse();
+
+        long timestamp = System.currentTimeMillis();
+
+        return fullName + "_" + group + "_Course_" + course + "_" + timestamp + extension;
     }
 }
