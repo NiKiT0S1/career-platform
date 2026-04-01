@@ -1,11 +1,10 @@
 /**
  * Global CORS configuration for frontend-backend communication.
  *
- * Allows requests from frontend development server (localhost:5173)
- * to backend API (localhost:8080).
+ * Allows requests only from configured frontend origin.
+ * Frontend URL is provided through environment variable APP_FRONTEND_URL.
  *
- * Required because frontend and backend run on different ports,
- * which browsers treat as different origins.
+ * This configuration is used both for local development and cloud deployment.
  *
  * Enabled methods:
  * GET, POST, PUT, DELETE, OPTIONS
@@ -15,6 +14,8 @@
 
 package com.university.careerplatform.backend.config;
 
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -26,11 +27,14 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(List.of(frontendUrl));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
