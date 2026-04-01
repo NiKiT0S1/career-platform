@@ -7,10 +7,18 @@ package com.university.careerplatform.backend.service;
 import com.university.careerplatform.backend.entity.Student;
 import com.university.careerplatform.backend.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.ResponseBytes;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,36 +32,20 @@ import java.util.UUID;
 public class ResumeService {
 
     private final StudentRepository studentRepository;
-    private final Path resumeUploadPath;
+    private final S3Client s3Client;
     private final Path contractsPath;
 
+    @Value("${r2.bucket-name}")
+    private String bucketName;
+
     public ResumeService(StudentRepository studentRepository,
-                         @Value("${file.upload-dir}") String uploadDir,
-                         @Value("${file.contracts-dir}") String contractsDir) throws IOException {
+                         @Value("${file.contracts-dir}") String contractsDir,
+                         S3Client s3Client) throws IOException {
         this.studentRepository = studentRepository;
-        this.resumeUploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
         this.contractsPath = Paths.get(contractsDir).toAbsolutePath().normalize();
+        this.s3Client = s3Client;
 
-        Files.createDirectories(this.resumeUploadPath);
         Files.createDirectories(this.contractsPath);
-    }
-
-    public Student uploadResume(Long studentId, MultipartFile file) throws IOException {
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
-
-        validatePdf(file);
-
-        String originalFilename = Objects.requireNonNull(file.getOriginalFilename());
-        String fileExtension = getFileExtension(originalFilename);
-
-        String generatedFilename = UUID.randomUUID() + fileExtension;
-        Path targetLocation = resumeUploadPath.resolve(generatedFilename);
-
-        Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-
-        student.setResumePath(targetLocation.toString());
-        return studentRepository.save(student);
     }
 
     public Student uploadResumeByEmail(String email, MultipartFile file) throws IOException {
@@ -63,23 +55,35 @@ public class ResumeService {
         validatePdf(file);
 
         if (student.getResumePath() != null && !student.getResumePath().isBlank()) {
-            Path oldFilePath = Paths.get(student.getResumePath()).normalize();
-            Files.deleteIfExists(oldFilePath);
+            s3Client.deleteObject(
+                    DeleteObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(student.getResumePath())
+                            .build()
+            );
         }
 
         String originalFilename = Objects.requireNonNull(file.getOriginalFilename());
         String fileExtension = getFileExtension(originalFilename);
 
         String generatedFilename = generateResumeFilename(student, fileExtension);
-        Path targetLocation = resumeUploadPath.resolve(generatedFilename);
 
-        Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(generatedFilename)
+                .contentType("application/pdf")
+                .build();
 
-        student.setResumePath(targetLocation.toString());
+        s3Client.putObject(
+                putObjectRequest,
+                RequestBody.fromBytes(file.getBytes())
+        );
+
+        student.setResumePath(generatedFilename);
         return studentRepository.save(student);
     }
 
-    public Resource downloadResume(Long studentId) throws IOException {
+    public Resource downloadResume(Long studentId) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
@@ -87,17 +91,17 @@ public class ResumeService {
             throw new RuntimeException("Resume not found");
         }
 
-        Path filePath = Paths.get(student.getResumePath()).normalize();
-        Resource resource = new UrlResource(filePath.toUri());
+        ResponseBytes<GetObjectResponse> objectBytes = s3Client.getObjectAsBytes(
+                GetObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(student.getResumePath())
+                        .build()
+        );
 
-        if (!resource.exists()) {
-            throw new RuntimeException("Resume file does not exist");
-        }
-
-        return resource;
+        return new ByteArrayResource(objectBytes.asByteArray());
     }
 
-    public Resource downloadResumeByEmail(String email) throws IOException {
+    public Resource downloadResumeByEmail(String email) {
         Student student = studentRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
@@ -105,18 +109,23 @@ public class ResumeService {
             throw new RuntimeException("Resume not found");
         }
 
-        Path filePath = Paths.get(student.getResumePath()).normalize();
-        Resource resource = new UrlResource(filePath.toUri());
+        ResponseBytes<GetObjectResponse> objectBytes = s3Client.getObjectAsBytes(
+                GetObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(student.getResumePath())
+                        .build()
+        );
 
-        if (!resource.exists()) {
-            throw new RuntimeException("Resume file does not exits");
-        }
-
-        return resource;
+        return new ByteArrayResource(objectBytes.asByteArray());
     }
 
     public Resource downloadContractTemplate(String filename) throws IOException {
         Path filePath = contractsPath.resolve(filename).normalize();
+
+        if (!filePath.startsWith(contractsPath)) {
+            throw new RuntimeException("Invalid contract path");
+        }
+
         Resource resource = new UrlResource(filePath.toUri());
 
         if (!resource.exists()) {

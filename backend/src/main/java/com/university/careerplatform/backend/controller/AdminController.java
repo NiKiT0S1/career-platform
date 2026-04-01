@@ -148,7 +148,7 @@ public class AdminController {
         return ResponseEntity.ok(notificationService.getNotificationsByStudentId(studentId));
     }
 
-//    @PutMapping("/change-password/{adminId}")
+    //    @PutMapping("/change-password/{adminId}")
 //    public ResponseEntity<String> changePassword(@PathVariable Long adminId,
 //                                                 @RequestBody ChangePasswordRequest request) {
 //        try {

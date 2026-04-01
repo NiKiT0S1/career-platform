@@ -17,6 +17,7 @@ It provides student profile management, filtering, notifications, resume upload,
 - PostgreSQL
 - Lombok
 - Maven
+- Cloudflare R2 (S3-compatible object storage)
 
 ---
 
@@ -54,7 +55,8 @@ It provides student profile management, filtering, notifications, resume upload,
 ```text
 src/main/java/com/university/careerplatform/backend
 ├── config
-│   └──CorsConfig.java
+│   ├── R2Config.java
+│   └── CorsConfig.java
 │
 ├── controller
 │   ├── AdminController.java
@@ -166,7 +168,7 @@ Examples:
 
 ### Security
 
-Contains JWT logic and Spring Security configuration.
+Contains JWT processing, request authentication, and role-based access configuration.
 
 Examples:
 
@@ -189,6 +191,23 @@ Contains helper and technical classes.
 Example:
 
 * `PasswordGenerator`
+
+### Configuration
+
+Contains infrastructure and integration configuration classes.
+
+Examples:
+
+* `CorsConfig`
+* `R2Config`
+
+### Model
+
+Contains supporting domain models and enums used across the application.
+
+Example:
+
+* `PracticeStatus`
 
 ---
 
@@ -259,13 +278,15 @@ Passwords are stored in the database as BCrypt hashes.
 
 ## File Storage
 
-Uploaded files are stored in local backend folders.
-
 ### Resume storage
 
-```text
-uploads/resumes
-```
+Student resumes are stored in **Cloudflare R2 (S3-compatible cloud storage)**.
+
+Features:
+- secure cloud-based storage
+- automatic deletion of old resume versions on update
+- unique filename generation based on student data
+- accessible for both student preview and admin download
 
 ### Contract templates
 
@@ -319,6 +340,32 @@ spring.servlet.multipart.max-file-size=10MB
 spring.servlet.multipart.max-request-size=10MB
 ```
 
+### Environment Variables
+
+Sensitive data is not stored directly in the repository.
+
+The following environment variables must be configured:
+
+- `SPRING_DATASOURCE_URL`
+- `SPRING_DATASOURCE_USERNAME`
+- `SPRING_DATASOURCE_PASSWORD`
+- `JWT_SECRET`
+- `JWT_EXPIRATION`
+- `R2_ACCOUNT_ID`
+- `R2_ACCESS_KEY_ID`
+- `R2_SECRET_ACCESS_KEY`
+- `R2_BUCKET_NAME`
+- `R2_ENDPOINT`
+
+Example (local development via IntelliJ):
+
+```text
+R2_ACCESS_KEY_ID=xxx;
+R2_SECRET_ACCESS_KEY=xxx;
+R2_BUCKET_NAME=career-platform-resumes;
+R2_ENDPOINT=https://xxxx.r2.cloudflarestorage.com
+```
+
 ---
 
 ## Running the Project
@@ -364,16 +411,15 @@ POST /api/auth/login
 
 ```http
 GET    /api/student/me
-GET    /api/student/profile/{studentId}
-PUT    /api/student/company/{studentId}
-PUT    /api/student/practice-status/{studentId}
-GET    /api/student/notifications/{studentId}
+PUT    /api/student/company
+PUT    /api/student/practice-status
+GET    /api/student/notifications
 PUT    /api/student/notifications/read/{notificationId}
-PUT    /api/student/notifications/read-all/{notificationId}
-POST   /api/student/resume/{studentId}
-GET    /api/student/resume/{studentId}
+PUT    /api/student/notifications/read-all
+POST   /api/student/resume
+GET    /api/student/resume
 GET    /api/student/contracts/three-sided
-PUT    /api/student/change-password/{studentId}
+PUT    /api/student/change-password
 ```
 
 ### Admin API
@@ -386,6 +432,7 @@ POST   /api/admin/notifications/send
 POST   /api/admin/notifications/send-by-filter
 GET    /api/admin/students/{studentId}/resume
 GET    /api/admin/students/{studentId}/notifications
+PUT    /api/admin/change-password
 ```
 
 ---
@@ -418,6 +465,7 @@ GET /api/admin/students/filter?educationalProgram=SE&course=2&practiceStatus=NOT
 * Resume upload currently supports PDF files only
 * Student filtering supports multiple parameters simultaneously
 * Current logout logic is expected to be handled on the frontend by removing JWT token
+* Sensitive credentials are managed via environment variables and are not stored in the repository
 
 ---
 

@@ -59,7 +59,7 @@ public class StudentController {
 //                orElseGet(() -> ResponseEntity.notFound().build());
 //    }
 
-//    @PutMapping("/company/{studentId}")
+    //    @PutMapping("/company/{studentId}")
 //    public ResponseEntity<Student> updateCompanyName(@PathVariable Long studentId,
 //                                                     @RequestBody CompanyUpdateRequest request) {
 //        try {
@@ -83,7 +83,7 @@ public class StudentController {
         }
     }
 
-//    @PutMapping("/practice-status/{studentId}")
+    //    @PutMapping("/practice-status/{studentId}")
 //    public ResponseEntity<Student> updatePracticeStatus(@PathVariable Long studentId,
 //                                                        @RequestBody PracticeStatusUpdateRequest request) {
 //        try {
@@ -107,7 +107,7 @@ public class StudentController {
         }
     }
 
-//    @GetMapping("/notifications/{studentId}")
+    //    @GetMapping("/notifications/{studentId}")
 //    public ResponseEntity<List<Notification>> getStudentNotifications(@PathVariable Long studentId) {
 //        List<Notification> notifications = notificationService.getNotificationsByStudentId(studentId);
 //        return ResponseEntity.ok(notifications);
@@ -130,7 +130,7 @@ public class StudentController {
         }
     }
 
-//    @PutMapping("/notifications/read-all/{studentId}")
+    //    @PutMapping("/notifications/read-all/{studentId}")
 //    public ResponseEntity<String> markAllNotificationsAsRead(@PathVariable Long studentId) {
 //        try {
 //            notificationService.markAllAsRead(studentId);
@@ -152,7 +152,7 @@ public class StudentController {
         }
     }
 
-//    @PostMapping(value = "/resume/{studentId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    //    @PostMapping(value = "/resume/{studentId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 //    public ResponseEntity<Student> uploadResume(@PathVariable Long studentId,
 //                                                @RequestParam("file") MultipartFile file) {
 //        try {
@@ -182,7 +182,7 @@ public class StudentController {
         }
     }
 
-//    @GetMapping("/resume/{studentId}")
+    //    @GetMapping("/resume/{studentId}")
 //    public ResponseEntity<Resource> previewResume(@PathVariable Long studentId) {
 //        try {
 //            Resource resource = resumeService.downloadResume(studentId);
@@ -231,7 +231,7 @@ public class StudentController {
         }
     }
 
-//    @PutMapping("/change-password/{studentId}")
+    //    @PutMapping("/change-password/{studentId}")
 //    public ResponseEntity<String> changePassword(@PathVariable Long studentId,
 //                                                 @RequestBody ChangePasswordRequest request) {
 //        try {
