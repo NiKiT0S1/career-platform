@@ -6,6 +6,7 @@
 package com.university.careerplatform.backend.repository;
 
 import com.university.careerplatform.backend.entity.Student;
+import com.university.careerplatform.backend.model.PracticeStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -26,5 +27,5 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
 
     List<Student> findByGpaGreaterThanEqual(Double gpa);
 
-    List<Student> findByPracticeStatus(String practiceStatus);
+    List<Student> findByPracticeStatus(PracticeStatus practiceStatus);
 }

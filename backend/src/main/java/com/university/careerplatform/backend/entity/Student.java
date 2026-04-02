@@ -41,8 +41,8 @@ public class Student {
 
     private String companyName;
 
-//    @Enumerated(EnumType.STRING)
-    private String practiceStatus;
+    @Enumerated(EnumType.STRING)
+    private PracticeStatus practiceStatus;
 
     @Column(nullable = false)
     private String password;

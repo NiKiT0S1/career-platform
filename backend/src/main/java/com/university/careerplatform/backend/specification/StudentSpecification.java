@@ -6,6 +6,7 @@
 package com.university.careerplatform.backend.specification;
 
 import com.university.careerplatform.backend.entity.Student;
+import com.university.careerplatform.backend.model.PracticeStatus;
 import org.springframework.data.jpa.domain.Specification;
 
 public class StudentSpecification {
@@ -37,10 +38,16 @@ public class StudentSpecification {
             }
 
             if (practiceStatus != null && !practiceStatus.isBlank()) {
-                predicate = criteriaBuilder.and(
-                        predicate,
-                        criteriaBuilder.equal(root.get("practiceStatus"), practiceStatus)
-                );
+                try {
+                    PracticeStatus status = PracticeStatus.valueOf(practiceStatus);
+                    predicate = criteriaBuilder.and(
+                            predicate,
+                            criteriaBuilder.equal(root.get("practiceStatus"), status)
+                    );
+                }
+                catch (IllegalArgumentException e) {
+                    throw new RuntimeException("Invalid practice status");
+                }
             }
 
             if (minGpa != null) {

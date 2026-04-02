@@ -18,6 +18,7 @@ It provides student profile management, filtering, notifications, resume upload,
 - Lombok
 - Maven
 - Cloudflare R2 (S3-compatible object storage)
+- Neon (Cloud DB)
 
 ---
 
@@ -42,6 +43,7 @@ It provides student profile management, filtering, notifications, resume upload,
 - Send notifications to one or multiple students
 - Download student resume
 - Show notification's story with each student
+- Change password
 
 ### Security
 - JWT authentication

@@ -6,6 +6,7 @@
 package com.university.careerplatform.backend.service;
 
 import com.university.careerplatform.backend.entity.Student;
+import com.university.careerplatform.backend.model.PracticeStatus;
 import com.university.careerplatform.backend.repository.StudentRepository;
 import com.university.careerplatform.backend.specification.StudentSpecification;
 import org.springframework.data.domain.Page;
@@ -76,7 +77,7 @@ public class StudentService {
         return studentRepository.findByGpaGreaterThanEqual(gpa);
     }
 
-    public List<Student> getStudentsByPracticeStatus(String practiceStatus) {
+    public List<Student> getStudentsByPracticeStatus(PracticeStatus practiceStatus) {
         return studentRepository.findByPracticeStatus(practiceStatus);
     }
 
@@ -84,13 +85,14 @@ public class StudentService {
         return studentRepository.save(student);
     }
 
-    public Student updateCompanyName(Long studentId, String companyName) {
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
-
-        student.setCompanyName(companyName);
-        return studentRepository.save(student);
-    }
+//    ## OLD METHOD ##
+//    public Student updateCompanyName(Long studentId, String companyName) {
+//        Student student = studentRepository.findById(studentId)
+//                .orElseThrow(() -> new RuntimeException("Student not found"));
+//
+//        student.setCompanyName(companyName);
+//        return studentRepository.save(student);
+//    }
 
     public Student updateCompanyByEmail(String email, String companyName) {
         Student student = getCurrentStudent(email);
@@ -98,23 +100,26 @@ public class StudentService {
         return studentRepository.save(student);
     }
 
-    public Student updatePracticeStatus(Long studentId, String practiceStatus) {
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
-
-        student.setPracticeStatus(practiceStatus);
-        return studentRepository.save(student);
-    }
+//    ## OLD METHOD ##
+//    public Student updatePracticeStatus(Long studentId, String practiceStatus) {
+//        Student student = studentRepository.findById(studentId)
+//                .orElseThrow(() -> new RuntimeException("Student not found"));
+//
+//        student.setPracticeStatus(practiceStatus);
+//        return studentRepository.save(student);
+//    }
 
     public Student updatePracticeStatusByEmail(String email, String practiceStatus) {
         Student student = getCurrentStudent(email);
 
-        if (!"EMPLOYED".equals(practiceStatus) && !"NOT FOUND".equals(practiceStatus)) {
+        try {
+            PracticeStatus status = PracticeStatus.valueOf(practiceStatus);
+            student.setPracticeStatus(status);
+            return studentRepository.save(student);
+        }
+        catch (IllegalArgumentException e) {
             throw new RuntimeException("Invalid practice status");
         }
-
-        student.setPracticeStatus(practiceStatus);
-        return studentRepository.save(student);
     }
 
     public Page<Student> filterStudents(String educationalProgram,
@@ -140,17 +145,18 @@ public class StudentService {
         return studentRepository.findAll(pageable);
     }
 
-    public void changePassword(Long studentId, String currentPassword, String newPassword) {
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
-
-        if (!passwordEncoder.matches(currentPassword, student.getPassword())) {
-            throw new RuntimeException("Current password is incorrect");
-        }
-
-        student.setPassword(passwordEncoder.encode(newPassword));
-        studentRepository.save(student);
-    }
+//    ## OLD METHOD ##
+//    public void changePassword(Long studentId, String currentPassword, String newPassword) {
+//        Student student = studentRepository.findById(studentId)
+//                .orElseThrow(() -> new RuntimeException("Student not found"));
+//
+//        if (!passwordEncoder.matches(currentPassword, student.getPassword())) {
+//            throw new RuntimeException("Current password is incorrect");
+//        }
+//
+//        student.setPassword(passwordEncoder.encode(newPassword));
+//        studentRepository.save(student);
+//    }
 
     public void changePasswordByEmail(String email, String currentPassword, String newPassword) {
         Student student = getCurrentStudent(email);
