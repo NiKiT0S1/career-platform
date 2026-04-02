@@ -66,7 +66,7 @@ public class ResumeService {
         String originalFilename = Objects.requireNonNull(file.getOriginalFilename());
         String fileExtension = getFileExtension(originalFilename);
 
-        String generatedFilename = generateResumeFilename(student, fileExtension);
+        String generatedFilename = "resumes/" + generateResumeFilename(student, fileExtension);
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
@@ -119,20 +119,17 @@ public class ResumeService {
         return new ByteArrayResource(objectBytes.asByteArray());
     }
 
-    public Resource downloadContractTemplate(String filename) throws IOException {
-        Path filePath = contractsPath.resolve(filename).normalize();
+    public Resource downloadContractTemplate(String filename) {
+        String contractKey = "contracts/" + filename;
 
-        if (!filePath.startsWith(contractsPath)) {
-            throw new RuntimeException("Invalid contract path");
-        }
+        ResponseBytes<GetObjectResponse> objectBytes = s3Client.getObjectAsBytes(
+                GetObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(contractKey)
+                        .build()
+        );
 
-        Resource resource = new UrlResource(filePath.toUri());
-
-        if (!resource.exists()) {
-            throw new RuntimeException("Contract template not found");
-        }
-
-        return resource;
+        return new ByteArrayResource(objectBytes.asByteArray());
     }
 
     private void validatePdf(MultipartFile file) {
