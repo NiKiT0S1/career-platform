@@ -367,7 +367,7 @@ export default function AdminDashboard() {
             >
                 <option value="">All statuses</option>
                 <option value="EMPLOYED">EMPLOYED</option>
-                <option value="NOT FOUND">NOT FOUND</option>
+                <option value="NOT_FOUND">NOT FOUND</option>
             </select>
             <br /><br />
 
