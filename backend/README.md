@@ -63,6 +63,7 @@ src/main/java/com/university/careerplatform/backend
 ├── controller
 │   ├── AdminController.java
 │   ├── AuthController.java
+│   ├── HealthController.java
 │   └── StudentController.java
 │
 ├── dto
