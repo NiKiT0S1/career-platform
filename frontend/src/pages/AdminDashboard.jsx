@@ -26,6 +26,7 @@ export default function AdminDashboard() {
     const [groups, setGroups] = useState([]);
 
     const [filters, setFilters] = useState({
+        fullName: "",
         educationalProgram: "",
         groupName: "",
         course: "",
@@ -41,6 +42,7 @@ export default function AdminDashboard() {
     const pagesPerBlock = 15;
 
     const [appliedFilters, setAppliedFilters] = useState({
+        fullName: "",
         educationalProgram: "",
         groupName: "",
         course: "",
@@ -64,6 +66,32 @@ export default function AdminDashboard() {
         loadEducationalPrograms();
         loadGroups();
     }, []);
+
+    useEffect (() => {
+        const timeout = setTimeout(async () => {
+            const preparedFilters = {
+                fullName: filters.fullName || undefined,
+                educationalProgram: filters.educationalProgram || undefined,
+                groupName: filters.groupName || undefined,
+                course: filters.course ? Number(filters.course) : undefined,
+                practiceStatus: filters.practiceStatus || undefined,
+                minGpa: filters.minGpa ? Number(filters.minGpa) : undefined,
+            };
+
+            try {
+                const data = await filterStudents(preparedFilters, 0, studentsPerPage);
+                setStudents(data.content);
+                setCurrentPage(0);
+                setTotalPages(data.totalPages);
+                // setTotalStudentsCount(data.totalElements);
+            }
+            catch (error) {
+                console.error(error);
+            }
+        }, 500);
+
+        return () => clearTimeout(timeout);
+    }, [filters.fullName, appliedFilters, studentsPerPage]);
 
     const loadCurrentAdmin = async () => {
         try {
@@ -111,6 +139,7 @@ export default function AdminDashboard() {
     const handleFilter = async (page = 0) => {
         try {
             const preparedFilters = {
+                fullName: filters.fullName || undefined,
                 educationalProgram: filters.educationalProgram || undefined,
                 groupName: filters.groupName || undefined,
                 course: filters.course ? Number(filters.course) : undefined,
@@ -127,6 +156,7 @@ export default function AdminDashboard() {
             setSelectedStudentIds([]);
 
             setAppliedFilters({
+                fullName: filters.fullName,
                 educationalProgram: filters.educationalProgram,
                 groupName: filters.groupName,
                 course: filters.course,
@@ -141,6 +171,7 @@ export default function AdminDashboard() {
 
     const handleResetFilters = async () => {
         setFilters({
+            fullName: "",
             educationalProgram: "",
             groupName: "",
             course: "",
@@ -148,6 +179,7 @@ export default function AdminDashboard() {
             minGpa: "",
         });
         setAppliedFilters({
+            fullName: "",
             educationalProgram: "",
             groupName: "",
             course: "",
@@ -296,6 +328,7 @@ export default function AdminDashboard() {
     const hasSelectedStudent = selectedStudentIds.length > 0;
 
     const hasActiveFilters = 
+        !!appliedFilters.fullName ||
         !!appliedFilters.educationalProgram ||
         !!appliedFilters.groupName ||
         !!appliedFilters.course ||
@@ -364,6 +397,16 @@ export default function AdminDashboard() {
 
             <h3>Filters</h3>
 
+            <input 
+                type="text"
+                placeholder="Search by full name"
+                value={filters.fullName}
+                onChange={(e) => 
+                    setFilters({...filters, fullName: e.target.value})
+                }
+            />
+            <br /><br />
+            
             <select
                 value={filters.educationalProgram}
                 onChange={(e) => handleEducationalProgramChange(e.target.value)}
