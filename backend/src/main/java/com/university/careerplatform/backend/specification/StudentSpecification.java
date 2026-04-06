@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 public class StudentSpecification {
 
     public static Specification<Student> filterStudents(
+            String fullName,
             String educationalProgram,
             String groupName,
             Integer course,
@@ -20,6 +21,16 @@ public class StudentSpecification {
     ) {
         return (root, query, criteriaBuilder) -> {
             var predicate = criteriaBuilder.conjunction();
+
+            if (fullName != null && !fullName.isBlank()) {
+                predicate = criteriaBuilder.and(
+                        predicate,
+                        criteriaBuilder.like(
+                                criteriaBuilder.lower(root.get("fullName")),
+                                "%" + fullName.toLowerCase() + "%"
+                        )
+                );
+            }
 
             if (educationalProgram != null && !educationalProgram.isBlank()) {
                 predicate = criteriaBuilder.and(

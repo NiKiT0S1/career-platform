@@ -6,6 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SendNotificationByFilterRequest {
+    private String fullName;
     private String educationalProgram;
     private String groupName;
     private Integer course;

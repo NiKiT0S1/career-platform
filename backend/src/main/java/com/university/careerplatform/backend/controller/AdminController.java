@@ -62,6 +62,7 @@ public class AdminController {
 
     @GetMapping("/students/filter")
     public ResponseEntity<Page<Student>> filterStudents(
+            @RequestParam(required = false) String fullName,
             @RequestParam(required = false) String educationalProgram,
             @RequestParam(required = false) String groupName,
             @RequestParam(required = false) Integer course,
@@ -72,6 +73,7 @@ public class AdminController {
     ) {
         return ResponseEntity.ok(
                 studentService.filterStudents(
+                        fullName,
                         educationalProgram,
                         groupName,
                         course,
@@ -121,6 +123,7 @@ public class AdminController {
         }
 
         List<Student> filteredStudents = studentService.getAllFilteredStudents(
+                request.getFullName(),
                 request.getEducationalProgram(),
                 request.getGroupName(),
                 request.getCourse(),

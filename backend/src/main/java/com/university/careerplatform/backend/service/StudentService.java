@@ -36,13 +36,15 @@ public class StudentService {
         return studentRepository.findAll();
     }
 
-    public List<Student> getAllFilteredStudents(String educationalProgram,
+    public List<Student> getAllFilteredStudents(String fullName,
+                                                String educationalProgram,
                                                 String groupName,
                                                 Integer course,
                                                 String practiceStatus,
                                                 Double minGpa) {
         return studentRepository.findAll(
                 StudentSpecification.filterStudents(
+                        fullName,
                         educationalProgram,
                         groupName,
                         course,
@@ -134,7 +136,8 @@ public class StudentService {
         }
     }
 
-    public Page<Student> filterStudents(String educationalProgram,
+    public Page<Student> filterStudents(String fullName,
+                                        String educationalProgram,
                                         String groupName,
                                         Integer course,
                                         String practiceStatus,
@@ -144,6 +147,7 @@ public class StudentService {
         Pageable pageable = PageRequest.of(page, size);
         return studentRepository.findAll(
                 StudentSpecification.filterStudents(
+                        fullName,
                         educationalProgram,
                         groupName,
                         course,
