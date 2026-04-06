@@ -7,6 +7,7 @@ package com.university.careerplatform.backend.entity;
 
 import com.university.careerplatform.backend.model.PracticeStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,12 +25,20 @@ public class Student {
     private String fullName;
 
     @Column(nullable = false)
+    @Pattern(
+            regexp = "^[a-zA-Z0-9\\s\\-]+$",
+            message = "Group name must contain only latin letters, digits, spaces and hyphens"
+    )
     private String groupName;
 
     @Column(nullable = false)
     private Integer course;
 
     @Column(name = "educational_program")
+    @Pattern(
+            regexp = "^[a-zA-Z0-9\\s\\-]+$",
+            message = "Educational program must contain only latin letters, digits, spaces and hyphens"
+    )
     private String educationalProgram;
 
     @Column(nullable = false, unique = true)

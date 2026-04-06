@@ -9,6 +9,8 @@ import com.university.careerplatform.backend.entity.Student;
 import com.university.careerplatform.backend.model.PracticeStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -28,4 +30,16 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
     List<Student> findByGpaGreaterThanEqual(Double gpa);
 
     List<Student> findByPracticeStatus(PracticeStatus practiceStatus);
+
+    @Query("SELECT DISTINCT s.educationalProgram FROM Student s WHERE s.educationalProgram IS NOT NULL ORDER BY s.educationalProgram")
+    List<String> findDistinctEducationalProgram();
+
+    @Query("""
+       SELECT DISTINCT s.groupName
+       FROM Student s
+       WHERE s.groupName IS NOT NULL
+       AND (:educationalProgram IS NULL OR s.educationalProgram = :educationalProgram)
+       ORDER BY s.groupName
+       """)
+    List<String> findDistinctGroupNamesByEducationalProgram(@Param("educationalProgram") String educationalProgram);
 }

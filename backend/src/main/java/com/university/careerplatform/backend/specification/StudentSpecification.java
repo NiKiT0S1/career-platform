@@ -13,6 +13,7 @@ public class StudentSpecification {
 
     public static Specification<Student> filterStudents(
             String educationalProgram,
+            String groupName,
             Integer course,
             String practiceStatus,
             Double minGpa
@@ -26,6 +27,16 @@ public class StudentSpecification {
                         criteriaBuilder.like(
                                 criteriaBuilder.lower(root.get("educationalProgram")),
                                 "%" + educationalProgram.toLowerCase() + "%"
+                        )
+                );
+            }
+
+            if (groupName != null && !groupName.isBlank()) {
+                predicate = criteriaBuilder.and(
+                        predicate,
+                        criteriaBuilder.like(
+                                criteriaBuilder.lower(root.get("groupName")),
+                                "%" + groupName.toLowerCase() + "%"
                         )
                 );
             }

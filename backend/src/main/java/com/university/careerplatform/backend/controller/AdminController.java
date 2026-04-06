@@ -63,6 +63,7 @@ public class AdminController {
     @GetMapping("/students/filter")
     public ResponseEntity<Page<Student>> filterStudents(
             @RequestParam(required = false) String educationalProgram,
+            @RequestParam(required = false) String groupName,
             @RequestParam(required = false) Integer course,
             @RequestParam(required = false) String practiceStatus,
             @RequestParam(required = false) Double minGpa,
@@ -72,6 +73,7 @@ public class AdminController {
         return ResponseEntity.ok(
                 studentService.filterStudents(
                         educationalProgram,
+                        groupName,
                         course,
                         practiceStatus,
                         minGpa,
@@ -79,6 +81,18 @@ public class AdminController {
                         size
                 )
         );
+    }
+
+    @GetMapping("/students/educational-programs")
+    public ResponseEntity<List<String>> getEducationalPrograms() {
+        return ResponseEntity.ok(studentService.getAllEducationalPrograms());
+    }
+
+    @GetMapping("/students/groups")
+    public ResponseEntity<List<String>> getGroupNames(
+            @RequestParam(required = false) String educationalProgram
+    ) {
+        return ResponseEntity.ok(studentService.getGroupNamesByEducationalProgram(educationalProgram));
     }
 
     @PostMapping("/notifications/send")
@@ -108,6 +122,7 @@ public class AdminController {
 
         List<Student> filteredStudents = studentService.getAllFilteredStudents(
                 request.getEducationalProgram(),
+                request.getGroupName(),
                 request.getCourse(),
                 request.getPracticeStatus(),
                 request.getMinGpa()

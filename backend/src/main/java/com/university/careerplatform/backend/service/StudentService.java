@@ -14,10 +14,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 import java.util.Optional;
 
+@Validated
 @Service
 public class StudentService {
 
@@ -35,12 +37,14 @@ public class StudentService {
     }
 
     public List<Student> getAllFilteredStudents(String educationalProgram,
+                                                String groupName,
                                                 Integer course,
                                                 String practiceStatus,
                                                 Double minGpa) {
         return studentRepository.findAll(
                 StudentSpecification.filterStudents(
                         educationalProgram,
+                        groupName,
                         course,
                         practiceStatus,
                         minGpa
@@ -63,6 +67,14 @@ public class StudentService {
 
     public List<Student> getStudentsByEducationalProgram(String educationalProgram) {
         return studentRepository.findByEducationalProgram(educationalProgram);
+    }
+
+    public List<String> getAllEducationalPrograms() {
+        return studentRepository.findDistinctEducationalProgram();
+    }
+
+    public List<String> getGroupNamesByEducationalProgram(String educationalProgram) {
+        return studentRepository.findDistinctGroupNamesByEducationalProgram(educationalProgram);
     }
 
     public List<Student> getStudentsByCourse(Integer course) {
@@ -123,6 +135,7 @@ public class StudentService {
     }
 
     public Page<Student> filterStudents(String educationalProgram,
+                                        String groupName,
                                         Integer course,
                                         String practiceStatus,
                                         Double minGpa,
@@ -132,6 +145,7 @@ public class StudentService {
         return studentRepository.findAll(
                 StudentSpecification.filterStudents(
                         educationalProgram,
+                        groupName,
                         course,
                         practiceStatus,
                         minGpa
