@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import { formatDateTime } from "../utils/formatDateTime";
 import {
     getStudentsPage,
+    getEducationalPrograms,
+    getGroups,
     filterStudents,
     sendNotification,
     sendNotificationByFilter,
     downloadStudentResume,
     getStudentNotificationsForAdmin,
     getCurrentAdmin,
-    changeAdminPassword
+    changeAdminPassword,
 } from "../api/adminApi";
 import { logout } from "../auth/auth";
 import { useNavigate } from "react-router-dom";
@@ -20,8 +22,12 @@ export default function AdminDashboard() {
     const [message, setMessage] = useState("");
     const [statusMessage, setStatusMessage] = useState("");
 
+    const [educationalPrograms, setEducationalPrograms] = useState([]);
+    const [groups, setGroups] = useState([]);
+
     const [filters, setFilters] = useState({
         educationalProgram: "",
+        groupName: "",
         course: "",
         practiceStatus: "",
         minGpa: "",
@@ -36,6 +42,7 @@ export default function AdminDashboard() {
 
     const [appliedFilters, setAppliedFilters] = useState({
         educationalProgram: "",
+        groupName: "",
         course: "",
         practiceStatus: "",
         minGpa: "",
@@ -54,6 +61,8 @@ export default function AdminDashboard() {
     useEffect(() => {
         loadCurrentAdmin();
         loadStudentsPage(0);
+        loadEducationalPrograms();
+        loadGroups();
     }, []);
 
     const loadCurrentAdmin = async () => {
@@ -79,10 +88,31 @@ export default function AdminDashboard() {
         }
     };
 
+    const loadEducationalPrograms = async () => {
+        try {
+            const data = await getEducationalPrograms();
+            setEducationalPrograms(data);
+        }
+        catch (error) {
+            console.error(error);
+        }
+    };
+
+    const loadGroups = async (educationalProgram = "") => {
+        try {
+            const data = await getGroups(educationalProgram);
+            setGroups(data);
+        }
+        catch (error) {
+            console.error(error);
+        }
+    };
+
     const handleFilter = async (page = 0) => {
         try {
             const preparedFilters = {
                 educationalProgram: filters.educationalProgram || undefined,
+                groupName: filters.groupName || undefined,
                 course: filters.course ? Number(filters.course) : undefined,
                 practiceStatus: filters.practiceStatus || undefined,
                 minGpa: filters.minGpa ? Number(filters.minGpa) : undefined,
@@ -98,6 +128,7 @@ export default function AdminDashboard() {
 
             setAppliedFilters({
                 educationalProgram: filters.educationalProgram,
+                groupName: filters.groupName,
                 course: filters.course,
                 practiceStatus: filters.practiceStatus,
                 minGpa: filters.minGpa,
@@ -111,12 +142,14 @@ export default function AdminDashboard() {
     const handleResetFilters = async () => {
         setFilters({
             educationalProgram: "",
+            groupName: "",
             course: "",
             practiceStatus: "",
             minGpa: "",
         });
         setAppliedFilters({
             educationalProgram: "",
+            groupName: "",
             course: "",
             practiceStatus: "",
             minGpa: "",
@@ -144,6 +177,16 @@ export default function AdminDashboard() {
                 ? prev.filter((id) => id !== studentId)
                 : [...prev, studentId]
         );
+    };
+
+    const handleEducationalProgramChange = async (value) => {
+        setFilters((prev) => ({
+            ...prev,
+            educationalProgram: value,
+            groupName: "",
+        }));
+
+        await loadGroups(value);
     };
 
     const handleSendNotification = async () => {
@@ -254,6 +297,7 @@ export default function AdminDashboard() {
 
     const hasActiveFilters = 
         !!appliedFilters.educationalProgram ||
+        !!appliedFilters.groupName ||
         !!appliedFilters.course ||
         !!appliedFilters.practiceStatus ||
         !!appliedFilters.minGpa;
@@ -322,28 +366,29 @@ export default function AdminDashboard() {
 
             <select
                 value={filters.educationalProgram}
-                onChange={(e) => 
-                    setFilters({...filters, educationalProgram: e.target.value})
-                }
+                onChange={(e) => handleEducationalProgramChange(e.target.value)}
             >
                 <option value="">All programs</option>
-                <option value="Software Engineering">Software Engineering</option>
-                <option value="Computer Science">Computer Science</option>
-                <option value="Big Data Analysis">Big Data Analysis</option>
-                <option value="Mathematical and Computational Science">Mathematical and Computational Science</option>
-                <option value="Big Data in Healthcare">Big Data in Healthcare</option>
-                <option value="Cybersecurity">Cybersecurity</option>
-                <option value="Smart Security Technologies">Smart Security Technologies</option>
-                <option value="Industrial Internet of Things">Industrial Internet of Things</option>
-                <option value="Electronic Engineering">Electronic Engineering</option>
-                <option value="Smart Technologies">Smart Technologies</option>
-                <option value="Digital Technologies in Nuclear Power Engineering">Digital Technologies in Nuclear Power Engineering</option>
-                <option value="IT Management">IT Management</option>
-                <option value="IT Entrepreneurship">IT Entrepreneurship</option>
-                <option value="AI Business">AI Business</option>
-                <option value="Media Technologies">Media Technologies</option>
-                <option value="Digital Journalism">Digital Journalism</option>
-                <option value="Digital Public Administration">Digital Public Administration</option>
+                {educationalPrograms.map((program) => (
+                    <option key={program} value={program}>
+                        {program}
+                    </option>
+                ))}
+            </select>
+            <br /><br />
+
+            <select
+                value={filters.groupName}
+                onChange={(e) => 
+                    setFilters({...filters, groupName: e.target.value})
+                }
+            >
+                <option value="">All groups</option>
+                {groups.map((group) => (
+                    <option key={group} value={group}>
+                        {group}
+                    </option>
+                ))}
             </select>
             <br /><br />
 

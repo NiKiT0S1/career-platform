@@ -13,6 +13,21 @@ export const getStudentsPage = async (page = 0, size = 20) => {
     return response.data;
 };
 
+export const getEducationalPrograms = async () => {
+    const response = await api.get("/api/admin/students/educational-programs");
+    return response.data;
+};
+
+export const getGroups = async (educationalProgram) => {
+    const response = await api.get("/api/admin/students/groups", {
+        params: {
+            educationalProgram: educationalProgram || undefined,
+        },
+    });
+
+    return response.data;
+};
+
 export const filterStudents = async (filters, page = 0, size = 20) => {
     const response = await api.get("/api/admin/students/filter", {
         params: {...filters, page, size},
