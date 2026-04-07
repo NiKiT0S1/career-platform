@@ -5,9 +5,14 @@ export const getCurrentAdmin = async () => {
     return response.data
 };
 
-export const getStudentsPage = async (page = 0, size = 20) => {
+export const getStudentsPage = async (page = 0, size = 20, sortBy = "", sortDir = "asc") => {
     const response = await api.get("/api/admin/students", {
-        params: {page, size},
+        params: {
+            page, 
+            size,
+            sortBy: sortBy || undefined,
+            sortDir: sortBy ? sortDir : undefined,
+        },
     });
 
     return response.data;
@@ -28,9 +33,9 @@ export const getGroups = async (educationalProgram) => {
     return response.data;
 };
 
-export const filterStudents = async (filters, page = 0, size = 20) => {
+export const filterStudents = async (filters, page = 0, size = 20, sortBy, sortDir) => {
     const response = await api.get("/api/admin/students/filter", {
-        params: {...filters, page, size},
+        params: {...filters, page, size, sortBy, sortDir},
     });
 
     return response.data;

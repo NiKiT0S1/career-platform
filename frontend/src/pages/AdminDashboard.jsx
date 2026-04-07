@@ -34,6 +34,9 @@ export default function AdminDashboard() {
         minGpa: "",
     });
 
+    const [sortBy, setSortBy] = useState("");
+    const [sortDir, setSortDir] = useState("asc");
+
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [isFilterMode, setIsFilterMode] = useState(false);
@@ -79,7 +82,7 @@ export default function AdminDashboard() {
 
             try {
                 if (hasAnyFilters) {
-                    const data = await filterStudents(preparedFilters, currentPage, studentsPerPage);
+                    const data = await filterStudents(preparedFilters, currentPage, studentsPerPage, sortBy, sortDir);
                     
                     setStudents(data.content);
                     setTotalPages(data.totalPages);
@@ -87,7 +90,7 @@ export default function AdminDashboard() {
                     setIsFilterMode(true);
                 }
                 else {
-                    const data = await getStudentsPage(currentPage, studentsPerPage);
+                    const data = await getStudentsPage(currentPage, studentsPerPage, sortBy, sortDir);
                     
                     setStudents(data.content);
                     setTotalPages(data.totalPages);
@@ -100,7 +103,7 @@ export default function AdminDashboard() {
         }, filters.fullName ? 500 : 0);
 
         return () => clearTimeout(timeout);
-    }, [filters, currentPage, studentsPerPage]);
+    }, [filters, currentPage, studentsPerPage, sortBy, sortDir]);
 
     const loadCurrentAdmin = async () => {
         try {
@@ -162,6 +165,22 @@ export default function AdminDashboard() {
 
         await loadGroups();
         await loadStudentsPage(0);
+    };
+
+    const handleSort = (field) => {
+        if (sortBy !== field) {
+            setSortBy(field);
+            setSortDir("asc");
+        }
+        else if (sortDir === "asc") {
+            setSortDir("desc");
+        }
+        else {
+            setSortBy("");
+            setSortDir("asc");
+        }
+
+        setCurrentPage(0);
     };
 
     const handlePageChange = async (page) => {
@@ -325,6 +344,11 @@ export default function AdminDashboard() {
         return "Send Notification For Current Students By Filter";
     };
 
+    const getSortIcon = (field) => {``
+        if (sortBy !== field) return "↕";
+        return sortDir === "asc" ? "▲" : "▼";
+    };
+
     const handleChangePassword = async () => {
         try {
             const response = await changeAdminPassword(currentPassword, newPassword);
@@ -474,13 +498,19 @@ export default function AdminDashboard() {
                         <thead>
                         <tr>
                             <th>Select</th>
-                            <th>Full Name</th>
+                            <th onClick={() => handleSort("fullName")} style={{cursor: "pointer",  userSelect: "none"}}>
+                                Full Name {getSortIcon("fullName")}
+                            </th>
                             <th>Email</th>
                             <th>Group</th>
-                            <th>Course</th>
+                            <th onClick={() => handleSort("course")} style={{cursor: "pointer",  userSelect: "none"}}>
+                                Course {getSortIcon("course")}
+                            </th>
                             <th>Educational Program</th>
                             <th>Phone</th>
-                            <th>GPA</th>
+                            <th onClick={() => handleSort("gpa")} style={{cursor: "pointer", userSelect: "none"}}>
+                                GPA {getSortIcon("gpa")}
+                            </th>
                             <th>Company</th>
                             <th>Status</th>
                             <th>Resume</th>
