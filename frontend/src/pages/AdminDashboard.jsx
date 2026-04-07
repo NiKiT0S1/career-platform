@@ -79,9 +79,9 @@ export default function AdminDashboard() {
             };
 
             try {
-                const data = await filterStudents(preparedFilters, 0, studentsPerPage);
+                const data = await filterStudents(preparedFilters, currentPage, studentsPerPage);
                 setStudents(data.content);
-                setCurrentPage(0);
+                // setCurrentPage(data.number);
                 setTotalPages(data.totalPages);
                 // setTotalStudentsCount(data.totalElements);
             }
@@ -91,7 +91,7 @@ export default function AdminDashboard() {
         }, 500);
 
         return () => clearTimeout(timeout);
-    }, [filters.fullName, appliedFilters, studentsPerPage]);
+    }, [filters.fullName, appliedFilters, currentPage, studentsPerPage]);
 
     const loadCurrentAdmin = async () => {
         try {
@@ -401,9 +401,10 @@ export default function AdminDashboard() {
                 type="text"
                 placeholder="Search by full name"
                 value={filters.fullName}
-                onChange={(e) => 
-                    setFilters({...filters, fullName: e.target.value})
-                }
+                onChange={(e) => {
+                    setFilters({...filters, fullName: e.target.value});
+                    setCurrentPage(0);
+                }}
             />
             <br /><br />
             
