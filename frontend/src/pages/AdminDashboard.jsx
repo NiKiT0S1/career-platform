@@ -41,15 +41,6 @@ export default function AdminDashboard() {
     const studentsPerPage = 20;
     const pagesPerBlock = 15;
 
-    const [appliedFilters, setAppliedFilters] = useState({
-        fullName: "",
-        educationalProgram: "",
-        groupName: "",
-        course: "",
-        practiceStatus: "",
-        minGpa: "",
-    });
-
     const [notificationViewerOpen, setNotificationViewerOpen] = useState(false);
     const [currentStudentNotifications, setCurrentStudentNotifications] = useState([]);
     const [currentStudentName, setCurrentStudentName] = useState("");
@@ -78,20 +69,38 @@ export default function AdminDashboard() {
                 minGpa: filters.minGpa ? Number(filters.minGpa) : undefined,
             };
 
+            const hasAnyFilters = 
+                !!filters.fullName ||
+                !!filters.educationalProgram ||
+                !!filters.groupName ||
+                !!filters.course ||
+                !!filters.practiceStatus ||
+                !!filters.minGpa;
+
             try {
-                const data = await filterStudents(preparedFilters, currentPage, studentsPerPage);
-                setStudents(data.content);
-                // setCurrentPage(data.number);
-                setTotalPages(data.totalPages);
-                // setTotalStudentsCount(data.totalElements);
+                if (hasAnyFilters) {
+                    const data = await filterStudents(preparedFilters, currentPage, studentsPerPage);
+                    
+                    setStudents(data.content);
+                    setTotalPages(data.totalPages);
+                    // setTotalStudentsCount(data.totalElements);
+                    setIsFilterMode(true);
+                }
+                else {
+                    const data = await getStudentsPage(currentPage, studentsPerPage);
+                    
+                    setStudents(data.content);
+                    setTotalPages(data.totalPages);
+                    setIsFilterMode(false);
+                }
             }
             catch (error) {
                 console.error(error);
             }
-        }, 500);
+        }, filters.fullName ? 500 : 0);
 
         return () => clearTimeout(timeout);
-    }, [filters.fullName, appliedFilters, currentPage, studentsPerPage]);
+    }, [filters, currentPage, studentsPerPage]);
 
     const loadCurrentAdmin = async () => {
         try {
@@ -136,39 +145,6 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleFilter = async (page = 0) => {
-        try {
-            const preparedFilters = {
-                fullName: filters.fullName || undefined,
-                educationalProgram: filters.educationalProgram || undefined,
-                groupName: filters.groupName || undefined,
-                course: filters.course ? Number(filters.course) : undefined,
-                practiceStatus: filters.practiceStatus || undefined,
-                minGpa: filters.minGpa ? Number(filters.minGpa) : undefined,
-            };
-
-            const data = await filterStudents(preparedFilters, page, studentsPerPage);
-
-            setStudents(data.content);
-            setCurrentPage(data.number);
-            setTotalPages(data.totalPages);
-            setIsFilterMode(true);
-            setSelectedStudentIds([]);
-
-            setAppliedFilters({
-                fullName: filters.fullName,
-                educationalProgram: filters.educationalProgram,
-                groupName: filters.groupName,
-                course: filters.course,
-                practiceStatus: filters.practiceStatus,
-                minGpa: filters.minGpa,
-            });
-        } 
-        catch (error) {
-            console.error(error);
-        }
-    };
-
     const handleResetFilters = async () => {
         setFilters({
             fullName: "",
@@ -178,29 +154,26 @@ export default function AdminDashboard() {
             practiceStatus: "",
             minGpa: "",
         });
-        setAppliedFilters({
-            fullName: "",
-            educationalProgram: "",
-            groupName: "",
-            course: "",
-            practiceStatus: "",
-            minGpa: "",
-        });
+        setCurrentPage(0);
         setSelectedStudentIds([]);
         setMessage("");
         setStatusMessage("");
+        setIsFilterMode(false);
+
+        await loadGroups();
         await loadStudentsPage(0);
     };
 
     const handlePageChange = async (page) => {
-        if (page < 0 || page >= totalPages) return;
+        // if (page < 0 || page >= totalPages) return;
 
-        if (isFilterMode) {
-            await handleFilter(page);
-        }
-        else {
-            await loadStudentsPage(page);
-        }
+        // if (isFilterMode) {
+        //     await handleFilter(page);
+        // }
+        // else {
+        //     await loadStudentsPage(page);
+        // }
+        setCurrentPage(page);
     };
 
     const handleSelectStudent = (studentId) => {
@@ -218,6 +191,7 @@ export default function AdminDashboard() {
             groupName: "",
         }));
 
+        setCurrentPage(0);
         await loadGroups(value);
     };
 
@@ -328,12 +302,12 @@ export default function AdminDashboard() {
     const hasSelectedStudent = selectedStudentIds.length > 0;
 
     const hasActiveFilters = 
-        !!appliedFilters.fullName ||
-        !!appliedFilters.educationalProgram ||
-        !!appliedFilters.groupName ||
-        !!appliedFilters.course ||
-        !!appliedFilters.practiceStatus ||
-        !!appliedFilters.minGpa;
+        !!filters.fullName ||
+        !!filters.educationalProgram ||
+        !!filters.groupName ||
+        !!filters.course ||
+        !!filters.practiceStatus ||
+        !!filters.minGpa;
 
     const getNotificationsButtonText = () => {
         if (!hasActiveFilters && !hasSelectedStudent) {
@@ -423,9 +397,10 @@ export default function AdminDashboard() {
 
             <select
                 value={filters.groupName}
-                onChange={(e) => 
-                    setFilters({...filters, groupName: e.target.value})
-                }
+                onChange={(e) => {
+                    setFilters({...filters, groupName: e.target.value});
+                    setCurrentPage(0);
+                }}
             >
                 <option value="">All groups</option>
                 {groups.map((group) => (
@@ -438,9 +413,10 @@ export default function AdminDashboard() {
 
             <select
                 value={filters.course}
-                onChange={(e) => 
-                    setFilters({...filters, course: e.target.value})
-                }
+                onChange={(e) => {
+                    setFilters({...filters, course: e.target.value});
+                    setCurrentPage(0);
+                }}
             >
                 <option value="">All courses</option>
                 <option value="2">2</option>
@@ -450,9 +426,10 @@ export default function AdminDashboard() {
 
             <select 
                 value={filters.practiceStatus}
-                onChange={(e) => 
-                    setFilters({...filters, practiceStatus: e.target.value})
-                }
+                onChange={(e) => {
+                    setFilters({...filters, practiceStatus: e.target.value});
+                    setCurrentPage(0);  
+                }}
             >
                 <option value="">All statuses</option>
                 <option value="EMPLOYED">EMPLOYED</option>
@@ -465,13 +442,13 @@ export default function AdminDashboard() {
                 step="0.1"
                 placeholder="Minimum GPA"
                 value={filters.minGpa}
-                onChange={(e) => 
-                    setFilters({...filters, minGpa: e.target.value})
-                }
+                onChange={(e) => {
+                    setFilters({...filters, minGpa: e.target.value});
+                    setCurrentPage(0);
+                }}
             />
             <br /><br />
 
-            <button onClick={() => handleFilter(0)}>Apply Filters</button>
             <button onClick={handleResetFilters} style={{marginLeft: "10px"}}>
                 Reset Filters
             </button>
