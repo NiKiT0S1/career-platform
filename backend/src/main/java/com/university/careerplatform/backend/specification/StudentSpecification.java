@@ -23,11 +23,19 @@ public class StudentSpecification {
             var predicate = criteriaBuilder.conjunction();
 
             if (fullName != null && !fullName.isBlank()) {
+                String search = fullName.toLowerCase();
+
                 predicate = criteriaBuilder.and(
                         predicate,
-                        criteriaBuilder.like(
-                                criteriaBuilder.lower(root.get("fullName")),
-                                "%" + fullName.toLowerCase() + "%"
+                        criteriaBuilder.or(
+                                criteriaBuilder.like(
+                                        criteriaBuilder.lower(root.get("fullName")),
+                                        search + "%"
+                                ),
+                                criteriaBuilder.like(
+                                        criteriaBuilder.lower(root.get("fullName")),
+                                        "% " + search + "%"
+                                )
                         )
                 );
             }

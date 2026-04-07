@@ -55,9 +55,11 @@ public class AdminController {
     @GetMapping("/students")
     public ResponseEntity<Page<Student>> getStudents(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir
     ) {
-        return ResponseEntity.ok(studentService.getStudentPage(page, size));
+        return ResponseEntity.ok(studentService.getStudentPage(page, size, sortBy, sortDir));
     }
 
     @GetMapping("/students/filter")
@@ -68,6 +70,8 @@ public class AdminController {
             @RequestParam(required = false) Integer course,
             @RequestParam(required = false) String practiceStatus,
             @RequestParam(required = false) Double minGpa,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
@@ -79,6 +83,8 @@ public class AdminController {
                         course,
                         practiceStatus,
                         minGpa,
+                        sortBy,
+                        sortDir,
                         page,
                         size
                 )

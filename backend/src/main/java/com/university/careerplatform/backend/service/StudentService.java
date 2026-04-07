@@ -12,6 +12,7 @@ import com.university.careerplatform.backend.specification.StudentSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -142,9 +143,19 @@ public class StudentService {
                                         Integer course,
                                         String practiceStatus,
                                         Double minGpa,
+                                        String sortBy,
+                                        String sortDir,
                                         int page,
                                         int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Sort sort = Sort.unsorted();
+
+        if (sortBy != null && !sortBy.isBlank()) {
+            sort = "desc".equalsIgnoreCase(sortDir)
+                    ? Sort.by(sortBy).descending()
+                    : Sort.by(sortBy).ascending();
+        }
+
+        Pageable pageable = PageRequest.of(page, size, sort);
         return studentRepository.findAll(
                 StudentSpecification.filterStudents(
                         fullName,
@@ -158,8 +169,22 @@ public class StudentService {
         );
     }
 
-    public Page<Student> getStudentPage(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public Page<Student> getStudentPage(int page, int size, String sortBy, String sortDir) {
+//        Pageable pageable = PageRequest.of(page, size);
+
+        Pageable pageable;
+
+        if (sortBy != null && !sortBy.isBlank()) {
+            Sort sort = "desc".equalsIgnoreCase(sortDir)
+                    ? Sort.by(sortBy).descending()
+                    : Sort.by(sortBy).ascending();
+
+            pageable = PageRequest.of(page, size, sort);
+        }
+        else {
+            pageable = PageRequest.of(page, size);
+        }
+
         return studentRepository.findAll(pageable);
     }
 
