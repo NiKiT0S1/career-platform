@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { 
     getCurrentStudent, 
     updateStudentCompany,
@@ -13,6 +13,11 @@ import {
 } from "../api/studentApi";
 import { logout } from "../auth/auth";
 import { useNavigate } from "react-router-dom";
+import { pdfjs, Document, Page } from "react-pdf";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export default function StudentDashboard() {
     const [student, setStudent] = useState(null);
@@ -25,9 +30,15 @@ export default function StudentDashboard() {
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [passwordMessage, setPasswordMessage] = useState("");
-    const [resumePreviewUrl, setResumePreviewUrl] = useState("");
+    // const [resumePreviewUrl, setResumePreviewUrl] = useState("");
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
+
+    const previewContainerRef = useRef(null);
+    const [pageWidth, setPageWidth] = useState(700);
+
+    const [pdfFile, setPdfFile] = useState(null);
+    const [numPages, setNumPages] = useState(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     const loadCurrentStudent = async () => {
@@ -47,6 +58,29 @@ export default function StudentDashboard() {
     useEffect(() => {
         loadCurrentStudent();
     }, []);
+
+    useEffect(() => {
+        return () => {
+            if (pdfFile) {
+                URL.revokeObjectURL(pdfFile);
+            }
+        };
+    }, [pdfFile]);
+
+    useEffect(() => {
+        const updatePageWidth = () => {
+            if (previewContainerRef.current) {
+                const containerWidth = previewContainerRef.current.clientWidth;
+                setPageWidth(Math.min(containerWidth - 40, 900));
+            }
+        };
+
+        updatePageWidth();
+
+        window.addEventListener("resize", updatePageWidth);
+
+        return () => window.removeEventListener("resize", updatePageWidth);
+    }, [isPreviewOpen]);
 
     const loadNotifications = async () => {
         try {
@@ -119,11 +153,20 @@ export default function StudentDashboard() {
         }
     };
 
+    const onDocumentLoadSuccess = ({numPages}) => {
+        setNumPages(numPages);
+    };
+
+    const onDocumentLoadError = (error) => {
+        console.error("PDF load error:", error);
+    };
+    
     const handlePreviewResume = async () => {
         try {
             const blob = await previewStudentResume();
-            const url = window.URL.createObjectURL(blob);
-            setResumePreviewUrl(url);
+            // const url = window.URL.createObjectURL(blob);
+            // setResumePreviewUrl(url);
+            setPdfFile(blob);
             setIsPreviewOpen(true);
         } 
         catch (error) {
@@ -132,12 +175,14 @@ export default function StudentDashboard() {
     };
 
     const handleClosePreview = () => {
+        setPdfFile(null);
+        setNumPages(null);
         setIsPreviewOpen(false);
 
-        if (resumePreviewUrl) {
-            window.URL.revokeObjectURL(resumePreviewUrl);
-            setResumePreviewUrl("");
-        }
+        // if (resumePreviewUrl) {
+        //     window.URL.revokeObjectURL(resumePreviewUrl);
+        //     setResumePreviewUrl("");
+        // }
     };
 
     const handleDownloadContract = async () => {
@@ -267,7 +312,7 @@ export default function StudentDashboard() {
                 </>
             )}
 
-            {isPreviewOpen && resumePreviewUrl && (
+            {isPreviewOpen && pdfFile && (
                 <div
                     style={{
                     position: "fixed",
@@ -288,6 +333,10 @@ export default function StudentDashboard() {
                             backgroundColor: "#fff",
                             borderRadius: "12px",
                             padding: "16px",
+
+                            boxSizing: "border-box",
+                            display: "flex",
+                            flexDirection: "column",
                         }}
                         >
                         <button
@@ -316,7 +365,7 @@ export default function StudentDashboard() {
                             ×
                         </button>
 
-                        <iframe
+                        {/* <iframe
                             src={resumePreviewUrl}
                             width="100%"
                             height="100%"
@@ -324,7 +373,36 @@ export default function StudentDashboard() {
                             style={{ 
                                 border: "none", 
                             }}
-                        />
+                        /> */}
+                        <div
+                            ref={previewContainerRef}
+                            style={{
+                                flex: 1,
+                                overflow: "auto",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "flext-start",
+                                paddingTop: "12px",
+                            }}
+                        >
+                            <Document
+                                file={pdfFile}
+                                onLoadSuccess={onDocumentLoadSuccess}
+                                onLoadError={onDocumentLoadError}
+                                loading="Loading PDF..."
+                                error="Failed to load PDF file."
+                            >
+                                {Array.from(new Array(numPages || 0), (_, index) => (
+                                    <Page 
+                                        key={`page_${index + 1}`}
+                                        pageNumber={index + 1}
+                                        width={pageWidth}
+                                        renderTextLayer={false}
+                                        renderAnnotationLayer={false}
+                                    />
+                                ))}
+                            </Document>
+                        </div>
                     </div>
                 </div>
             )}
