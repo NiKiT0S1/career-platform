@@ -1,6 +1,6 @@
 /**
  * REST API for student actions:
- * profile access, updates, resume upload and preview, notifications, change password.
+ * profile access, updates, resume upload and preview, download templates, notifications, change password.
  */
 
 package com.university.careerplatform.backend.controller;
@@ -10,9 +10,11 @@ import com.university.careerplatform.backend.dto.CompanyUpdateRequest;
 import com.university.careerplatform.backend.dto.PracticeStatusUpdateRequest;
 import com.university.careerplatform.backend.entity.Notification;
 import com.university.careerplatform.backend.entity.Student;
+import com.university.careerplatform.backend.entity.TemplateDocument;
 import com.university.careerplatform.backend.service.NotificationService;
 import com.university.careerplatform.backend.service.ResumeService;
 import com.university.careerplatform.backend.service.StudentService;
+import com.university.careerplatform.backend.service.TemplateService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -31,12 +33,13 @@ public class StudentController {
     private final StudentService studentService;
     private final NotificationService notificationService;
     private final ResumeService resumeService;
+    private final TemplateService templateService;
 
-    public StudentController(StudentService studentService, NotificationService notificationService, ResumeService resumeService) {
+    public StudentController(StudentService studentService, NotificationService notificationService, ResumeService resumeService, TemplateService templateService) {
         this.studentService = studentService;
         this.notificationService = notificationService;
         this.resumeService = resumeService;
-
+        this.templateService = templateService;
     }
 
     @GetMapping("/me")
@@ -215,32 +218,49 @@ public class StudentController {
             return ResponseEntity.internalServerError().build();
         }
     }
+//    ## OLD METHODS FOR EACH CASE
+//    @GetMapping("resume/template")
+//    public ResponseEntity<Resource> downloadResumeTemplate() {
+//        Resource resource = resumeService.downloadResumeTemplate();
+//
+//        return ResponseEntity.ok()
+//                .contentType(MediaType.parseMediaType(
+//                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+//                ))
+//                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"resume-template.docx\"")
+//                .body(resource);
+//    }
+//
+//    @GetMapping("/contracts/three-sided")
+//    public ResponseEntity<Resource> downloadThreeSidedContracts() {
+//        try {
+//            Resource resource = resumeService.downloadContractTemplate("three-sided-contract.docx");
+//            return ResponseEntity.ok()
+//                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"three-sided-contract.docx\"")
+//                    .contentType(MediaType.parseMediaType(
+//                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+//                    .body(resource);
+//        }
+//        catch (Exception e) {
+//            return ResponseEntity.notFound().build();
+//        }
+//    }
 
-    @GetMapping("resume/template")
-    public ResponseEntity<Resource> downloadResumeTemplate() {
-        Resource resource = resumeService.downloadResumeTemplate();
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(
-                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                ))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"resume-template.docx\"")
-                .body(resource);
+    @GetMapping("/templates")
+    public ResponseEntity<List<TemplateDocument>> getAllTemplatesForStudent() {
+        return ResponseEntity.ok(templateService.getAllTemplates());
     }
 
-    @GetMapping("/contracts/three-sided")
-    public ResponseEntity<Resource> downloadThreeSidedContracts() {
-        try {
-            Resource resource = resumeService.downloadContractTemplate("three-sided-contract.docx");
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"three-sided-contract.docx\"")
-                    .contentType(MediaType.parseMediaType(
-                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
-                    .body(resource);
-        }
-        catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+    @GetMapping("/templates/{templateId}")
+    public ResponseEntity<Resource> downloadTemplate(@PathVariable Long templateId) {
+        TemplateDocument templateDocument = templateService.getTemplateById(templateId);
+        Resource resource = templateService.downloadTemplate(templateId);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(templateDocument.getContentType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + templateDocument.getFileName() + "\"")
+                .body(resource);
     }
 
 //    @PutMapping("/change-password/{studentId}")

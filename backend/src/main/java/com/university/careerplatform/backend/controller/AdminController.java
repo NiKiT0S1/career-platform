@@ -1,6 +1,6 @@
 /**
  * REST API for administrator actions:
- * student filtering, notifications, management.
+ * student filtering, searching, notifications, management templates, change admin password.
  */
 
 package com.university.careerplatform.backend.controller;
@@ -8,13 +8,13 @@ package com.university.careerplatform.backend.controller;
 import com.university.careerplatform.backend.dto.ChangePasswordRequest;
 import com.university.careerplatform.backend.dto.SendNotificationByFilterRequest;
 import com.university.careerplatform.backend.dto.SendNotificationRequest;
+import com.university.careerplatform.backend.dto.UpdateTemplateDisplayNameRequest;
 import com.university.careerplatform.backend.entity.Admin;
 import com.university.careerplatform.backend.entity.Notification;
 import com.university.careerplatform.backend.entity.Student;
-import com.university.careerplatform.backend.service.AdminService;
-import com.university.careerplatform.backend.service.NotificationService;
-import com.university.careerplatform.backend.service.ResumeService;
-import com.university.careerplatform.backend.service.StudentService;
+import com.university.careerplatform.backend.entity.TemplateDocument;
+import com.university.careerplatform.backend.model.TemplateCategory;
+import com.university.careerplatform.backend.service.*;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
@@ -22,7 +22,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -33,14 +35,16 @@ public class AdminController {
     private final NotificationService notificationService;
     private final ResumeService resumeService;
     private final AdminService adminService;
+    private final TemplateService templateService;
 
     public AdminController(StudentService studentService,
                            NotificationService notificationService,
-                           ResumeService resumeService, AdminService adminService) {
+                           ResumeService resumeService, AdminService adminService, TemplateService templateService) {
         this.studentService = studentService;
         this.notificationService = notificationService;
         this.resumeService = resumeService;
         this.adminService = adminService;
+        this.templateService = templateService;
     }
 
     @GetMapping("/me")
@@ -172,7 +176,7 @@ public class AdminController {
         return ResponseEntity.ok(notificationService.getNotificationsByStudentId(studentId));
     }
 
-    //    @PutMapping("/change-password/{adminId}")
+//    @PutMapping("/change-password/{adminId}")
 //    public ResponseEntity<String> changePassword(@PathVariable Long adminId,
 //                                                 @RequestBody ChangePasswordRequest request) {
 //        try {
@@ -208,5 +212,41 @@ public class AdminController {
     public ResponseEntity<String> syncPracticeStatuses() {
         int updated = studentService.syncPracticeStatusesByCompanyName();
         return ResponseEntity.ok("Updated students: " + updated);
+    }
+
+    @GetMapping("/templates")
+    public ResponseEntity<List<TemplateDocument>> getAllTemplates() {
+        return ResponseEntity.ok(templateService.getAllTemplates());
+    }
+
+    @PostMapping("/templates")
+    public ResponseEntity<TemplateDocument> uploadTemplate(
+            @RequestParam("displayName") String displayName,
+            @RequestParam("category") TemplateCategory category,
+            @RequestParam("file")MultipartFile file
+    ) throws IOException {
+        return ResponseEntity.ok(templateService.uploadTemplate(displayName, category, file));
+    }
+
+    @PutMapping("/templates/{templateId}/display-name")
+    public ResponseEntity<TemplateDocument> updateTemplateDisplayName(
+            @PathVariable Long templateId,
+            @RequestBody UpdateTemplateDisplayNameRequest request
+    ) {
+        return ResponseEntity.ok(templateService.updateTemplateDisplayName(templateId, request.getDisplayName()));
+    }
+
+    @PutMapping("/templates/{templateId}/file")
+    public ResponseEntity<TemplateDocument> replaceTemplateFile(
+            @PathVariable Long templateId,
+            @RequestParam("file") MultipartFile file
+    ) throws IOException {
+        return ResponseEntity.ok(templateService.replaceTemplateFile(templateId, file));
+    }
+
+    @DeleteMapping("/templates/{templateId}")
+    public ResponseEntity<String> deleteTemplate(@PathVariable Long templateId) {
+        templateService.deleteTemplate(templateId);
+        return ResponseEntity.ok("Template deleted successfully");
     }
 }

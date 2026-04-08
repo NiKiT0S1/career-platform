@@ -19,6 +19,7 @@ It provides student profile management, filtering, notifications, resume upload,
 - Maven
 - Cloudflare R2 (S3-compatible object storage)
 - Neon (Cloud DB)
+- Koyeb (Cloud Backend)
 
 ---
 
@@ -33,7 +34,7 @@ It provides student profile management, filtering, notifications, resume upload,
 - View notifications
 - Mark notifications as read
 - Upload PDF resume
-- Download internship contract template
+- Download templates like resume or three-sided contracts
 - Change password
 
 ### Admin features
@@ -42,6 +43,7 @@ It provides student profile management, filtering, notifications, resume upload,
 - Filter students by multiple parameters
 - Send notifications to one or multiple students
 - Download student resume
+- Manage upload template logic (upload template, replace file, change display name, delete template)
 - Show notification's story with each student
 - Change password
 
@@ -73,20 +75,24 @@ src/main/java/com/university/careerplatform/backend
 │   ├── LoginRequest.java
 │   ├── PracticeStatusUpdateRequest.java
 │   ├── SendNotificationByFilterRequest.java
-│   └── SendNotificationRequest.java
+│   ├── SendNotificationRequest.java
+│   └── UpdateTemplateDisplayNameRequest.java
 │
 ├── entity
 │   ├── Admin.java
 │   ├── Notification.java
-│   └── Student.java
+│   ├── Student.java
+│   └── TemplateDocument.java
 │
 ├── model
-│   └── PracticeStatus.java
+│   ├── PracticeStatus.java
+│   └── TemplateCategory.java
 │
 ├── repository
 │   ├── AdminRepository.java
 │   ├── NotificationRepository.java
-│   └── StudentRepository.java
+│   ├── StudentRepository.java
+│   └── TemplateDocumentRepository.java
 │
 ├── security
 │   ├── JwtAuthenticationFilter.java
@@ -98,7 +104,8 @@ src/main/java/com/university/careerplatform/backend
 │   ├── AuthService.java
 │   ├── NotificationService.java
 │   ├── ResumeService.java
-│   └── StudentService.java
+│   ├── StudentService.java
+│   └── TemplateService.java
 │
 ├── specification
 │   └── StudentSpecification.java
@@ -122,6 +129,7 @@ Examples:
 * `Student`
 * `Admin`
 * `Notification`
+* `TemplateDocument`
 
 ### Repository
 
@@ -132,6 +140,7 @@ Examples:
 * `StudentRepository`
 * `AdminRepository`
 * `NotificationRepository`
+* `TemplateDocumentRepository`
 
 ### Service
 
@@ -144,6 +153,7 @@ Examples:
 * `NotificationService`
 * `ResumeService`
 * `AuthService`
+* `TemplateService`
 
 ### Controller
 
@@ -168,6 +178,7 @@ Examples:
 * `SendNotificationRequest`
 * `SendNotificationByFilterRequest`
 * `PracticeStatusUpdateRequest`
+* `UpdateTemplateDisplayNameRequest`
 
 ### Security
 
@@ -211,6 +222,7 @@ Contains supporting domain models and enums used across the application.
 Example:
 
 * `PracticeStatus`
+* `TemplateCategory`
 
 ---
 
@@ -223,6 +235,7 @@ The backend uses PostgreSQL.
 * `students`
 * `admins`
 * `notifications`
+* `template_documents`
 
 ### Students table includes
 
@@ -244,6 +257,16 @@ The backend uses PostgreSQL.
 * read status
 * creation date
 * student reference
+
+### Template Documents table includes
+
+* category
+* content type
+* display name
+* file name
+* storage key
+* creation date
+* update date
 
 ---
 
@@ -291,15 +314,19 @@ Features:
 - unique filename generation based on student data
 - accessible for both student preview and admin download
 
-### Contract templates
+### Templates
 
-```text
-uploads/contracts
-```
+Templates (resume and contract) are stored in **Cloudflare R2 (S3-compatible cloud storage)**.
+
+Features:
+- secure cloud-based storage
+- automatic deletion of old resume versions on update
+- accessible for both student download and admin manage
 
 ### Current contract template
 
 * `three-sided-contract.docx`
+* `resume-template.docx`
 
 ---
 
@@ -421,7 +448,8 @@ PUT    /api/student/notifications/read/{notificationId}
 PUT    /api/student/notifications/read-all
 POST   /api/student/resume
 GET    /api/student/resume
-GET    /api/student/contracts/three-sided
+GET    /api/student/templates
+GET    /api/student//templates/{templateId}
 PUT    /api/student/change-password
 ```
 
@@ -431,11 +459,19 @@ PUT    /api/student/change-password
 GET    /api/admin/me
 GET    /api/admin/students
 GET    /api/admin/students/filter
+GET    /api/admin/students/educational-programs
+GET    /api/admin/students/groups
 POST   /api/admin/notifications/send
 POST   /api/admin/notifications/send-by-filter
 GET    /api/admin/students/{studentId}/resume
 GET    /api/admin/students/{studentId}/notifications
 PUT    /api/admin/change-password
+POST   /api/admin/students/sync-practice-statuses
+GET    /api/admin/templates
+POST   /api/admin/templates
+PUT   /api/admin/templates/{templateId}/display-name
+PUT   /api/admin/templates/{templateId}/file
+DELETE   /api/admin/templates/{templateId}
 ```
 
 ---
@@ -456,6 +492,12 @@ Example:
 ```http
 GET /api/admin/students/filter?educationalProgram=SE&course=2&practiceStatus=NOT_FOUND&minGpa=3.0
 ```
+
+---
+
+## Searching
+
+The admin API supports search placeholder by students.
 
 ---
 

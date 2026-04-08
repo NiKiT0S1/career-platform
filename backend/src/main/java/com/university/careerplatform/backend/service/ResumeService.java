@@ -119,31 +119,32 @@ public class ResumeService {
         return new ByteArrayResource(objectBytes.asByteArray());
     }
 
-    public Resource downloadContractTemplate(String filename) {
-        String contractKey = "contracts/" + filename;
-
-        ResponseBytes<GetObjectResponse> objectBytes = s3Client.getObjectAsBytes(
-                GetObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(contractKey)
-                        .build()
-        );
-
-        return new ByteArrayResource(objectBytes.asByteArray());
-    }
-
-    public Resource downloadResumeTemplate() {
-        String templateKey = "resume-template/resume-template.docx";
-
-        ResponseBytes<GetObjectResponse> objectBytes = s3Client.getObjectAsBytes(
-                GetObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(templateKey)
-                        .build()
-        );
-
-        return new ByteArrayResource(objectBytes.asByteArray());
-    }
+//    ## OLD METHODS -> REPLACE TO TemplateService
+//    public Resource downloadContractTemplate(String filename) {
+//        String contractKey = "contracts/" + filename;
+//
+//        ResponseBytes<GetObjectResponse> objectBytes = s3Client.getObjectAsBytes(
+//                GetObjectRequest.builder()
+//                        .bucket(bucketName)
+//                        .key(contractKey)
+//                        .build()
+//        );
+//
+//        return new ByteArrayResource(objectBytes.asByteArray());
+//    }
+//
+//    public Resource downloadResumeTemplate() {
+//        String templateKey = "resume-template/resume-template.docx";
+//
+//        ResponseBytes<GetObjectResponse> objectBytes = s3Client.getObjectAsBytes(
+//                GetObjectRequest.builder()
+//                        .bucket(bucketName)
+//                        .key(templateKey)
+//                        .build()
+//        );
+//
+//        return new ByteArrayResource(objectBytes.asByteArray());
+//    }
 
     private void validatePdf(MultipartFile file) {
         if (file.isEmpty()) {
