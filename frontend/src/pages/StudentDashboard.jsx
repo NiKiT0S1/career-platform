@@ -9,7 +9,8 @@ import {
     downloadThreeSidedContract,
     changeStudentPassword,
     markAllNotificationsAsRead,
-    previewStudentResume
+    previewStudentResume,
+    downloadResumeTemplate
 } from "../api/studentApi";
 import { logout } from "../auth/auth";
 import { useNavigate } from "react-router-dom";
@@ -185,6 +186,25 @@ export default function StudentDashboard() {
         // }
     };
 
+    const handleDownloadResumeTemplate = async () => {
+        try {
+            const blob = await downloadResumeTemplate();
+            const url = window.URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "resume-template.docx";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            window.URL.revokeObjectURL(url);
+        }
+        catch (error) {
+            console.error(error);
+        }
+    };
+    
     const handleDownloadContract = async () => {
         try {
             const blob = await downloadThreeSidedContract();
@@ -311,6 +331,12 @@ export default function StudentDashboard() {
                     <button onClick={handlePreviewResume}>Preview Resume</button>
                 </>
             )}
+
+            <br /><br />
+
+            <button onClick={handleDownloadResumeTemplate}>
+                Download Resume Template
+            </button>
 
             {isPreviewOpen && pdfFile && (
                 <div

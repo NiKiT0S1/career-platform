@@ -56,6 +56,14 @@ export const previewStudentResume = async () => {
     return response.data; 
 };
 
+export const downloadResumeTemplate = async () => {
+    const response = await api.get("api/student/resume/template", {
+        responseType: "blob",
+    });
+
+    return response.data;
+};
+
 export const downloadThreeSidedContract = async () => {
     const response = await api.get("/api/student/contracts/three-sided", {
         responseType: "blob",
