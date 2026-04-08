@@ -203,4 +203,10 @@ public class AdminController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PostMapping("/students/sync-practice-statuses")
+    public ResponseEntity<String> syncPracticeStatuses() {
+        int updated = studentService.syncPracticeStatusesByCompanyName();
+        return ResponseEntity.ok("Updated students: " + updated);
+    }
 }

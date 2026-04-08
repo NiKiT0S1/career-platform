@@ -9,6 +9,7 @@ import com.university.careerplatform.backend.entity.Student;
 import com.university.careerplatform.backend.model.PracticeStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -42,4 +43,22 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
        ORDER BY s.groupName
        """)
     List<String> findDistinctGroupNamesByEducationalProgram(@Param("educationalProgram") String educationalProgram);
+
+    @Modifying
+    @Query("""
+        UPDATE Student s
+        SET s.practiceStatus = 'EMPLOYED'
+        WHERE s.companyName IS NOT NULL
+            AND TRIM(s.companyName) <> ''
+""")
+    int markStudentsAsEmployed();
+
+    @Modifying
+    @Query("""
+        UPDATE Student s
+        SET s.practiceStatus = 'NOT_FOUND'
+        WHERE s.companyName IS NULL
+            OR TRIM(s.companyName) = ''
+""")
+    int markStudentsAsNotFound();
 }

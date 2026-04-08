@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
@@ -210,5 +211,11 @@ public class StudentService {
 
         student.setPassword(passwordEncoder.encode(newPassword));
         studentRepository.save(student);
+    }
+    @Transactional
+    public int syncPracticeStatusesByCompanyName() {
+        int employedUpdated = studentRepository.markStudentsAsEmployed();
+        int notFoundUpdated = studentRepository.markStudentsAsNotFound();
+        return employedUpdated + notFoundUpdated;
     }
 }
