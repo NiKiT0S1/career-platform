@@ -18,6 +18,9 @@ import { useNavigate } from "react-router-dom";
 export default function AdminDashboard() {
     const [admin, setAdmin] = useState(null);
     const [students, setStudents] = useState([]);
+
+    const [totalStudentsCount, setTotalStudentsCount] = useState(0);
+
     const [selectedStudentIds, setSelectedStudentIds] = useState([]);
     const [message, setMessage] = useState("");
     const [statusMessage, setStatusMessage] = useState("");
@@ -86,7 +89,7 @@ export default function AdminDashboard() {
                     
                     setStudents(data.content);
                     setTotalPages(data.totalPages);
-                    // setTotalStudentsCount(data.totalElements);
+                    setTotalStudentsCount(data.totalElements);
                     setIsFilterMode(true);
                 }
                 else {
@@ -94,6 +97,7 @@ export default function AdminDashboard() {
                     
                     setStudents(data.content);
                     setTotalPages(data.totalPages);
+                    setTotalStudentsCount(data.totalElements);
                     setIsFilterMode(false);
                 }
             }
@@ -117,10 +121,11 @@ export default function AdminDashboard() {
     
     const loadStudentsPage = async (page = 0) => {
         try {
-            const data = await getStudentsPage(page, studentsPerPage);
+            const data = await getStudentsPage(page, studentsPerPage, sortBy, sortDir);
             setStudents(data.content);
             setCurrentPage(data.number);
             setTotalPages(data.totalPages);
+            setTotalStudentsCount(data.totalElements);
             setIsFilterMode(false);
         } 
         catch (error) {
@@ -479,7 +484,7 @@ export default function AdminDashboard() {
 
             <h3 style={{marginTop: "30px"}}>Students</h3>
 
-            <p>Selected students: {selectedStudentIds.length}</p>
+            <p>Selected students: {selectedStudentIds.length} | Total Students: {totalStudentsCount}</p>
 
             {students.length === 0 ? (
                 <p>No students found</p>
