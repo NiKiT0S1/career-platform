@@ -216,6 +216,18 @@ public class StudentController {
         }
     }
 
+    @GetMapping("resume/template")
+    public ResponseEntity<Resource> downloadResumeTemplate() {
+        Resource resource = resumeService.downloadResumeTemplate();
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                ))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"resume-template.docx\"")
+                .body(resource);
+    }
+
     @GetMapping("/contracts/three-sided")
     public ResponseEntity<Resource> downloadThreeSidedContracts() {
         try {

@@ -132,6 +132,19 @@ public class ResumeService {
         return new ByteArrayResource(objectBytes.asByteArray());
     }
 
+    public Resource downloadResumeTemplate() {
+        String templateKey = "resume-template/resume-template.docx";
+
+        ResponseBytes<GetObjectResponse> objectBytes = s3Client.getObjectAsBytes(
+                GetObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(templateKey)
+                        .build()
+        );
+
+        return new ByteArrayResource(objectBytes.asByteArray());
+    }
+
     private void validatePdf(MultipartFile file) {
         if (file.isEmpty()) {
             throw new RuntimeException("File is empty");
