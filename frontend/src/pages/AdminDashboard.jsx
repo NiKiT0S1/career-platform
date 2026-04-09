@@ -16,6 +16,7 @@ import {
     changeAdminPassword,
     updateTemplateDisplayName,
     replaceTemplateFile,
+    updateTemplateCategory,
 } from "../api/adminApi";
 import { logout } from "../auth/auth";
 import { useNavigate } from "react-router-dom";
@@ -65,7 +66,8 @@ export default function AdminDashboard() {
     const [templates, setTemplates] = useState([]);
     const [templateFile, setTemplateFile] = useState(null);
     const [templateName, setTemplateName] = useState("");
-    const [templateCategory, setTemplateCategory] = useState("RESUME");
+    const [templateCategory, setTemplateCategory] = useState("");
+    const [newTemplateCategory, setNewTemplateCategory] = useState("");
 
     const [editingTemplateId, setEditingTemplateId] = useState(null);
     const [newDisplayName, setNewDisplayName] = useState("");
@@ -128,6 +130,47 @@ export default function AdminDashboard() {
 
         return () => clearTimeout(timeout);
     }, [filters, currentPage, studentsPerPage, sortBy, sortDir]);
+
+    useEffect(() => {
+        if (!message) return;
+
+        const timeout = setTimeout(() => {
+            setMessage("");
+        }, 1500);
+
+        return () => clearTimeout(timeout);
+    }, [message]);
+
+    useEffect(() => {
+        if (!statusMessage) return;
+
+        const timeout = setTimeout(() => {
+            setStatusMessage("");
+        }, 1500);
+
+        return () => clearTimeout(timeout);
+    }, [statusMessage]);
+
+    useEffect(() => {
+        if (!passwordMessage) return;
+
+        const timeout = setTimeout(() => {
+            setPasswordMessage("");
+        }, 1500);
+
+        return () => clearTimeout(timeout);
+    }, [passwordMessage]);
+
+    useEffect(() => {
+        if (!templateActionMessage && !templateActionError) return;
+
+        const timeout = setTimeout(() => {
+            setTemplateActionMessage("");
+            setTemplateActionError("");
+        }, 1500);
+
+        return () => clearTimeout(timeout);
+    }, [templateActionMessage, templateActionError]);
 
     const loadCurrentAdmin = async () => {
         try {
@@ -350,22 +393,42 @@ export default function AdminDashboard() {
     };
 
     const handleUploadTemplate = async () => {
-        if (!templateFile || !templateName) return;
+        setTemplateActionMessage("");
+        setTemplateActionError("");
+        
+        if (!templateName.trim()) {
+            setTemplateActionError("Please enter template name");
+            return;
+        }
+
+        if (!templateFile) {
+            setTemplateActionError("Please select a template file");
+            return;
+        }
+
+        if (!newTemplateCategory) {
+            setTemplateActionError("Please select a template category");
+            return;
+        }
 
         const formData = new FormData();
         formData.append("file", templateFile);
         formData.append("displayName", templateName);
-        formData.append("category", templateCategory);
+        formData.append("category", newTemplateCategory);
 
         try {
             await uploadTemplate(formData);
+
+            setTemplateActionMessage("Template uploaded successfully");
+
             setTemplateFile(null);
             setTemplateName("");
-            setTemplateCategory("RESUME");
+            setTemplateCategory("");
             await loadTemplatesAdmin();
         }
         catch (error) {
             console.error(error);
+            setTemplateActionError("Failed to upload template");
         }
     };
 
@@ -380,6 +443,21 @@ export default function AdminDashboard() {
         }
         catch (error) {
             console.error(error);
+        }
+    };
+
+    const handleChangeTemplateCategory = async (templateId, category) => {
+        try {
+            setTemplateActionMessage("");
+            setTemplateActionError("");
+            
+            await updateTemplateCategory(templateId, category);
+            setTemplateActionMessage("Template category updated successfully");
+            await loadTemplatesAdmin();
+        }
+        catch (error) {
+            console.error(error);
+            setTemplateActionError("Failed to update template category");
         }
     };
 
@@ -456,6 +534,17 @@ export default function AdminDashboard() {
         if (status === "EMPLOYED") return "EMPLOYED";
         return status;
     }
+
+    const getRowStyle = (status) => {
+        if (status === "EMPLOYED") {
+            return {backgroundColor: "#27b030", color: "white"};
+        }
+        if (status === "NOT_FOUND") {
+            return {backgroundColor: "#b92828", color: "white"};
+        }
+
+        return {};
+    };
 
     const handleChangePassword = async () => {
         try {
@@ -628,7 +717,7 @@ export default function AdminDashboard() {
 
                         <tbody>
                             {students.map((student) => (
-                                <tr key={student.id}>
+                                <tr key={student.id} style={getRowStyle(student.practiceStatus)}>
                                     <td>
                                         <input
                                             type="checkbox"
@@ -859,6 +948,16 @@ export default function AdminDashboard() {
                             <button onClick={() => handleDeleteTemplate(template.id)}>
                                 Delete
                             </button>
+
+                            <select
+                                value={templateCategory}
+                                onChange={(e) => handleChangeTemplateCategory(template.id, e.target.value)}
+                            >
+                                <option value="">Select Category</option>
+                                <option value="RESUME">RESUME</option>
+                                <option value="CONTRACT">CONTRACT</option>
+                                <option value="OTHER">OTHER</option>
+                            </select>
                         </div>
 
                         {editingTemplateId === template.id && (
@@ -922,9 +1021,10 @@ export default function AdminDashboard() {
             <br /><br />
 
             <select
-                value={templateCategory}
-                onChange={(e) => setTemplateCategory(e.target.value)}
+                value={newTemplateCategory}
+                onChange={(e) => setNewTemplateCategory(e.target.value)}
             >
+                <option value="">Select Category</option>
                 <option value="RESUME">RESUME</option>
                 <option value="CONTRACT">CONTRACT</option>
                 <option value="OTHER">OTHER</option>

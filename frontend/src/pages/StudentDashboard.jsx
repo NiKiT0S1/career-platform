@@ -27,7 +27,7 @@ export default function StudentDashboard() {
     const [message, setMessage] = useState("");
     const [notifications, setNotifications] = useState([]);
     const [resumeFile, setResumeFile] = useState(null);
-    const [resumeMessage, setResumeMessage] = useState("");
+    // const [resumeMessage, setResumeMessage] = useState("");
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [passwordMessage, setPasswordMessage] = useState("");
@@ -43,6 +43,11 @@ export default function StudentDashboard() {
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     const [templates, setTemplates] = useState([]);
+
+    const [isUploadingResume, setIsUploadingResume] = useState(false);
+    const [resumeActionMessage, setResumeActionMessage] = useState("");
+    const [resumeActionError, setResumeActionError] = useState("");
+
 
     const loadCurrentStudent = async () => {
         try {
@@ -86,9 +91,40 @@ export default function StudentDashboard() {
         return () => window.removeEventListener("resize", updatePageWidth);
     }, [isPreviewOpen]);
 
+    // useEffect(() => {
+    //     loadTemplates();
+    // });
+
     useEffect(() => {
-        loadTemplates();
-    });
+        if (!message) return;
+
+        const timeout = setTimeout(() => {
+            setMessage("");
+        }, 1500);
+
+        return () => clearTimeout(timeout);
+    }, [message]);
+
+    useEffect(() => {
+        if (!passwordMessage) return;
+
+        const timeout = setTimeout(() => {
+            setPasswordMessage("");
+        }, 1500);
+
+        return () => clearTimeout(timeout);
+    }, [passwordMessage]);
+
+    useEffect(() => {
+        if (!resumeActionMessage && !resumeActionError) return;
+
+        const timeout = setTimeout(() => {
+            setResumeActionMessage("");
+            setResumeActionError("");
+        }, 1500);
+
+        return () => clearTimeout(timeout);
+    }, [resumeActionMessage, resumeActionError]);
 
     const loadTemplates = async () => {
         try {
@@ -134,6 +170,18 @@ export default function StudentDashboard() {
         }
     };
 
+    const getPracticeStatusColor = (status) => {
+        if (status === "EMPLOYED") return "green";
+        if (status === "NOT_FOUND") return "red";
+        return "gray";
+    };
+
+    const formatPracticeStatus = (status) => {
+        if (status === "NOT_FOUND") return "NOT FOUND";
+        if (status === "EMPLOYED") return "EMPLOYED";
+        return status;
+    }
+
     const handleMarkAsRead = async (notificationId) => {
         try {
             await markNotificationAsRead(notificationId);
@@ -156,18 +204,31 @@ export default function StudentDashboard() {
 
     const handleResumeUpload = async () => {
         if (!resumeFile) {
-            setResumeMessage("Please select a PDF file first");
+            setResumeActionError("Please select a PDF file first");
             return;
         }
 
         try {
-            const updateStudent = await uploadStudentResume(resumeFile);
-            setStudent(updateStudent);
-            setResumeMessage("Resume uploaded successfully");
+            setIsUploadingResume(true);
+            setResumeActionMessage("");
+            setResumeActionError("");
+            
+            // const updateStudent = await uploadStudentResume(resumeFile);
+            // setStudent(updateStudent);
+            // setResumeMessage("Resume uploaded successfully");
+
+            await uploadStudentResume(resumeFile);
+            setResumeActionMessage("Resume uploaded successfully");
+            setResumeFile(null);
+            await loadCurrentStudent();
         } 
         catch (error) {
             console.error(error);
-            setResumeMessage("Failed to upload resume");
+            // setResumeMessage("Failed to upload resume");
+            setResumeActionError("Failed to upload resume");
+        }
+        finally {
+            setIsUploadingResume(false);
         }
     };
 
@@ -320,7 +381,12 @@ export default function StudentDashboard() {
 
             <p>GPA: {student.gpa}</p>
             <p>Company: {student.companyName}</p>
-            <p>Status: {student.practiceStatus}</p>
+            <p>
+                Status: {" "} 
+                <span style={{color: getPracticeStatusColor(student.practiceStatus)}}>
+                    {formatPracticeStatus(student.practiceStatus)}
+                </span>
+            </p>
 
 
             <h3>Update Company</h3>
@@ -357,11 +423,28 @@ export default function StudentDashboard() {
                 onChange={(e) => setResumeFile(e.target.files[0])}
             />
             <br /><br />
-            <button onClick={handleResumeUpload}>
+            {/* <button onClick={handleResumeUpload}>
                 {student.resumePath ? "Replace Resume" : "Upload Resume"}
+            </button> */}
+            <button onClick={handleResumeUpload} disabled={isUploadingResume}>
+                {isUploadingResume
+                    ? "Uploading..."
+                    : student.resumePath 
+                        ? "Replace Resume" 
+                        : "Upload Resume"}
             </button>
 
-            {resumeMessage && <p>{resumeMessage}</p>}
+            {resumeActionMessage && (
+                <p style={{color: "green", fontWeight: "500"}}>
+                    {resumeActionMessage}
+                </p>
+            )}
+
+            {resumeActionError && (
+                <p style={{color: "red", fontWeight: "500"}}>
+                    {resumeActionError}
+                </p>
+            )}
 
             {student.resumePath && (
                 <>
