@@ -10,7 +10,12 @@ import {
     downloadStudentResume,
     getStudentNotificationsForAdmin,
     getCurrentAdmin,
+    getTemplatesAdmin,
+    uploadTemplate,
+    deleteTemplate,
     changeAdminPassword,
+    updateTemplateDisplayName,
+    replaceTemplateFile,
 } from "../api/adminApi";
 import { logout } from "../auth/auth";
 import { useNavigate } from "react-router-dom";
@@ -57,11 +62,26 @@ export default function AdminDashboard() {
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
 
+    const [templates, setTemplates] = useState([]);
+    const [templateFile, setTemplateFile] = useState(null);
+    const [templateName, setTemplateName] = useState("");
+    const [templateCategory, setTemplateCategory] = useState("RESUME");
+
+    const [editingTemplateId, setEditingTemplateId] = useState(null);
+    const [newDisplayName, setNewDisplayName] = useState("");
+    const [replaceFile, setReplaceFile] = useState(null);
+
+    const [templateActionMessage, setTemplateActionMessage] = useState("");
+    const [templateActionError, setTemplateActionError] = useState("");
+    const [replacingTemplateId, setReplacingTemplateId] = useState(null);
+
+
     useEffect(() => {
         loadCurrentAdmin();
         loadStudentsPage(0);
         loadEducationalPrograms();
         loadGroups();
+        loadTemplatesAdmin();
     }, []);
 
     useEffect (() => {
@@ -147,6 +167,16 @@ export default function AdminDashboard() {
         try {
             const data = await getGroups(educationalProgram);
             setGroups(data);
+        }
+        catch (error) {
+            console.error(error);
+        }
+    };
+
+    const loadTemplatesAdmin = async () => {
+        try {
+            const data = await getTemplatesAdmin();
+            setTemplates(data);
         }
         catch (error) {
             console.error(error);
@@ -319,6 +349,73 @@ export default function AdminDashboard() {
         setCurrentStudentName("");
     };
 
+    const handleUploadTemplate = async () => {
+        if (!templateFile || !templateName) return;
+
+        const formData = new FormData();
+        formData.append("file", templateFile);
+        formData.append("displayName", templateName);
+        formData.append("category", templateCategory);
+
+        try {
+            await uploadTemplate(formData);
+            setTemplateFile(null);
+            setTemplateName("");
+            setTemplateCategory("RESUME");
+            await loadTemplatesAdmin();
+        }
+        catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleChangeTemplateName = async (templateId) => {
+        if (!newDisplayName.trim()) return;
+        
+        try {
+            await updateTemplateDisplayName(templateId, newDisplayName);
+            setEditingTemplateId(null);
+            setNewDisplayName("");
+            await loadTemplatesAdmin();
+        }
+        catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleReplaceTemplateFile = async (templateId) => {
+        if (!replaceFile) return;
+
+        try {
+            setReplacingTemplateId(templateId);
+            setTemplateActionMessage("");
+            setTemplateActionError("");
+            
+            await replaceTemplateFile(templateId, replaceFile);
+
+            setReplaceFile(null);
+            setTemplateActionMessage("Template file updated successfully");
+            await loadTemplatesAdmin();
+        }
+        catch (error) {
+            console.error(error);
+            setTemplateActionError("Failed to update template file");
+        }
+        finally {
+            setReplacingTemplateId(null);
+        }
+    };
+
+    const handleDeleteTemplate = async (templateId) => {
+        try {
+            await deleteTemplate(templateId);
+            await loadTemplatesAdmin();
+        }
+        catch (error) {
+            console.error(error);
+        }
+    }
+
     const currentBlock = Math.floor(currentPage / pagesPerBlock);
     const startPage = currentBlock * pagesPerBlock;
     const endPage = Math.min(startPage + pagesPerBlock, totalPages);
@@ -353,6 +450,12 @@ export default function AdminDashboard() {
         if (sortBy !== field) return "↕";
         return sortDir === "asc" ? "▲" : "▼";
     };
+
+    const formatPracticeStatus = (status) => {
+        if (status === "NOT_FOUND") return "NOT FOUND";
+        if (status === "EMPLOYED") return "EMPLOYED";
+        return status;
+    }
 
     const handleChangePassword = async () => {
         try {
@@ -541,7 +644,12 @@ export default function AdminDashboard() {
                                     <td>{student.phone || "Not specified"}</td>
                                     <td>{student.gpa ?? "Not specified"}</td>
                                     <td>{student.companyName || "Not specified"}</td>
-                                    <td>{student.practiceStatus || "Not specified"}</td>
+                                    <td>{formatPracticeStatus(student.practiceStatus) || "Not specified"}</td>
+                                    {/* <td>
+                                        {student.practiceStatus === "NOT_FOUND"
+                                            ? "NOT FOUND"
+                                            : student.practiceStatus || "Not specified"}
+                                    </td> */}
                                     <td>
                                         {student.resumePath ? (
                                             <button onClick={() => handleDownloadResume(student.id)}>
@@ -718,6 +826,125 @@ export default function AdminDashboard() {
 
             {statusMessage && <p>{statusMessage}</p>}
 
+            <br /><br />
+            <br /><br />
+
+            <h3>Templates Management</h3>
+
+            {templates.length === 0 ? (
+                <p>No templates uploaded yet</p>
+            ) : (
+                templates.map((template) => (
+                    <div
+                        key={template.id}
+                        style={{
+                            border: "1px solid #ccc",
+                            borderRadius: "8px",
+                            padding: "10px",
+                            marginBottom: "12px",
+                        }}
+                    >
+                        <div style={{marginBottom: "8px"}}>
+                            <strong>{template.displayName}</strong> ({template.category})
+                        </div>
+
+                        <div style={{display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "8px"}}>
+                            <button onClick={() => {
+                                setEditingTemplateId(template.id);
+                                setNewDisplayName(template.displayName);
+                            }}>
+                                Change Name
+                            </button>
+
+                            <button onClick={() => handleDeleteTemplate(template.id)}>
+                                Delete
+                            </button>
+                        </div>
+
+                        {editingTemplateId === template.id && (
+                            <div style={{marginBottom: "8px"}}>
+                                <input
+                                    type="text"
+                                    value={newDisplayName}
+                                    onChange={(e) => setNewDisplayName(e.target.value)}
+                                    placeholder="New display name"
+                                />
+                                <button
+                                    style={{marginLeft: "8px"}}
+                                    onClick={() => handleChangeTemplateName(template.id)}
+                                >
+                                    Save Name
+                                </button>
+                            </div>
+                        )}
+
+                        <div style={{marginBottom: "8px"}}>
+                            <input 
+                                type="file"
+                                onChange={(e) => setReplaceFile(e.target.files[0])}
+                            />
+                            <button
+                                style={{marginLeft: "8px"}}
+                                onClick={() => handleReplaceTemplateFile(template.id)}
+                                disabled={replacingTemplateId === template.id}
+                            >
+                                {replacingTemplateId === template.id ? "Replacing..." : "Replace File"}
+                            </button>
+                        </div>
+                    </div>
+                ))
+            )}
+
+            <br /><br />
+
+            {templateActionMessage && (
+                <p style={{color: "green"}}>{templateActionMessage}</p>
+            )}
+
+            {templateActionError && (
+                <p style={{color: "red"}}>{templateActionError}</p>
+            )}
+
+            <br /><br />
+
+
+            <hr />
+            
+            <h4>Upload New Template</h4>
+            
+            <input 
+                type="text"
+                placeholder="Template display name"
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+            />
+
+            <br /><br />
+
+            <select
+                value={templateCategory}
+                onChange={(e) => setTemplateCategory(e.target.value)}
+            >
+                <option value="RESUME">RESUME</option>
+                <option value="CONTRACT">CONTRACT</option>
+                <option value="OTHER">OTHER</option>
+            </select>
+
+            <br /><br />
+
+            <input 
+                type="file"
+                onChange={(e) => setTemplateFile(e.target.files[0])}
+            />
+
+            <br /><br />
+
+            <button onClick={handleUploadTemplate}>
+                Upload Template
+            </button>
+
+            <br /><br />
+            <br /><br />
 
             <h3>Change Password</h3>
 

@@ -56,16 +56,29 @@ export const previewStudentResume = async () => {
     return response.data; 
 };
 
-export const downloadResumeTemplate = async () => {
-    const response = await api.get("api/student/resume/template", {
-        responseType: "blob",
-    });
+// export const downloadResumeTemplate = async () => {
+//     const response = await api.get("api/student/resume/template", {
+//         responseType: "blob",
+//     });
 
+//     return response.data;
+// };
+
+// export const downloadThreeSidedContract = async () => {
+//     const response = await api.get("/api/student/contracts/three-sided", {
+//         responseType: "blob",
+//     });
+
+//     return response.data;
+// };
+
+export const getTemplates = async () => {
+    const response = await api.get("/api/student/templates");
     return response.data;
 };
 
-export const downloadThreeSidedContract = async () => {
-    const response = await api.get("/api/student/contracts/three-sided", {
+export const downloadTemplate = async (templateId) => {
+    const response = await api.get(`/api/student/templates/${templateId}`, {
         responseType: "blob",
     });
 

@@ -6,11 +6,11 @@ import {
     getStudentNotifications,
     markNotificationAsRead ,
     uploadStudentResume,
-    downloadThreeSidedContract,
+    getTemplates,
+    downloadTemplate,
     changeStudentPassword,
     markAllNotificationsAsRead,
     previewStudentResume,
-    downloadResumeTemplate
 } from "../api/studentApi";
 import { logout } from "../auth/auth";
 import { useNavigate } from "react-router-dom";
@@ -42,6 +42,8 @@ export default function StudentDashboard() {
     const [numPages, setNumPages] = useState(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
+    const [templates, setTemplates] = useState([]);
+
     const loadCurrentStudent = async () => {
         try {
             const currentStudent = await getCurrentStudent();
@@ -58,6 +60,7 @@ export default function StudentDashboard() {
 
     useEffect(() => {
         loadCurrentStudent();
+        loadTemplates();
     }, []);
 
     useEffect(() => {
@@ -82,6 +85,20 @@ export default function StudentDashboard() {
 
         return () => window.removeEventListener("resize", updatePageWidth);
     }, [isPreviewOpen]);
+
+    useEffect(() => {
+        loadTemplates();
+    });
+
+    const loadTemplates = async () => {
+        try {
+            const data = await getTemplates();
+            setTemplates(data);
+        }
+        catch (error) {
+            console.error(error);
+        }
+    };
 
     const loadNotifications = async () => {
         try {
@@ -186,39 +203,60 @@ export default function StudentDashboard() {
         // }
     };
 
-    const handleDownloadResumeTemplate = async () => {
-        try {
-            const blob = await downloadResumeTemplate();
-            const url = window.URL.createObjectURL(blob);
+    // const handleDownloadResumeTemplate = async () => {
+    //     try {
+    //         const blob = await downloadResumeTemplate();
+    //         const url = window.URL.createObjectURL(blob);
 
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = "resume-template.docx";
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
+    //         const link = document.createElement("a");
+    //         link.href = url;
+    //         link.download = "resume-template.docx";
+    //         document.body.appendChild(link);
+    //         link.click();
+    //         link.remove();
 
-            window.URL.revokeObjectURL(url);
-        }
-        catch (error) {
-            console.error(error);
-        }
-    };
+    //         window.URL.revokeObjectURL(url);
+    //     }
+    //     catch (error) {
+    //         console.error(error);
+    //     }
+    // };
     
-    const handleDownloadContract = async () => {
-        try {
-            const blob = await downloadThreeSidedContract();
-            const url = window.URL.createObjectURL(blob);
+    // const handleDownloadContract = async () => {
+    //     try {
+    //         const blob = await downloadThreeSidedContract();
+    //         const url = window.URL.createObjectURL(blob);
 
+    //         const link = document.createElement("a");
+    //         link.href = url;
+    //         link.download = "three-sided-contract.docx";
+    //         document.body.appendChild(link);
+    //         link.click();
+    //         link.remove();
+
+    //         window.URL.revokeObjectURL(url);
+    //     } 
+    //     catch (error) {
+    //         console.error(error);
+    //     }
+    // };
+
+    const handleDownloadTemplate = async (templateId, fileName) => {
+        try {
+            const blob = await downloadTemplate(templateId);
+
+            const url = window.URL.createObjectURL(blob);
             const link = document.createElement("a");
+
             link.href = url;
-            link.download = "three-sided-contract.docx";
+            link.download = fileName;
+
             document.body.appendChild(link);
             link.click();
             link.remove();
 
             window.URL.revokeObjectURL(url);
-        } 
+        }
         catch (error) {
             console.error(error);
         }
@@ -332,11 +370,11 @@ export default function StudentDashboard() {
                 </>
             )}
 
-            <br /><br />
+            {/* <br /><br />
 
             <button onClick={handleDownloadResumeTemplate}>
                 Download Resume Template
-            </button>
+            </button> */}
 
             {isPreviewOpen && pdfFile && (
                 <div
@@ -434,11 +472,27 @@ export default function StudentDashboard() {
             )}
 
 
-            <h3>Contract Template</h3>
+            <h3>Template</h3>
 
-            <button onClick={handleDownloadContract}>
+            {/* <button onClick={handleDownloadContract}>
                 Download Three-Sided Contract
-            </button>
+            </button> */}
+
+            {templates.length === 0 ? (
+                <p>No templates available</p>
+            ) : (
+                templates.map((template) => (
+                    <div key={template.id} style={{marginBottom: "10px"}}>
+                        <span>{template.displayName}</span>
+                        <button
+                            style={{marginLeft: "10px"}}
+                            onClick={() => handleDownloadTemplate(template.id, template.fileName)}
+                        >
+                            Download
+                        </button>
+                    </div>
+                ))
+            )}
             
 
             <h3>Notifications</h3>

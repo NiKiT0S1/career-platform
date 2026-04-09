@@ -75,6 +75,41 @@ export const getStudentNotificationsForAdmin = async (studentId) => {
     return response.data;
 };
 
+export const getTemplatesAdmin = async () => {
+    const response = await api.get("/api/admin/templates");
+    return response.data;
+};
+
+export const uploadTemplate = async (formData) => {
+    const response = await api.post("/api/admin/templates", formData);
+    return response.data;
+};
+
+export const updateTemplateDisplayName = async (templateId, displayName) => {
+    const response = await api.put(`/api/admin/templates/${templateId}/display-name`, {
+        displayName,
+    });
+
+    return response.data;
+};
+
+export const replaceTemplateFile = async (templateId, file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await api.put(`/api/admin/templates/${templateId}/file`, formData, {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+    });
+
+    return response.data;
+};
+
+export const deleteTemplate = async (templateId) => {
+    await api.delete(`/api/admin/templates/${templateId}`);
+};
+
 export const changeAdminPassword = async (currentPassword, newPassword) => {
     const response = await api.put("/api/admin/change-password", {
         currentPassword,
