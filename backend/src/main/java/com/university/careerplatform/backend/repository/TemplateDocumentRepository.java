@@ -15,4 +15,6 @@ public interface TemplateDocumentRepository extends JpaRepository<TemplateDocume
     Optional<TemplateDocument> findByStorageKey(String storageKey);
 
     List<TemplateDocument> findAllByOrderByCategoryAscDisplayNameAsc();
+
+    List<TemplateDocument> findAllByOrderByUpdatedAtDesc();
 }

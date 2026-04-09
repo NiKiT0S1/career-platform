@@ -5,10 +5,7 @@
 
 package com.university.careerplatform.backend.controller;
 
-import com.university.careerplatform.backend.dto.ChangePasswordRequest;
-import com.university.careerplatform.backend.dto.SendNotificationByFilterRequest;
-import com.university.careerplatform.backend.dto.SendNotificationRequest;
-import com.university.careerplatform.backend.dto.UpdateTemplateDisplayNameRequest;
+import com.university.careerplatform.backend.dto.*;
 import com.university.careerplatform.backend.entity.Admin;
 import com.university.careerplatform.backend.entity.Notification;
 import com.university.careerplatform.backend.entity.Student;
@@ -234,6 +231,16 @@ public class AdminController {
             @RequestBody UpdateTemplateDisplayNameRequest request
     ) {
         return ResponseEntity.ok(templateService.updateTemplateDisplayName(templateId, request.getDisplayName()));
+    }
+
+    @PutMapping("/templates/{templateId}/category")
+    public ResponseEntity<TemplateDocument> updateTemplateCategory(
+            @PathVariable Long templateId,
+            @RequestBody UpdateTemplateCategoryRequest request
+            ) {
+        return ResponseEntity.ok(
+                templateService.updateTemplateCategory(templateId, request.getCategory())
+        );
     }
 
     @PutMapping("/templates/{templateId}/file")

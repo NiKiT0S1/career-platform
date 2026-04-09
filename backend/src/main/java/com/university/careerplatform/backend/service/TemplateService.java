@@ -82,7 +82,7 @@ public class TemplateService {
     }
 
     public List<TemplateDocument> getAllTemplates() {
-        return templateDocumentRepository.findAllByOrderByCategoryAscDisplayNameAsc();
+        return templateDocumentRepository.findAllByOrderByUpdatedAtDesc();
     }
 
     public TemplateDocument getTemplateById(Long templateId) {
@@ -109,6 +109,16 @@ public class TemplateService {
                 .orElseThrow(() -> new RuntimeException("Template not found"));
 
         templateDocument.setDisplayName(newDisplayName);
+        templateDocument.setUpdatedAt(LocalDateTime.now());
+
+        return templateDocumentRepository.save(templateDocument);
+    }
+
+    public TemplateDocument updateTemplateCategory(Long templateId, TemplateCategory newCategory) {
+        TemplateDocument templateDocument = templateDocumentRepository.findById(templateId)
+                .orElseThrow(() -> new RuntimeException("Template not found"));
+
+        templateDocument.setCategory(newCategory);
         templateDocument.setUpdatedAt(LocalDateTime.now());
 
         return templateDocumentRepository.save(templateDocument);

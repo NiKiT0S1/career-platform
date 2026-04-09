@@ -1,3 +1,7 @@
+/**
+ * DTO for update display name of template.
+ */
+
 package com.university.careerplatform.backend.dto;
 
 import lombok.Getter;

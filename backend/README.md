@@ -76,6 +76,7 @@ src/main/java/com/university/careerplatform/backend
 │   ├── PracticeStatusUpdateRequest.java
 │   ├── SendNotificationByFilterRequest.java
 │   ├── SendNotificationRequest.java
+│   ├── UpdateTemplateCategoryRequest.java
 │   └── UpdateTemplateDisplayNameRequest.java
 │
 ├── entity
@@ -179,6 +180,7 @@ Examples:
 * `SendNotificationByFilterRequest`
 * `PracticeStatusUpdateRequest`
 * `UpdateTemplateDisplayNameRequest`
+* `UpdateTemplateCategoryRequest`
 
 ### Security
 
@@ -323,7 +325,7 @@ Features:
 - automatic deletion of old resume versions on update
 - accessible for both student download and admin manage
 
-### Current contract template
+### Current templates
 
 * `three-sided-contract.docx`
 * `resume-template.docx`
@@ -470,6 +472,7 @@ POST   /api/admin/students/sync-practice-statuses
 GET    /api/admin/templates
 POST   /api/admin/templates
 PUT   /api/admin/templates/{templateId}/display-name
+PUT   /api/admin/templates/{templateId}/category
 PUT   /api/admin/templates/{templateId}/file
 DELETE   /api/admin/templates/{templateId}
 ```
