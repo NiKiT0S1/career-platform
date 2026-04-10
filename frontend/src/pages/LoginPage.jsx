@@ -46,7 +46,7 @@ export default function LoginPage() {
 
     return (
         <div style={{padding: "40px"}}>
-            <h2>Career Platform Login</h2>
+            <h2>Digital Career Platform</h2>
 
             <input
                 type="email"

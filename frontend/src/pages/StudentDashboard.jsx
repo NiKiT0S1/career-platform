@@ -69,6 +69,21 @@ export default function StudentDashboard() {
     }, []);
 
     useEffect(() => {
+        const interval = setInterval(async () => {
+            // if (document.visibilityState === "visible") return;
+
+            try {
+                await loadNotifications();
+            }
+            catch (error) {
+                console.error(error);
+            }
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
         return () => {
             if (pdfFile) {
                 URL.revokeObjectURL(pdfFile);
@@ -204,7 +219,14 @@ export default function StudentDashboard() {
 
     const handleResumeUpload = async () => {
         if (!resumeFile) {
+            setResumeActionMessage("");
             setResumeActionError("Please select a PDF file first");
+            return;
+        }
+
+        if (resumeFile.type !== "application/pdf") {
+            setResumeActionMessage("");
+            setResumeActionError("Only PDF files are allowed");
             return;
         }
 
@@ -555,7 +577,7 @@ export default function StudentDashboard() {
             )}
 
 
-            <h3>Template</h3>
+            <h3>Templates</h3>
 
             {/* <button onClick={handleDownloadContract}>
                 Download Three-Sided Contract

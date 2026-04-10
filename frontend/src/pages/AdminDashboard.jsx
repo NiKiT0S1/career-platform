@@ -29,6 +29,12 @@ export default function AdminDashboard() {
 
     const [selectedStudentIds, setSelectedStudentIds] = useState([]);
     const [message, setMessage] = useState("");
+
+    // const clearNotificationMessage = (reason) => {
+    //     console.trace("clearNotificationMessage: ", reason);
+    //     setMessage("");
+    // };
+
     const [statusMessage, setStatusMessage] = useState("");
 
     const [educationalPrograms, setEducationalPrograms] = useState([]);
@@ -55,6 +61,9 @@ export default function AdminDashboard() {
 
     const [notificationViewerOpen, setNotificationViewerOpen] = useState(false);
     const [currentStudentNotifications, setCurrentStudentNotifications] = useState([]);
+    
+    const [currentStudentNotificationId, setCurrentStudentNotificationId] = useState(null);
+
     const [currentStudentName, setCurrentStudentName] = useState("");
 
     const [currentPassword, setCurrentPassword] = useState("");
@@ -66,7 +75,7 @@ export default function AdminDashboard() {
     const [templates, setTemplates] = useState([]);
     const [templateFile, setTemplateFile] = useState(null);
     const [templateName, setTemplateName] = useState("");
-    const [templateCategory, setTemplateCategory] = useState("");
+    // const [templateCategory, setTemplateCategory] = useState("");
     const [newTemplateCategory, setNewTemplateCategory] = useState("");
 
     const [editingTemplateId, setEditingTemplateId] = useState(null);
@@ -85,6 +94,24 @@ export default function AdminDashboard() {
         loadGroups();
         loadTemplatesAdmin();
     }, []);
+
+    useEffect(() => {
+        if (!notificationViewerOpen || !currentStudentNotificationId) return;
+
+        const interval = setInterval(async () => {
+            // if (document.visibilityState === "visible") return;
+
+            try {
+                const data = await getStudentNotificationsForAdmin(currentStudentNotificationId);
+                setCurrentStudentNotifications(data);
+            }
+            catch (error) {
+                console.error(error);
+            }
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [notificationViewerOpen, currentStudentNotificationId]);
 
     useEffect (() => {
         const timeout = setTimeout(async () => {
@@ -131,15 +158,16 @@ export default function AdminDashboard() {
         return () => clearTimeout(timeout);
     }, [filters, currentPage, studentsPerPage, sortBy, sortDir]);
 
-    useEffect(() => {
-        if (!message) return;
+    // useEffect(() => {
+    //     if (!message) return;
 
-        const timeout = setTimeout(() => {
-            setMessage("");
-        }, 1500);
+    //     const timeout = setTimeout(() => {
+    //         // setMessage("");
+    //         clearNotificationMessage("useEffect success");
+    //     }, 1500);
 
-        return () => clearTimeout(timeout);
-    }, [message]);
+    //     return () => clearTimeout(timeout);
+    // }, [message]);
 
     useEffect(() => {
         if (!statusMessage) return;
@@ -238,7 +266,7 @@ export default function AdminDashboard() {
         setCurrentPage(0);
         setSelectedStudentIds([]);
         setMessage("");
-        setStatusMessage("");
+        // clearNotificationMessage("handleResetFilters success");
         setIsFilterMode(false);
 
         await loadGroups();
@@ -310,6 +338,7 @@ export default function AdminDashboard() {
             const response = await sendNotification(selectedStudentIds, message);
             setStatusMessage(response);
             setMessage("");
+            // clearNotificationMessage("handleSendNotification success");
         } 
         catch (error) {
             console.error(error);
@@ -329,6 +358,7 @@ export default function AdminDashboard() {
             const response = await sendNotificationByFilter(filters, message);
             setStatusMessage(response);
             setMessage("");
+            // clearNotificationMessage("handleSendNotificationToFiltered success");
         } 
         catch (error) {
             console.error(error);
@@ -378,6 +408,7 @@ export default function AdminDashboard() {
             const data = await getStudentNotificationsForAdmin(student.id);
             setCurrentStudentNotifications(data);
             setCurrentStudentName(student.fullName);
+            setCurrentStudentNotificationId(student.id);
             setNotificationViewerOpen(true);
         } 
         catch (error) {
@@ -388,6 +419,7 @@ export default function AdminDashboard() {
 
     const handleCloseNotificationViewer = () => {
         setNotificationViewerOpen(false);
+        setCurrentStudentNotificationId(null);
         setCurrentStudentNotifications([]);
         setCurrentStudentName("");
     };
@@ -423,7 +455,7 @@ export default function AdminDashboard() {
 
             setTemplateFile(null);
             setTemplateName("");
-            setTemplateCategory("");
+            setNewTemplateCategory("");
             await loadTemplatesAdmin();
         }
         catch (error) {
@@ -899,7 +931,7 @@ export default function AdminDashboard() {
             )}
 
             <h3 style={{marginTop: "30px"}}>Send Notification</h3>
-
+            
             <textarea
                 rows="5"
                 cols="60"
@@ -950,7 +982,7 @@ export default function AdminDashboard() {
                             </button>
 
                             <select
-                                value={templateCategory}
+                                value={template.category}
                                 onChange={(e) => handleChangeTemplateCategory(template.id, e.target.value)}
                             >
                                 <option value="">Select Category</option>
