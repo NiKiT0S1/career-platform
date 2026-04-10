@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { formatDateTime } from "../utils/formatDateTime";
 import {
     getStudentsPage,
@@ -82,6 +82,9 @@ export default function AdminDashboard() {
     const [newDisplayName, setNewDisplayName] = useState("");
     const [replaceFile, setReplaceFile] = useState(null);
 
+    const templateFileInputRef = useRef(null);
+    const replaceFileInputRef = useRef({});
+
     const [templateActionMessage, setTemplateActionMessage] = useState("");
     const [templateActionError, setTemplateActionError] = useState("");
     const [replacingTemplateId, setReplacingTemplateId] = useState(null);
@@ -99,7 +102,7 @@ export default function AdminDashboard() {
         if (!notificationViewerOpen || !currentStudentNotificationId) return;
 
         const interval = setInterval(async () => {
-            // if (document.visibilityState === "visible") return;
+            if (document.visibilityState === "visible") return;
 
             try {
                 const data = await getStudentNotificationsForAdmin(currentStudentNotificationId);
@@ -112,6 +115,36 @@ export default function AdminDashboard() {
 
         return () => clearInterval(interval);
     }, [notificationViewerOpen, currentStudentNotificationId]);
+
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            if (document.visibilityState === "visible") return;
+            
+            try {
+                await loadTemplatesAdmin();
+            }
+            catch (error) {
+                console.error(error);
+            }
+        }, 10000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            if (document.visibilityState === "visible") return;
+            
+            try {
+                await refreshStudentsForPolling();
+            }
+            catch (error) {
+                console.error(error);
+            }
+        }, 10000);
+
+        return () => clearInterval(interval);
+    }, [filters, currentPage, studentsPerPage, sortBy, sortDir]);
 
     useEffect (() => {
         const timeout = setTimeout(async () => {
@@ -199,6 +232,47 @@ export default function AdminDashboard() {
 
         return () => clearTimeout(timeout);
     }, [templateActionMessage, templateActionError]);
+
+    const refreshStudentsForPolling = async () => {
+        const preparedFilters = {
+                fullName: filters.fullName || undefined,
+                educationalProgram: filters.educationalProgram || undefined,
+                groupName: filters.groupName || undefined,
+                course: filters.course ? Number(filters.course) : undefined,
+                practiceStatus: filters.practiceStatus || undefined,
+                minGpa: filters.minGpa ? Number(filters.minGpa) : undefined,
+        };
+
+        const hasAnyFilters = 
+            !!filters.fullName ||
+            !!filters.educationalProgram ||
+            !!filters.groupName ||
+            !!filters.course ||
+            !!filters.practiceStatus ||
+            !!filters.minGpa;
+
+         try {
+            if (hasAnyFilters) {
+                const data = await filterStudents(preparedFilters, currentPage, studentsPerPage, sortBy, sortDir);
+                    
+                setStudents(data.content);
+                setTotalPages(data.totalPages);
+                setTotalStudentsCount(data.totalElements);
+                setIsFilterMode(true);
+            }
+            else {
+                const data = await getStudentsPage(currentPage, studentsPerPage, sortBy, sortDir);
+                    
+                setStudents(data.content);
+                setTotalPages(data.totalPages);
+                setTotalStudentsCount(data.totalElements);
+                setIsFilterMode(false);
+            }
+        }
+        catch (error) {
+            console.error(error);
+        }
+    };
 
     const loadCurrentAdmin = async () => {
         try {
@@ -390,7 +464,7 @@ export default function AdminDashboard() {
 
             const link = document.createElement("a");
             link.href = url;
-            link.download = `student-${safeName}-resume.pdf`;
+            link.download = `student-${safeName}-CV.pdf`;
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -399,7 +473,7 @@ export default function AdminDashboard() {
         } 
         catch (error) {
             console.error(error);
-            setStatusMessage("Resume not found or failed to download");
+            setStatusMessage("CV not found or failed to download");
         }
     };
 
@@ -456,6 +530,11 @@ export default function AdminDashboard() {
             setTemplateFile(null);
             setTemplateName("");
             setNewTemplateCategory("");
+
+            if (templateFileInputRef.current) {
+                templateFileInputRef.current.value = "";
+            }
+
             await loadTemplatesAdmin();
         }
         catch (error) {
@@ -505,6 +584,11 @@ export default function AdminDashboard() {
 
             setReplaceFile(null);
             setTemplateActionMessage("Template file updated successfully");
+            
+            if (replaceFileInputRef.current[templateId]) {
+                replaceFileInputRef.current[templateId].value = "";
+            }
+            
             await loadTemplatesAdmin();
         }
         catch (error) {
@@ -742,7 +826,7 @@ export default function AdminDashboard() {
                             </th>
                             <th>Company</th>
                             <th>Status</th>
-                            <th>Resume</th>
+                            <th>CV</th>
                             <th>Notifications</th>
                         </tr>
                         </thead>
@@ -777,7 +861,7 @@ export default function AdminDashboard() {
                                                 Download
                                             </button>
                                         ) : (
-                                            "No resume"
+                                            "No CV"
                                         )}
                                     </td>
                                     <td>
@@ -986,7 +1070,7 @@ export default function AdminDashboard() {
                                 onChange={(e) => handleChangeTemplateCategory(template.id, e.target.value)}
                             >
                                 <option value="">Select Category</option>
-                                <option value="RESUME">RESUME</option>
+                                <option value="CV">CV</option>
                                 <option value="CONTRACT">CONTRACT</option>
                                 <option value="OTHER">OTHER</option>
                             </select>
@@ -1011,6 +1095,9 @@ export default function AdminDashboard() {
 
                         <div style={{marginBottom: "8px"}}>
                             <input 
+                                ref={(el) => {
+                                    replaceFileInputRef.current[template.id] = el;
+                                }}
                                 type="file"
                                 onChange={(e) => setReplaceFile(e.target.files[0])}
                             />
@@ -1057,7 +1144,7 @@ export default function AdminDashboard() {
                 onChange={(e) => setNewTemplateCategory(e.target.value)}
             >
                 <option value="">Select Category</option>
-                <option value="RESUME">RESUME</option>
+                <option value="CV">CV</option>
                 <option value="CONTRACT">CONTRACT</option>
                 <option value="OTHER">OTHER</option>
             </select>
@@ -1065,6 +1152,7 @@ export default function AdminDashboard() {
             <br /><br />
 
             <input 
+                ref={templateFileInputRef}
                 type="file"
                 onChange={(e) => setTemplateFile(e.target.files[0])}
             />

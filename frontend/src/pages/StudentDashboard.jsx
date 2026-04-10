@@ -27,6 +27,9 @@ export default function StudentDashboard() {
     const [message, setMessage] = useState("");
     const [notifications, setNotifications] = useState([]);
     const [resumeFile, setResumeFile] = useState(null);
+
+    const resumeFileInputRef = useRef(null);
+
     // const [resumeMessage, setResumeMessage] = useState("");
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
@@ -70,7 +73,7 @@ export default function StudentDashboard() {
 
     useEffect(() => {
         const interval = setInterval(async () => {
-            // if (document.visibilityState === "visible") return;
+            if (document.visibilityState === "visible") return;
 
             try {
                 await loadNotifications();
@@ -79,6 +82,21 @@ export default function StudentDashboard() {
                 console.error(error);
             }
         }, 5000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            if (document.visibilityState === "visible") return;
+
+            try {
+                await loadTemplates();
+            }
+            catch (error) {
+                console.error(error);
+            }
+        }, 10000);
 
         return () => clearInterval(interval);
     }, []);
@@ -240,14 +258,19 @@ export default function StudentDashboard() {
             // setResumeMessage("Resume uploaded successfully");
 
             await uploadStudentResume(resumeFile);
-            setResumeActionMessage("Resume uploaded successfully");
+            setResumeActionMessage("CV uploaded successfully");
             setResumeFile(null);
+
+            if (resumeFileInputRef.current) {
+                resumeFileInputRef.current.value = "";
+            }
+
             await loadCurrentStudent();
         } 
         catch (error) {
             console.error(error);
             // setResumeMessage("Failed to upload resume");
-            setResumeActionError("Failed to upload resume");
+            setResumeActionError("Failed to upload CV");
         }
         finally {
             setIsUploadingResume(false);
@@ -436,10 +459,11 @@ export default function StudentDashboard() {
             <button onClick={handleUpdatePracticeStatus}>Save Practice Status</button>
 
 
-            <h3>Resume Upload</h3>
-            <p>Resume status: {student.resumePath ? "Uploaded" : "Not uploaded"}</p>
+            <h3>CV Upload</h3>
+            <p>CV status: {student.resumePath ? "Uploaded" : "Not uploaded"}</p>
 
             <input
+                ref={resumeFileInputRef}
                 type="file"
                 accept="application/pdf"
                 onChange={(e) => setResumeFile(e.target.files[0])}
@@ -452,8 +476,8 @@ export default function StudentDashboard() {
                 {isUploadingResume
                     ? "Uploading..."
                     : student.resumePath 
-                        ? "Replace Resume" 
-                        : "Upload Resume"}
+                        ? "Replace CV" 
+                        : "Upload CV"}
             </button>
 
             {resumeActionMessage && (
@@ -471,7 +495,7 @@ export default function StudentDashboard() {
             {student.resumePath && (
                 <>
                     <br /><br />
-                    <button onClick={handlePreviewResume}>Preview Resume</button>
+                    <button onClick={handlePreviewResume}>Preview CV</button>
                 </>
             )}
 
