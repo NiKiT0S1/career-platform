@@ -6,7 +6,7 @@
 package com.university.careerplatform.backend.model;
 
 public enum TemplateCategory {
-    RESUME,
+    CV,
     CONTRACT,
     OTHER
 }
