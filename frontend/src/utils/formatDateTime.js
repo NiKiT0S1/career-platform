@@ -1,7 +1,7 @@
 export const formatDateTime = (dateTime) => {
     if (!dateTime) return "-";
 
-    return new Date(dateTime).toLocaleDateString("ru-RU", {
+    return new Date(dateTime).toLocaleString("ru-RU", {
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
