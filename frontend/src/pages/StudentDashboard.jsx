@@ -73,7 +73,7 @@ export default function StudentDashboard() {
 
     useEffect(() => {
         const interval = setInterval(async () => {
-            if (document.visibilityState === "visible") return;
+            if (document.visibilityState !== "visible") return;
 
             try {
                 await loadNotifications();
@@ -88,7 +88,7 @@ export default function StudentDashboard() {
 
     useEffect(() => {
         const interval = setInterval(async () => {
-            if (document.visibilityState === "visible") return;
+            if (document.visibilityState !== "visible") return;
 
             try {
                 await loadTemplates();

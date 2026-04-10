@@ -102,7 +102,7 @@ export default function AdminDashboard() {
         if (!notificationViewerOpen || !currentStudentNotificationId) return;
 
         const interval = setInterval(async () => {
-            if (document.visibilityState === "visible") return;
+            if (document.visibilityState !== "visible") return;
 
             try {
                 const data = await getStudentNotificationsForAdmin(currentStudentNotificationId);
@@ -118,7 +118,7 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         const interval = setInterval(async () => {
-            if (document.visibilityState === "visible") return;
+            if (document.visibilityState !== "visible") return;
             
             try {
                 await loadTemplatesAdmin();
@@ -133,7 +133,7 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         const interval = setInterval(async () => {
-            if (document.visibilityState === "visible") return;
+            if (document.visibilityState !== "visible") return;
             
             try {
                 await refreshStudentsForPolling();
