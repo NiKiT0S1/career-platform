@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "notifications")
@@ -28,10 +29,10 @@ public class Notification {
     private Boolean isRead = false;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @Column
-    private LocalDateTime readAt;
+    private OffsetDateTime readAt;
 
     @ManyToOne
     @JoinColumn(name = "student_id", nullable = false)
@@ -39,6 +40,6 @@ public class Notification {
 
     @PrePersist
     public void prePersist() {
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = OffsetDateTime.now();
     }
 }

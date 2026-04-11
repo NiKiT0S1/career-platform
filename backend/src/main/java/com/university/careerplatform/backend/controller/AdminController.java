@@ -216,6 +216,18 @@ public class AdminController {
         return ResponseEntity.ok(templateService.getAllTemplates());
     }
 
+    @GetMapping("/templates/{templateId}")
+    public ResponseEntity<Resource> downloadTemplate(@PathVariable Long templateId) {
+        TemplateDocument templateDocument = templateService.getTemplateById(templateId);
+        Resource resource = templateService.downloadTemplate(templateId);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(templateDocument.getContentType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + templateDocument.getFileName() + "\"")
+                .body(resource);
+    }
+
     @PostMapping("/templates")
     public ResponseEntity<TemplateDocument> uploadTemplate(
             @RequestParam("displayName") String displayName,

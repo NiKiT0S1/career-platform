@@ -11,6 +11,7 @@ import com.university.careerplatform.backend.repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -57,7 +58,7 @@ public class NotificationService {
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
 
         notification.setIsRead(true);
-        notification.setReadAt(LocalDateTime.now());
+        notification.setReadAt(OffsetDateTime.now());
         return notificationRepository.save(notification);
     }
 
@@ -79,7 +80,7 @@ public class NotificationService {
 
         for (Notification notification : notifications) {
             notification.setIsRead(true);
-            notification.setReadAt(LocalDateTime.now());
+            notification.setReadAt(OffsetDateTime.now());
         }
 
         notificationRepository.saveAll(notifications);
