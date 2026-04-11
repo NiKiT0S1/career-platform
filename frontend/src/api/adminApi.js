@@ -89,6 +89,14 @@ export const uploadTemplate = async (formData) => {
     return response.data;
 };
 
+export const downloadTemplateForAdmin = async (templateId) => {
+    const response = await api.get(`/api/admin/templates/${templateId}`, {
+        responseType: "blob",
+    });
+
+    return response.data;
+};
+
 export const updateTemplateDisplayName = async (templateId, displayName) => {
     const response = await api.put(`/api/admin/templates/${templateId}/display-name`, {
         displayName,

@@ -12,6 +12,7 @@ import {
     getCurrentAdmin,
     getTemplatesAdmin,
     uploadTemplate,
+    downloadTemplateForAdmin,
     deleteTemplate,
     changeAdminPassword,
     updateTemplateDisplayName,
@@ -543,6 +544,28 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleDownloadTemplateForAdmin = async (templateId, fileName) => {
+        try {
+            const blob = await downloadTemplateForAdmin(templateId);
+    
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+    
+            link.href = url;
+            link.download = fileName;
+    
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+    
+            window.URL.revokeObjectURL(url);
+        }
+        catch (error) {
+            console.error(error);
+            setTemplateActionError("Failed to download template");
+        }
+    };
+
     const handleChangeTemplateName = async (templateId) => {
         if (!newDisplayName.trim()) return;
         
@@ -1059,6 +1082,10 @@ export default function AdminDashboard() {
                                 setNewDisplayName(template.displayName);
                             }}>
                                 Change Name
+                            </button>
+
+                            <button onClick={() => handleDownloadTemplateForAdmin(template.id, template.displayName)}>
+                                Download
                             </button>
 
                             <button onClick={() => handleDeleteTemplate(template.id)}>
