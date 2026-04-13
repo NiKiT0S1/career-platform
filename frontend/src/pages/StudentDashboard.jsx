@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { pdfjs, Document, Page } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
+import StudentLayout from "../layouts/StudentLayout";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -26,6 +27,12 @@ export default function StudentDashboard() {
     const [practiceStatus, setPracticeStatus] = useState("");
     const [message, setMessage] = useState("");
     const [notifications, setNotifications] = useState([]);
+
+    const [activePage, setActivePage] = useState("main");
+    const [notificationsOpen, setNotificationsOpen] = useState(false);
+    
+    const hasUnreadNotifications = notifications.some((notification) => !notification.isRead);
+
     const [resumeFile, setResumeFile] = useState(null);
 
     const resumeFileInputRef = useRef(null);
@@ -34,6 +41,11 @@ export default function StudentDashboard() {
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [passwordMessage, setPasswordMessage] = useState("");
+
+    const [showAccountCurrentPassword, setShowAccountCurrentPassword] = useState(false);
+    const [showAccountNewPassword, setShowAccountNewPassword] = useState(false);
+    const [accountPasswordMessage, setAccountPasswordMessage] = useState("");
+
     // const [resumePreviewUrl, setResumePreviewUrl] = useState("");
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
@@ -50,6 +62,20 @@ export default function StudentDashboard() {
     const [isUploadingResume, setIsUploadingResume] = useState(false);
     const [resumeActionMessage, setResumeActionMessage] = useState("");
     const [resumeActionError, setResumeActionError] = useState("");
+
+    const [showCvUploadModal, setShowCvUploadModal] = useState(false);
+    const [isCvHovered, setIsCvHovered] = useState(false);
+
+    const [isEditingCompany, setIsEditingCompany] = useState(false);
+
+    const [accountOpen, setAccountOpen] = useState(false);
+    const [showPasswordForm, setShowPasswordForm] = useState(false);
+
+    const [isDraggingCv, setIsDraggingCv] = useState(false);
+
+    const dragCounterRef = useRef(0);
+
+    const companyEditRef = useRef(null);
 
 
     const loadCurrentStudent = async () => {
@@ -149,6 +175,24 @@ export default function StudentDashboard() {
     }, [passwordMessage]);
 
     useEffect(() => {
+        if (!accountPasswordMessage) return;
+
+        const timeout = setTimeout(() => {
+            const isSuccess =
+                accountPasswordMessage.toLowerCase().includes("success");
+
+            setAccountPasswordMessage("");
+
+            if (isSuccess) {
+                setShowPasswordForm(false);
+                setAccountOpen(false);
+            }
+        }, 1800);
+
+        return () => clearTimeout(timeout);
+    }, [accountPasswordMessage]);
+
+    useEffect(() => {
         if (!resumeActionMessage && !resumeActionError) return;
 
         const timeout = setTimeout(() => {
@@ -158,6 +202,23 @@ export default function StudentDashboard() {
 
         return () => clearTimeout(timeout);
     }, [resumeActionMessage, resumeActionError]);
+
+    useEffect(() => {
+        if (!isEditingCompany) return;
+
+        const handleClickOutside = (event) => {
+            if (companyEditRef.current && !companyEditRef.current.contains(event.target)) {
+                setIsEditingCompany(false);
+                setCompanyName(student?.companyName || "");
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isEditingCompany, student?.companyName]);
 
     const loadTemplates = async () => {
         try {
@@ -239,13 +300,13 @@ export default function StudentDashboard() {
         if (!resumeFile) {
             setResumeActionMessage("");
             setResumeActionError("Please select a PDF file first");
-            return;
+            return false;
         }
 
         if (resumeFile.type !== "application/pdf") {
             setResumeActionMessage("");
             setResumeActionError("Only PDF files are allowed");
-            return;
+            return false;
         }
 
         try {
@@ -271,6 +332,7 @@ export default function StudentDashboard() {
             console.error(error);
             // setResumeMessage("Failed to upload resume");
             setResumeActionError("Failed to upload CV");
+            return false;
         }
         finally {
             setIsUploadingResume(false);
@@ -347,6 +409,55 @@ export default function StudentDashboard() {
     //     }
     // };
 
+    const handleCvDragEnter = (e) => {
+        if (student?.resumePath) return;
+
+        e.preventDefault();
+
+        const file = e.dataTransfer?.items?.[0];
+        if (!file || file.kind !== "file") return;
+
+        dragCounterRef.current += 1;
+        setIsDraggingCv(true);
+    };
+
+    const handleCvDragOver = (e) => {
+        if (student?.resumePath) return;
+        e.preventDefault();
+    };
+
+    const handleCvDragLeave = (e) => {
+        if (student?.resumePath) return;
+        e.preventDefault();
+
+        dragCounterRef.current -= 1;
+        if (dragCounterRef.current <= 0) {
+            dragCounterRef.current = 0;
+            setIsDraggingCv(false);
+        }
+    };
+
+    const handleCvDrop = (e) => {
+        if (student?.resumePath) return;
+
+        e.preventDefault();
+
+        dragCounterRef.current = 0;
+        setIsDraggingCv(false);
+
+        const file = e.dataTransfer.files?.[0];
+        if (!file) return;
+
+        if (!isAllowedResumeFile(file)) {
+            setResumeActionMessage("");
+            setResumeActionError("Only PDF files are allowed");
+            return;
+        }
+
+        setResumeFile(file);
+        setShowCvUploadModal(true);
+    };
+
     const handleDownloadTemplate = async (templateId, fileName) => {
         try {
             const blob = await downloadTemplate(templateId);
@@ -368,16 +479,83 @@ export default function StudentDashboard() {
         }
     };
 
+    const getResumeFileName = (resumePath) => {
+        if (!resumePath) return "CV.pdf";
+        return resumePath.split("/").pop();
+    };
+
     const handleChangePassword = async () => {
+        if (currentPassword === newPassword) {
+            setAccountPasswordMessage("New password must be different from current password");
+            return;
+        }
+        
         try {
             const response = await changeStudentPassword(currentPassword, newPassword);
-            setPasswordMessage(response);
+            // setPasswordMessage(response);
+            
+            setAccountPasswordMessage(response || "Password changed successfully");
             setCurrentPassword("");
             setNewPassword("");
+            setShowAccountCurrentPassword(false);
+            setShowAccountNewPassword(false);
+            // setShowPasswordForm(false);
         } 
         catch (error) {
             console.error(error);
-            setPasswordMessage(error?.response?.data || "Failed to change password");
+            // setPasswordMessage(error?.response?.data || "Failed to change password");
+            setAccountPasswordMessage(error?.response?.data || "Failed to change password");
+        }
+    };
+
+    const getDisplayFileName = (fileName, maxLength = 24) => {
+        if (!fileName) return "";
+
+        const cleanedName = fileName.replace(/_\d+\.(pdf|docx)$/i, ".$1");
+
+        if (cleanedName.length <= maxLength) {
+            return cleanedName;
+        }
+
+        const dotIndex = cleanedName.lastIndexOf(".");
+        const extension = dotIndex !== -1 ? cleanedName.slice(dotIndex) : "";
+        const baseName = dotIndex !== -1 ? cleanedName.slice(0, dotIndex) : cleanedName;
+
+        return `${baseName.slice(0, maxLength)}...${extension}`;
+    };
+
+    const isAllowedResumeFile = (file) => {
+        if (!file) return false;
+        return file.name.toLowerCase().endsWith(".pdf");
+    };
+
+    const handleResumeFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!isAllowedResumeFile(file)) {
+            setResumeActionMessage("");
+            setResumeActionError("Only PDF files are allowed");
+            setResumeFile(null);
+
+            if (resumeFileInputRef.current) {
+                resumeFileInputRef.current.value = "";
+            }
+
+            return;
+        }
+
+        setResumeActionError("");
+        setResumeFile(file);
+    };
+
+    const resetCvUploadModal = () => {
+        setResumeFile(null);
+        setResumeActionMessage("");
+        setResumeActionError("");
+
+        if (resumeFileInputRef.current) {
+            resumeFileInputRef.current.value = "";
         }
     };
 
@@ -389,133 +567,421 @@ export default function StudentDashboard() {
     };
 
     if (!student) {
-        return <h2>Loading...</h2>;
+        return (
+            <div className="app-page-loader">
+                <div className="app-page-loader__text">Loading...</div>
+            </div>
+        );
     }
 
     return (
-        <div style={{position: "relative", padding: "40px"}}>
-            <button 
-            onClick={handleLogout}
-            style={{
-                position: "absolute",
-                top: "20px",
-                right: "20px",
-                padding: "10px 16px",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                backgroundColor: "red",
+        <StudentLayout
+            activePage={activePage}
+            onChangePage={setActivePage}
+            notifications={notifications}
+            hasUnreadNotifications={hasUnreadNotifications}
+            notificationsOpen={notificationsOpen}
+            onToggleNotifications={() => {
+                setNotificationsOpen((prev) => !prev);
+                setAccountOpen(false);
             }}
-            >
-                Logout
-            </button>
+            onCloseNotifications={() => setNotificationsOpen(false)}
+            onClearNotifications={handleMarkAllAsRead}
 
-            <h1>Student Dashboard</h1>
+            accountOpen={accountOpen}
+            onToggleAccount={() => {
+                setAccountOpen((prev) => !prev);
+                setNotificationsOpen(false);
+            }}
+            onCloseAccount={() => {
+                setAccountOpen(false);
+                setShowPasswordForm(false);
+            }}
+            renderAccountDropdown={() => (
+                <div className="student-account-menu">
+                    {!showPasswordForm ? (
+                        <button
+                            type="button"
+                            className="student-account-menu__item"
+                            onClick={() => setShowPasswordForm(true)}
+                        >
+                            Change Password
+                        </button>
+                    ) : (
+                        <div className="student-account-password-box">
+                            <h4 className="student-account-password-box__title">
+                                Change Password
+                            </h4>
 
-            <h3>Profile</h3>
+                            <div className="student-account-password-box__field">
+                                <input
+                                    type={showAccountCurrentPassword ? "text" : "password"}
+                                    className="student-account-password-box__input"
+                                    placeholder="Current Password"
+                                    value={currentPassword}
+                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    className="student-account-password-box__toggle"
+                                    onClick={() => setShowAccountCurrentPassword((prev) => !prev)}
+                                >
+                                    {showAccountCurrentPassword ? "Hide" : "Show"}
+                                </button>
+                            </div>
 
-            <p>Full Name: {student.fullName}</p>
-            <p>Group: {student.groupName}</p>
-            <p>Course: {student.course}</p>
-            <p>Educational Program: {student.educationalProgram}</p>
-            <p>Email: {student.email}</p>
-            <p>Phone: {student.phone}</p>
+                            <div className="student-account-password-box__field">
+                                <input
+                                    type={showAccountNewPassword ? "text" : "password"}
+                                    className="student-account-password-box__input"
+                                    placeholder="New Password"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    className="student-account-password-box__toggle"
+                                    onClick={() => setShowAccountNewPassword((prev) => !prev)}
+                                >
+                                    {showAccountNewPassword ? "Hide" : "Show"}
+                                </button>
+                            </div>
 
+                            <button
+                                type="button"
+                                className="student-account-password-box__save"
+                                onClick={handleChangePassword}
+                            >
+                                Save Password
+                            </button>
 
-            <h3>Practice</h3>
+                            {accountPasswordMessage && (
+                                <p
+                                    className={`student-account-password-box__message ${
+                                        accountPasswordMessage.toLowerCase().includes("incorrect") ||
+                                        accountPasswordMessage.toLowerCase().includes("failed")
+                                            ? "error"
+                                            : "success"
+                                    }`}
+                                >
+                                    {accountPasswordMessage}
+                                </p>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )}
+            
+            onLogout={handleLogout}
+            renderNotification={(notification) => (
+                <div
+                    key={notification.id}
+                    className={`app-notification-item ${
+                        !notification.isRead ? "app-notification-item--unread" : ""
+                    }`}
+                >
+                    <p className="app-notification-item__message">{notification.message}</p>
+                    <p className="app-notification-item__meta">
+                        Status: {notification.isRead ? "Read" : "Unread"}
+                    </p>
 
-            <p>GPA: {student.gpa}</p>
-            <p>Company: {student.companyName}</p>
-            <p>
-                Status: {" "} 
-                <span style={{color: getPracticeStatusColor(student.practiceStatus)}}>
-                    {formatPracticeStatus(student.practiceStatus)}
-                </span>
-            </p>
+                    {!notification.isRead && (
+                        <button
+                            type="button"
+                            className="app-notification-read-btn"
+                            onClick={() => handleMarkAsRead(notification.id)}
+                        >
+                            Mark as Read
+                        </button>
+                    )}
+                </div>
+            )}
+        >
+            {activePage === "main" && (
+                <div className="student-profile-page">
+                    <h1 className="student-profile-page__title">Profile</h1>
 
+                    <div className="student-profile-hero">
+                        <div className="student-profile-avatar student-profile-avatar--placeholder">
+                            <span>👤</span>
+                        </div>
 
-            <h3>Update Company</h3>
-            <input
-                type="text"
-                placeholder="Enter company name"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-            />
-            <br /><br />
-            <button onClick={handleUpdateCompany}>Save Company</button>
-            {message && <p>{message}</p>}
+                        <div className="student-profile-hero__info">
+                            <h2 className="student-profile-name">{student.fullName}</h2>
+                            <p className="student-profile-subtext">{student.email}</p>
+                            <p className="student-profile-subtext">{student.groupName}</p>
+                        </div>
+                    </div>
 
-            <h3>Update Practice Status</h3>
-            <select
-                value={practiceStatus}
-                onChange={(e) => setPracticeStatus(e.target.value)}
-            >
-                <option value="">Select status</option>
-                <option value="EMPLOYED">EMPLOYED</option>
-                <option value="NOT_FOUND">NOT FOUND</option>
-            </select>
-            <br /><br />
+                    <div className="student-profile-details">
+                        <div className="student-profile-details__column">
+                            <div className="student-detail-row">
+                                <span className="student-detail-icon">🎓</span>
+                                <span>Course: {student.course}</span>
+                            </div>
 
-            <button onClick={handleUpdatePracticeStatus}>Save Practice Status</button>
+                            <div className="student-detail-row">
+                                <span className="student-detail-icon">📚</span>
+                                <span>Educational Program: {student.educationalProgram}</span>
+                            </div>
 
+                            <div className="student-detail-row">
+                                <span className="student-detail-icon">📊</span>
+                                <span>GPA: {student.gpa}</span>
+                            </div>
 
-            <h3>CV Upload</h3>
-            <p>CV status: {student.resumePath ? "Uploaded" : "Not uploaded"}</p>
+                            <div className="student-detail-row">
+                                <span className="student-detail-icon">📞</span>
+                                <span>Phone: {student.phone || "-"}</span>
+                            </div>
+                        </div>
 
-            <input
-                ref={resumeFileInputRef}
-                type="file"
-                accept="application/pdf"
-                onChange={(e) => setResumeFile(e.target.files[0])}
-            />
-            <br /><br />
-            {/* <button onClick={handleResumeUpload}>
-                {student.resumePath ? "Replace Resume" : "Upload Resume"}
-            </button> */}
-            <button onClick={handleResumeUpload} disabled={isUploadingResume}>
-                {isUploadingResume
-                    ? "Uploading..."
-                    : student.resumePath 
-                        ? "Replace CV" 
-                        : "Upload CV"}
-            </button>
+                        <div className="student-profile-details__column">
+                            <div className="student-detail-row student-detail-row--company">
+                                <span className="student-detail-icon">💼</span>
+                                <span>Company: {student.companyName || "-"}</span>
 
-            {resumeActionMessage && (
-                <p style={{color: "green", fontWeight: "500"}}>
-                    {resumeActionMessage}
-                </p>
+                                {!isEditingCompany && (
+                                    <button
+                                        type="button"
+                                        className="student-inline-icon-btn"
+                                        onClick={() => setIsEditingCompany(true)}
+                                        title="Edit company"
+                                    >
+                                        ✎
+                                    </button>
+                                )}
+                            </div>
+
+                            {isEditingCompany && (
+                                <div className="student-company-edit" ref={companyEditRef}>
+                                    <input
+                                        type="text"
+                                        value={companyName}
+                                        onChange={(e) => setCompanyName(e.target.value)}
+                                        placeholder="Enter company name"
+                                    />
+                                    <button
+                                        className="primary-btn"
+                                        onClick={async () => {
+                                            await handleUpdateCompany();
+                                            setIsEditingCompany(false);
+                                        }}
+                                    >
+                                        Save
+                                    </button>
+                                </div>
+                            )}
+
+                            <div className="student-detail-row student-detail-row--status">
+                                <span className="student-detail-icon">🧍</span>
+                                <span>Status:</span>
+
+                                <div className="student-status-inline">
+                                    <select
+                                        className="student-status-select"
+                                        value={practiceStatus}
+                                        onChange={(e) => setPracticeStatus(e.target.value)}
+                                    >
+                                        {/* <option value="">Not selected</option> */}
+                                        <option value="EMPLOYED">EMPLOYED</option>
+                                        <option value="NOT_FOUND">NOT FOUND</option>
+                                    </select>
+
+                                    <button
+                                        className="primary-btn student-status-save-inline"
+                                        onClick={handleUpdatePracticeStatus}
+                                    >
+                                        Save
+                                    </button>
+                                </div>
+                            </div>
+                            {message && <p className="student-action-message">{message}</p>}
+                        </div>
+                    </div>
+
+                    {/* {message && <p className="student-inline-message">{message}</p>} */}
+                </div>
             )}
 
-            {resumeActionError && (
-                <p style={{color: "red", fontWeight: "500"}}>
-                    {resumeActionError}
-                </p>
+            {activePage === "resume" && (
+                <div
+                    className={`student-cv-page ${!student.resumePath && isDraggingCv ? "student-cv-page--dragging" : ""}`}
+                    onDragEnter={handleCvDragEnter}
+                    onDragOver={handleCvDragOver}
+                    onDragLeave={handleCvDragLeave}
+                    onDrop={handleCvDrop}
+                >
+                    <h1 className="student-page-title">CV</h1>
+
+                    <div className="student-cv-grid">
+                        {student.resumePath && (
+                            <div
+                                className="student-cv-card"
+                                onMouseEnter={() => setIsCvHovered(true)}
+                                onMouseLeave={() => setIsCvHovered(false)}
+                            >
+                                <button
+                                    type="button"
+                                    className="student-cv-preview-button"
+                                    onClick={handlePreviewResume}
+                                >
+                                    <div className="student-cv-thumbnail">
+                                        <span className="student-cv-thumbnail__icon">📄</span>
+                                    </div>
+                                    <div 
+                                        className="student-cv-file-name"
+                                        title={getResumeFileName(student.resumePath)}
+                                    >
+                                        {getDisplayFileName(getResumeFileName(student.resumePath), 22)}
+                                    </div>
+                                </button>
+
+                                {isCvHovered && (
+                                    <button
+                                        type="button"
+                                        className="student-cv-replace-button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowCvUploadModal(true);
+                                        }}
+                                    >
+                                        Replace CV
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                        {!student.resumePath && (
+                            <button
+                                type="button"
+                                className="student-cv-upload-tile"
+                                onClick={() => {
+                                    resetCvUploadModal();
+                                    setShowCvUploadModal(true);
+                                }}
+                            >
+                                <div className="student-cv-upload-tile__box">+</div>
+                                <div className="student-cv-upload-tile__text">Upload new CV</div>
+                            </button>
+                        )}
+                    </div>
+
+                    {showCvUploadModal && (
+                        <div className="student-cv-modal-backdrop">
+                            <div className="student-cv-modal">
+                                <div className="student-cv-modal__topbar" />
+
+                                <div className="student-cv-modal__content">
+                                    <h3 className="student-cv-modal__title">Upload new CV</h3>
+
+                                    <input
+                                        ref={resumeFileInputRef}
+                                        type="file"
+                                        accept="application/pdf"
+                                        className="student-cv-modal__file-input"
+                                        // onChange={(e) => setResumeFile(e.target.files[0])}
+                                        onChange={handleResumeFileChange}
+                                    />
+
+                                    {resumeFile && (
+                                        <p className="student-cv-modal__selected-file">
+                                            Selected file: {resumeFile.name}
+                                        </p>
+                                    )}
+
+                                    <div className="student-cv-modal__actions">
+                                        <button
+                                            type="button"
+                                            className="student-cv-modal__save"
+                                            onClick={async () => {
+                                                await handleResumeUpload();
+                                                if (!resumeActionError) {
+                                                    resetCvUploadModal();
+                                                    setShowCvUploadModal(false);
+                                                }
+                                            }}
+                                            disabled={isUploadingResume}
+                                        >
+                                            {isUploadingResume ? "Uploading..." : "Save CV"}
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className="student-cv-modal__cancel"
+                                            onClick={() => {
+                                                resetCvUploadModal();
+                                                setShowCvUploadModal(false);
+                                            }}
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+
+                                    {resumeActionMessage && (
+                                        <p className="student-cv-modal__message success">
+                                            {resumeActionMessage}
+                                        </p>
+                                    )}
+
+                                    {resumeActionError && (
+                                        <p className="student-cv-modal__message error">
+                                            {resumeActionError}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {!student.resumePath && isDraggingCv && (
+                        <div className="student-cv-drag-overlay">
+                            <div className="student-cv-drag-overlay__plus">+</div>
+                            <div className="student-cv-drag-overlay__text">Drop your CV here</div>
+                        </div>
+                    )}
+                </div>
             )}
 
-            {student.resumePath && (
-                <>
-                    <br /><br />
-                    <button onClick={handlePreviewResume}>Preview CV</button>
-                </>
+            {activePage === "templates" && (
+                <div className="student-templates-page">
+                    <h1 className="student-page-title">Templates</h1>
+
+                    <div className="student-templates-grid">
+                        {templates.length === 0 ? (
+                            <p>No templates available</p>
+                        ) : (
+                            templates.map((template) => (
+                                <button
+                                    key={template.id}
+                                    type="button"
+                                    className="student-template-card"
+                                    onClick={() => handleDownloadTemplate(template.id, template.fileName)}
+                                >
+                                    <div className="student-template-card__preview">📄</div>
+                                    <div 
+                                        className="student-template-card__name"
+                                        title={template.displayName}
+                                    >
+                                        {getDisplayFileName(template.displayName, 20)}
+                                    </div>
+                                </button>
+                            ))
+                        )}
+                    </div>
+                </div>
             )}
-
-            {/* <br /><br />
-
-            <button onClick={handleDownloadResumeTemplate}>
-                Download Resume Template
-            </button> */}
 
             {isPreviewOpen && pdfFile && (
                 <div
                     style={{
-                    position: "fixed",
-                    inset: 0,
-                    backgroundColor: "rgba(0, 0, 0, 0.45)",
-                    backdropFilter: "blur(4px)",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    zIndex: 1000,
+                        position: "fixed",
+                        inset: 0,
+                        backgroundColor: "rgba(0, 0, 0, 0.45)",
+                        backdropFilter: "blur(4px)",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        zIndex: 1000,
                     }}
                 >
                     <div
@@ -526,12 +992,11 @@ export default function StudentDashboard() {
                             backgroundColor: "#fff",
                             borderRadius: "12px",
                             padding: "16px",
-
                             boxSizing: "border-box",
                             display: "flex",
                             flexDirection: "column",
                         }}
-                        >
+                    >
                         <button
                             onClick={handleClosePreview}
                             style={{
@@ -558,15 +1023,6 @@ export default function StudentDashboard() {
                             ×
                         </button>
 
-                        {/* <iframe
-                            src={resumePreviewUrl}
-                            width="100%"
-                            height="100%"
-                            title="Resume Preview"
-                            style={{ 
-                                border: "none", 
-                            }}
-                        /> */}
                         <div
                             ref={previewContainerRef}
                             style={{
@@ -574,7 +1030,7 @@ export default function StudentDashboard() {
                                 overflow: "auto",
                                 display: "flex",
                                 justifyContent: "center",
-                                alignItems: "flext-start",
+                                alignItems: "flex-start",
                                 paddingTop: "12px",
                             }}
                         >
@@ -586,7 +1042,7 @@ export default function StudentDashboard() {
                                 error="Failed to load PDF file."
                             >
                                 {Array.from(new Array(numPages || 0), (_, index) => (
-                                    <Page 
+                                    <Page
                                         key={`page_${index + 1}`}
                                         pageNumber={index + 1}
                                         width={pageWidth}
@@ -599,91 +1055,6 @@ export default function StudentDashboard() {
                     </div>
                 </div>
             )}
-
-
-            <h3>Templates</h3>
-
-            {/* <button onClick={handleDownloadContract}>
-                Download Three-Sided Contract
-            </button> */}
-
-            {templates.length === 0 ? (
-                <p>No templates available</p>
-            ) : (
-                templates.map((template) => (
-                    <div key={template.id} style={{marginBottom: "10px"}}>
-                        <span>{template.displayName}</span>
-                        <button
-                            style={{marginLeft: "10px"}}
-                            onClick={() => handleDownloadTemplate(template.id, template.fileName)}
-                        >
-                            Download
-                        </button>
-                    </div>
-                ))
-            )}
-            
-
-            <h3>Notifications</h3>
-
-            {notifications.length > 0 && (
-                <>
-                    <button onClick={handleMarkAllAsRead}>Mark All as Read</button>
-                    <br /><br />
-                </>
-            )}
-
-            {notifications.length === 0 ? (
-                <p>No notifications</p>
-            ) : (
-                notifications.map((notification) => (
-                    <div key={notification.id} style={{marginBottom: "20px"}}>
-                        <p>{notification.message}</p>
-                        <p>Status: {notification.isRead ? "Read" : "Unread"}</p>
-
-                        {!notification.isRead && (
-                            <button onClick={() => handleMarkAsRead(notification.id)}>
-                                Mark as Read
-                            </button>
-                        )}
-                    </div>
-                ))
-            )}
-
-
-            <h3>Change Password</h3>
-
-            <input 
-                type={showCurrentPassword ? "text" : "password"}
-                placeholder="Current Password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-            />
-            <br /><br />
-
-            <button type="button" onClick={() => setShowCurrentPassword((prev) => !prev)}>
-                {showCurrentPassword ? "Hide Current Password" : "Show Current Password"}
-            </button>
-
-            <br /><br />
-
-            <input 
-                type={showNewPassword ? "text" : "password"}
-                placeholder="New Password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-            />
-            <br /><br />
-
-            <button type="button" onClick={() => setShowNewPassword((prev) => !prev)}>
-                {showNewPassword ? "Hide New Password" : "Show New Password"}
-            </button>
-
-            <br /><br />
-
-            <button onClick={handleChangePassword}>Change Password</button>
-
-            {passwordMessage && <p>{passwordMessage}</p>}
-        </div>
+        </StudentLayout>
     );
 }

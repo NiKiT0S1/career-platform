@@ -12,6 +12,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@fontsource/montserrat": "^5.2.8",
     "@mui/material": "^7.3.9",
     "axios": "^1.13.6",
     "pdfjs-dist": "^5.6.205",

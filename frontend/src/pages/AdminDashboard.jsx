@@ -22,6 +22,8 @@ import {
 import { logout } from "../auth/auth";
 import { useNavigate } from "react-router-dom";
 
+import AdminLayout from "../layouts/AdminLayout";
+
 export default function AdminDashboard() {
     const [admin, setAdmin] = useState(null);
     const [students, setStudents] = useState([]);
@@ -89,6 +91,20 @@ export default function AdminDashboard() {
     const [templateActionMessage, setTemplateActionMessage] = useState("");
     const [templateActionError, setTemplateActionError] = useState("");
     const [replacingTemplateId, setReplacingTemplateId] = useState(null);
+
+    const [activePage, setActivePage] = useState("students");
+    const [accountOpen, setAccountOpen] = useState(false);
+    const [showPasswordForm, setShowPasswordForm] = useState(false);
+    const [accountPasswordMessage, setAccountPasswordMessage] = useState("");
+
+    const [showTemplateUploadModal, setShowTemplateUploadModal] = useState(false);
+    const [hoveredTemplateId, setHoveredTemplateId] = useState(null);
+    const [isDraggingTemplate, setIsDraggingTemplate] = useState(false);
+    const dragTemplateCounterRef = useRef(0);
+
+    const renameBoxRef = useRef(null);
+
+    const [isUploadingTemplate, setIsUploadingTemplate] = useState(false);
 
 
     useEffect(() => {
@@ -224,6 +240,24 @@ export default function AdminDashboard() {
     }, [passwordMessage]);
 
     useEffect(() => {
+        if (!accountPasswordMessage) return;
+
+        const timeout = setTimeout(() => {
+            const isSuccess =
+                accountPasswordMessage.toLowerCase().includes("success");
+
+            setAccountPasswordMessage("");
+
+            if (isSuccess) {
+                setShowPasswordForm(false);
+                setAccountOpen(false);
+            }
+        }, 1800);
+
+        return () => clearTimeout(timeout);
+    }, [accountPasswordMessage]);
+
+    useEffect(() => {
         if (!templateActionMessage && !templateActionError) return;
 
         const timeout = setTimeout(() => {
@@ -233,6 +267,23 @@ export default function AdminDashboard() {
 
         return () => clearTimeout(timeout);
     }, [templateActionMessage, templateActionError]);
+
+    useEffect(() => {
+        if (!editingTemplateId) return;
+
+        const handleClickOutside = (event) => {
+            if (renameBoxRef.current && !renameBoxRef.current.contains(event.target)) {
+                setEditingTemplateId(null);
+                setNewDisplayName("");
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [editingTemplateId]);
 
     const refreshStudentsForPolling = async () => {
         const preparedFilters = {
@@ -505,25 +556,36 @@ export default function AdminDashboard() {
         
         if (!templateName.trim()) {
             setTemplateActionError("Please enter template name");
-            return;
+            return false;
         }
 
         if (!templateFile) {
             setTemplateActionError("Please select a template file");
-            return;
+            return false;
         }
 
         if (!newTemplateCategory) {
             setTemplateActionError("Please select a template category");
-            return;
+            return false;
         }
 
+        const allowedExtensions = [".pdf", ".docx"];
+        const lowerName = templateFile.name.toLowerCase();
+        const isAllowed = allowedExtensions.some((ext) => lowerName.endsWith(ext));
+
+        if (!isAllowed) {
+            setTemplateActionError("Only PDF and DOCX files are allowed");
+            return false;
+        }
+        
         const formData = new FormData();
         formData.append("file", templateFile);
         formData.append("displayName", templateName);
         formData.append("category", newTemplateCategory);
 
         try {
+            setIsUploadingTemplate(true);
+
             await uploadTemplate(formData);
 
             setTemplateActionMessage("Template uploaded successfully");
@@ -537,10 +599,15 @@ export default function AdminDashboard() {
             }
 
             await loadTemplatesAdmin();
+            return true;
         }
         catch (error) {
             console.error(error);
             setTemplateActionError("Failed to upload template");
+            return false;
+        }
+        finally {
+            setIsUploadingTemplate(false);
         }
     };
 
@@ -596,7 +663,19 @@ export default function AdminDashboard() {
     };
 
     const handleReplaceTemplateFile = async (templateId) => {
-        if (!replaceFile) return;
+        if (!replaceFile) {
+            setTemplateActionError("Please select a file");
+            return;
+        }
+
+        const allowedExtensions = [".pdf", ".docx"];
+        const lowerName = replaceFile.name.toLowerCase();
+        const isAllowed = allowedExtensions.some((ext) => lowerName.endsWith(ext));
+
+        if (!isAllowed) {
+            setTemplateActionError("Only PDF and DOCX files are allowed");
+            return;
+        }
 
         try {
             setReplacingTemplateId(templateId);
@@ -686,8 +765,14 @@ export default function AdminDashboard() {
     };
 
     const handleChangePassword = async () => {
+        if (currentPassword === newPassword) {
+            setAccountPasswordMessage("New password must be different from current password");
+            return;
+        }
+        
         try {
             const response = await changeAdminPassword(currentPassword, newPassword);
+            
             setPasswordMessage(response);
             setCurrentPassword("");
             setNewPassword("");
@@ -698,6 +783,86 @@ export default function AdminDashboard() {
         }
     };
 
+    const isAllowedTemplateFile = (file) => {
+        if (!file) return false;
+
+        const allowedExtensions = [".pdf", ".docx"];
+        const lowerName = file.name.toLowerCase();
+
+        return allowedExtensions.some((ext) => lowerName.endsWith(ext));
+    };
+
+    const handleTemplateDragEnter = (e) => {
+        e.preventDefault();
+
+        const file = e.dataTransfer?.items?.[0];
+        if (!file || file.kind !== "file") return;
+
+        dragTemplateCounterRef.current += 1;
+        setIsDraggingTemplate(true);
+    };
+
+    const handleTemplateDragOver = (e) => {
+        e.preventDefault();
+    };
+
+    const handleTemplateDragLeave = (e) => {
+        e.preventDefault();
+
+        dragTemplateCounterRef.current -= 1;
+        if (dragTemplateCounterRef.current <= 0) {
+            dragTemplateCounterRef.current = 0;
+            setIsDraggingTemplate(false);
+        }
+    };
+
+    const handleTemplateDrop = (e) => {
+        e.preventDefault();
+
+        dragTemplateCounterRef.current = 0;
+        setIsDraggingTemplate(false);
+
+        const file = e.dataTransfer.files?.[0];
+        if (!file) return;
+
+        if (!isAllowedTemplateFile(file)) {
+            setTemplateActionMessage("");
+            setTemplateActionError("Only PDF and DOCX files are allowed");
+            return;
+        }
+
+        setTemplateFile(file);
+        setShowTemplateUploadModal(true);
+    };
+
+    const getDisplayFileName = (fileName, maxLength = 24) => {
+        if (!fileName) return "";
+
+        const cleanedName = fileName.replace(/_\d+\.(pdf|docx)$/i, ".$1");
+
+        if (cleanedName.length <= maxLength) {
+            return cleanedName;
+        }
+
+        const dotIndex = cleanedName.lastIndexOf(".");
+        const extension = dotIndex !== -1 ? cleanedName.slice(dotIndex) : "";
+        const baseName = dotIndex !== -1 ? cleanedName.slice(0, dotIndex) : cleanedName;
+
+        return `${baseName.slice(0, maxLength)}...${extension}`;
+    };
+
+    const resetTemplateUploadModal = () => {
+        setTemplateFile(null);
+        setTemplateName("");
+        setNewTemplateCategory("");
+        setTemplateActionMessage("");
+        setTemplateActionError("");
+
+        if (templateFileInputRef.current) {
+            templateFileInputRef.current.value = "";
+        }
+    };
+
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -705,197 +870,626 @@ export default function AdminDashboard() {
         navigate("/login");
     };
 
+    if (!admin) {
+        return (
+            <div className="app-page-loader">
+                <div className="app-page-loader__text">Loading...</div>
+            </div>
+        );
+    }
+
     return (
-        <div style={{position: "relative", padding: "40px"}}>
-            <button 
-            onClick={handleLogout}
-            style={{
-                position: "absolute",
-                top: "20px",
-                right: "20px",
-                padding: "10px 16px",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                backgroundColor: "red",
+        <AdminLayout
+            activePage={activePage}
+            onChangePage={setActivePage}
+            onLogout={handleLogout}
+
+            adminName={admin?.fullName}
+
+            notifications={[]}
+            hasUnreadNotifications={false}
+            notificationsOpen={false}
+            onToggleNotifications={() => {}}
+            onCloseNotifications={() => {}}
+            onClearNotifications={() => {}}
+
+            accountOpen={accountOpen}
+            onToggleAccount={() => {
+                setAccountOpen((prev) => !prev);
+                setShowPasswordForm(false);
+                setAccountPasswordMessage("");
             }}
-            >
-                Logout
-            </button>
+            onCloseAccount={() => {
+                setAccountOpen(false);
+                setShowPasswordForm(false);
+                setAccountPasswordMessage("");
+            }}
 
-            <h1>Admin Dashboard</h1>
+            renderAccountDropdown={() => (
+                <div className="student-account-menu">
+                    {!showPasswordForm ? (
+                        <>
+                            <button
+                                type="button"
+                                className="student-account-menu__item"
+                                onClick={() => setShowPasswordForm(true)}
+                            >
+                                Change Password
+                            </button>
 
-            {admin && (
-                <p>Logged in as: {admin.fullName} ({admin.email})</p>
+                            <br /><br />
+                            <button
+                                type="button"
+                                className="student-account-menu__item student-account-menu__item--danger"
+                                onClick={handleLogout}
+                            >
+                                Logout
+                            </button>
+                        </>
+                    ) : (
+                        <div className="student-account-password-box">
+                            <h4 className="student-account-password-box__title">
+                                Change Password
+                            </h4>
+
+                            <div className="student-account-password-box__field">
+                                <input
+                                    type={showCurrentPassword ? "text" : "password"}
+                                    className="student-account-password-box__input"
+                                    placeholder="Current Password"
+                                    value={currentPassword}
+                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    className="student-account-password-box__toggle"
+                                    onClick={() => setShowCurrentPassword((prev) => !prev)}
+                                >
+                                    {showCurrentPassword ? "Hide" : "Show"}
+                                </button>
+                            </div>
+
+                            <div className="student-account-password-box__field">
+                                <input
+                                    type={showNewPassword ? "text" : "password"}
+                                    className="student-account-password-box__input"
+                                    placeholder="New Password"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    className="student-account-password-box__toggle"
+                                    onClick={() => setShowNewPassword((prev) => !prev)}
+                                >
+                                    {showNewPassword ? "Hide" : "Show"}
+                                </button>
+                            </div>
+
+                            <button
+                                type="button"
+                                className="student-account-password-box__save"
+                                onClick={handleChangePassword}
+                            >
+                                Save Password
+                            </button>
+
+                            {accountPasswordMessage && (
+                                <p
+                                    className={`student-account-password-box__message ${
+                                        accountPasswordMessage.toLowerCase().includes("success")
+                                            ? "success"
+                                            : "error"
+                                    }`}
+                                >
+                                    {accountPasswordMessage}
+                                </p>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )}
+        >
+            {activePage === "students" && (
+                <div className="admin-main-page">
+                    <div className="admin-filter-panel">
+                        <h2 className="admin-filter-title">Filter</h2>
+
+                        <div className="admin-filter-group">
+                            <label className="admin-filter-label">Search by full name</label>
+                            <input
+                                className="admin-input"
+                                type="text"
+                                placeholder="Type..."
+                                value={filters.fullName}
+                                onChange={(e) => {
+                                    setFilters({ ...filters, fullName: e.target.value });
+                                    setCurrentPage(0);
+                                }}
+                            />
+                        </div>
+
+                        <div className="admin-filter-group">
+                            <label className="admin-filter-label">Educational Program</label>
+                            <select
+                                className="admin-select"
+                                value={filters.educationalProgram}
+                                onChange={(e) => handleEducationalProgramChange(e.target.value)}
+                            >
+                                <option value="">All programs</option>
+                                {educationalPrograms.map((program) => (
+                                    <option key={program} value={program}>
+                                        {program}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="admin-filter-group">
+                            <label className="admin-filter-label">Group</label>
+                            <select
+                                className="admin-select"
+                                value={filters.groupName}
+                                onChange={(e) => {
+                                    setFilters({ ...filters, groupName: e.target.value });
+                                    setCurrentPage(0);
+                                }}
+                            >
+                                <option value="">All groups</option>
+                                {groups.map((group) => (
+                                    <option key={group} value={group}>
+                                        {group}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="admin-filter-group">
+                            <label className="admin-filter-label">Course</label>
+                            <select
+                                className="admin-select"
+                                value={filters.course}
+                                onChange={(e) => {
+                                    setFilters({ ...filters, course: e.target.value });
+                                    setCurrentPage(0);
+                                }}
+                            >
+                                <option value="">All courses</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                            </select>
+                        </div>
+
+                        <div className="admin-filter-group">
+                            <label className="admin-filter-label">Status</label>
+                            <select
+                                className="admin-select"
+                                value={filters.practiceStatus}
+                                onChange={(e) => {
+                                    setFilters({ ...filters, practiceStatus: e.target.value });
+                                    setCurrentPage(0);
+                                }}
+                            >
+                                <option value="">All statuses</option>
+                                <option value="EMPLOYED">EMPLOYED</option>
+                                <option value="NOT_FOUND">NOT FOUND</option>
+                            </select>
+                        </div>
+
+                        <div className="admin-filter-group">
+                            <label className="admin-filter-label">GPA</label>
+                            <input
+                                className="admin-input"
+                                type="number"
+                                step="0.1"
+                                placeholder="Type..."
+                                value={filters.minGpa}
+                                onChange={(e) => {
+                                    setFilters({ ...filters, minGpa: e.target.value });
+                                    setCurrentPage(0);
+                                }}
+                            />
+                        </div>
+
+                        <div className="admin-filter-actions admin-filter-actions--single">
+                            <button className="admin-pill-btn" onClick={handleResetFilters}>
+                                Reset filters
+                            </button>
+                        </div>
+
+                        <div className="admin-filter-group admin-filter-group--message">
+                            <label className="admin-filter-label">Message</label>
+                            <textarea
+                                className="admin-textarea"
+                                placeholder="Type..."
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                            />
+                        </div>
+
+                        <button className="admin-send-btn" onClick={handleNotificationAction}>
+                            Send
+                        </button>
+
+                        {statusMessage && <p className="admin-inline-message">{statusMessage}</p>}
+                    </div>
+
+                    <div className="admin-table-panel">
+                        <div className="admin-table-meta">
+                            <span>Selected students: {selectedStudentIds.length}</span>
+                            <span>Total Students: {totalStudentsCount}</span>
+                        </div>
+
+                        <div className="admin-table-wrapper">
+                            <table className="admin-table">
+                                <colgroup>
+                                    <col style={{ width: "42px" }} />
+                                    <col style={{ width: "110px" }} />
+                                    <col style={{ width: "160px" }} />
+                                    <col style={{ width: "65px" }} />
+                                    <col style={{ width: "50px" }} />
+                                    <col style={{ width: "170px" }} />
+                                    <col style={{ width: "100px" }} />
+                                    <col style={{ width: "45px" }} />
+                                    <col style={{ width: "120px" }} />
+                                    <col style={{ width: "75px" }} />
+                                    <col style={{ width: "55px" }} />
+                                    <col style={{ width: "95px" }} />
+                                </colgroup>
+
+                                <thead>
+                                    <tr>
+                                        <th>Select</th>
+                                        <th
+                                            onClick={() => handleSort("fullName")}
+                                            style={{ cursor: "pointer", userSelect: "none" }}
+                                        >
+                                            Full name {getSortIcon("fullName")}
+                                        </th>
+                                        <th>Email</th>
+                                        <th>Group</th>
+                                        <th
+                                            onClick={() => handleSort("course")}
+                                            style={{ cursor: "pointer", userSelect: "none" }}
+                                        >
+                                            Course {getSortIcon("course")}
+                                        </th>
+                                        <th>Educational Program</th>
+                                        <th>Phone</th>
+                                        <th
+                                            onClick={() => handleSort("gpa")}
+                                            style={{ cursor: "pointer", userSelect: "none" }}
+                                        >
+                                            GPA {getSortIcon("gpa")}
+                                        </th>
+                                        <th>Company</th>
+                                        <th>Status</th>
+                                        <th>CV</th>
+                                        <th>Notifications</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {students.map((student) => (
+                                        <tr key={student.id} style={getRowStyle(student.practiceStatus)}>
+                                            <td>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedStudentIds.includes(student.id)}
+                                                    onChange={() => handleSelectStudent(student.id)}
+                                                />
+                                            </td>
+                                            <td>{student.fullName}</td>
+                                            <td>{student.email}</td>
+                                            <td>{student.groupName}</td>
+                                            <td>{student.course}</td>
+                                            <td>{student.educationalProgram}</td>
+                                            <td>{student.phone || "Not specified"}</td>
+                                            <td>{student.gpa ?? "Not specified"}</td>
+                                            <td>{student.companyName || "Not specified"}</td>
+                                            <td>{formatPracticeStatus(student.practiceStatus) || "Not specified"}</td>
+                                            <td style={{ textAlign: "center" }}>
+                                                {student.resumePath ? (
+                                                    <span
+                                                        className="admin-check"
+                                                        style={{ cursor: "pointer" }}
+                                                        onClick={() => handleDownloadResume(student.id)}
+                                                    >
+                                                        ✅
+                                                    </span>
+                                                ) : (
+                                                    "—"
+                                                )}
+                                            </td>
+                                            <td>
+                                                <button
+                                                    className="admin-view-btn"
+                                                    onClick={() => handleViewNotifications(student)}
+                                                >
+                                                    View
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {totalPages > 1 && (
+                            <div className="admin-pagination">
+                                <button
+                                    className="admin-page-btn"
+                                    onClick={() => handlePageChange(0)}
+                                    disabled={currentPage === 0}
+                                >
+                                    First
+                                </button>
+
+                                <button
+                                    className="admin-page-btn"
+                                    onClick={() => handlePageChange(Math.max(startPage - pagesPerBlock, 0))}
+                                    disabled={startPage === 0}
+                                >
+                                    Previous
+                                </button>
+
+                                {Array.from({ length: endPage - startPage }, (_, index) => {
+                                    const pageNumber = startPage + index;
+
+                                    return (
+                                        <button
+                                            key={pageNumber}
+                                            className={`admin-page-btn ${
+                                                currentPage === pageNumber ? "admin-page-btn--active" : ""
+                                            }`}
+                                            onClick={() => handlePageChange(pageNumber)}
+                                        >
+                                            {pageNumber + 1}
+                                        </button>
+                                    );
+                                })}
+
+                                <button
+                                    className="admin-page-btn"
+                                    onClick={() => handlePageChange(endPage)}
+                                    disabled={endPage >= totalPages}
+                                >
+                                    Next
+                                </button>
+
+                                <button
+                                    className="admin-page-btn"
+                                    onClick={() => handlePageChange(totalPages - 1)}
+                                    disabled={currentPage === totalPages - 1}
+                                >
+                                    Last
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
 
-            <h3>Filters</h3>
+            {activePage === "templates" && (
+                <div
+                    className={`admin-templates-page ${isDraggingTemplate ? "admin-templates-page--dragging" : ""}`}
+                    onDragEnter={handleTemplateDragEnter}
+                    onDragOver={handleTemplateDragOver}
+                    onDragLeave={handleTemplateDragLeave}
+                    onDrop={handleTemplateDrop}
+                >
+                    <h2 className="admin-templates-title">Templates Management</h2>
 
-            <input 
-                type="text"
-                placeholder="Search by full name"
-                value={filters.fullName}
-                onChange={(e) => {
-                    setFilters({...filters, fullName: e.target.value});
-                    setCurrentPage(0);
-                }}
-            />
-            <br /><br />
-            
-            <select
-                value={filters.educationalProgram}
-                onChange={(e) => handleEducationalProgramChange(e.target.value)}
-            >
-                <option value="">All programs</option>
-                {educationalPrograms.map((program) => (
-                    <option key={program} value={program}>
-                        {program}
-                    </option>
-                ))}
-            </select>
-            <br /><br />
+                    {!showTemplateUploadModal && templateActionMessage && (
+                        <p className="admin-template-inline-message success">{templateActionMessage}</p>
+                    )}
 
-            <select
-                value={filters.groupName}
-                onChange={(e) => {
-                    setFilters({...filters, groupName: e.target.value});
-                    setCurrentPage(0);
-                }}
-            >
-                <option value="">All groups</option>
-                {groups.map((group) => (
-                    <option key={group} value={group}>
-                        {group}
-                    </option>
-                ))}
-            </select>
-            <br /><br />
+                    {!showTemplateUploadModal && templateActionError && (
+                        <p className="admin-template-inline-message error">{templateActionError}</p>
+                    )}
+                    
+                    <div className="admin-templates-grid">
+                        {templates.map((template) => (
+                            <div
+                                key={template.id}
+                                className="admin-template-card"
+                                onMouseEnter={() => setHoveredTemplateId(template.id)}
+                                onMouseLeave={() => setHoveredTemplateId(null)}
+                            >
+                                <button
+                                    type="button"
+                                    className="admin-template-card__button"
+                                    onClick={() => handleDownloadTemplateForAdmin(template.id, template.fileName)}
+                                >
+                                    <div className="admin-template-card__preview">📄</div>
+                                    <div 
+                                    className="admin-template-card__name"
+                                    title={template.displayName}
+                                    >
+                                        {getDisplayFileName(template.displayName, 20)}
+                                    </div>
+                                </button>
 
-            <select
-                value={filters.course}
-                onChange={(e) => {
-                    setFilters({...filters, course: e.target.value});
-                    setCurrentPage(0);
-                }}
-            >
-                <option value="">All courses</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-            </select>
-            <br /><br />
+                                <select
+                                    className="admin-template-card__category"
+                                    value={template.category}
+                                    onChange={(e) => handleChangeTemplateCategory(template.id, e.target.value)}
+                                >
+                                    <option value="CV">CV</option>
+                                    <option value="CONTRACT">CONTRACT</option>
+                                    <option value="OTHER">OTHER</option>
+                                </select>
 
-            <select 
-                value={filters.practiceStatus}
-                onChange={(e) => {
-                    setFilters({...filters, practiceStatus: e.target.value});
-                    setCurrentPage(0);  
-                }}
-            >
-                <option value="">All statuses</option>
-                <option value="EMPLOYED">EMPLOYED</option>
-                <option value="NOT_FOUND">NOT FOUND</option>
-            </select>
-            <br /><br />
-
-            <input 
-                type="number"
-                step="0.1"
-                placeholder="Minimum GPA"
-                value={filters.minGpa}
-                onChange={(e) => {
-                    setFilters({...filters, minGpa: e.target.value});
-                    setCurrentPage(0);
-                }}
-            />
-            <br /><br />
-
-            <button onClick={handleResetFilters} style={{marginLeft: "10px"}}>
-                Reset Filters
-            </button>
-
-            <h3 style={{marginTop: "30px"}}>Students</h3>
-
-            <p>Selected students: {selectedStudentIds.length} | Total Students: {totalStudentsCount}</p>
-
-            {students.length === 0 ? (
-                <p>No students found</p>
-            ) : (
-                <div style={{ overflowX: "auto" }}>
-                    <table
-                        border="1"
-                        cellPadding="8"
-                        cellSpacing="0"
-                        style={{
-                            width: "100%",
-                            borderCollapse: "collapse",
-                            textAlign: "left",
-                        }}
-                    >
-                        <thead>
-                        <tr>
-                            <th>Select</th>
-                            <th onClick={() => handleSort("fullName")} style={{cursor: "pointer",  userSelect: "none"}}>
-                                Full Name {getSortIcon("fullName")}
-                            </th>
-                            <th>Email</th>
-                            <th>Group</th>
-                            <th onClick={() => handleSort("course")} style={{cursor: "pointer",  userSelect: "none"}}>
-                                Course {getSortIcon("course")}
-                            </th>
-                            <th>Educational Program</th>
-                            <th>Phone</th>
-                            <th onClick={() => handleSort("gpa")} style={{cursor: "pointer", userSelect: "none"}}>
-                                GPA {getSortIcon("gpa")}
-                            </th>
-                            <th>Company</th>
-                            <th>Status</th>
-                            <th>CV</th>
-                            <th>Notifications</th>
-                        </tr>
-                        </thead>
-
-                        <tbody>
-                            {students.map((student) => (
-                                <tr key={student.id} style={getRowStyle(student.practiceStatus)}>
-                                    <td>
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedStudentIds.includes(student.id)}
-                                            onChange={() => handleSelectStudent(student.id)}
-                                        />
-                                    </td>
-                                    <td>{student.fullName}</td>
-                                    <td>{student.email}</td>
-                                    <td>{student.groupName}</td>
-                                    <td>{student.course}</td>
-                                    <td>{student.educationalProgram}</td>
-                                    <td>{student.phone || "Not specified"}</td>
-                                    <td>{student.gpa ?? "Not specified"}</td>
-                                    <td>{student.companyName || "Not specified"}</td>
-                                    <td>{formatPracticeStatus(student.practiceStatus) || "Not specified"}</td>
-                                    {/* <td>
-                                        {student.practiceStatus === "NOT_FOUND"
-                                            ? "NOT FOUND"
-                                            : student.practiceStatus || "Not specified"}
-                                    </td> */}
-                                    <td>
-                                        {student.resumePath ? (
-                                            <button onClick={() => handleDownloadResume(student.id)}>
-                                                Download
-                                            </button>
-                                        ) : (
-                                            "No CV"
-                                        )}
-                                    </td>
-                                    <td>
-                                        <button onClick={() => handleViewNotifications(student)}>
-                                            View
+                                {hoveredTemplateId === template.id && (
+                                    <div className="admin-template-card__actions">
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                replaceFileInputRef.current[template.id]?.click();
+                                            }}
+                                        >
+                                            Replace
                                         </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setEditingTemplateId(template.id);
+                                                setNewDisplayName(template.displayName);
+                                            }}
+                                        >
+                                            Rename
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteTemplate(template.id);
+                                            }}
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
+                                )}
+
+                                <input
+                                    ref={(el) => {
+                                        replaceFileInputRef.current[template.id] = el;
+                                    }}
+                                    type="file"
+                                    accept=".pdf,.docx"
+                                    style={{ display: "none" }}
+                                    onChange={(e) => {
+                                        setReplaceFile(e.target.files[0]);
+                                        setTimeout(() => handleReplaceTemplateFile(template.id), 0);
+                                    }}
+                                />
+
+                                {editingTemplateId === template.id && (
+                                    <div className="admin-template-card__rename-box" ref={renameBoxRef}>
+                                        <input
+                                            type="text"
+                                            value={newDisplayName}
+                                            onChange={(e) => setNewDisplayName(e.target.value)}
+                                            placeholder="New display name"
+                                        />
+                                        <button onClick={() => handleChangeTemplateName(template.id)}>
+                                            Save
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+
+                        <button
+                            type="button"
+                            className="admin-template-upload-tile"
+                            onClick={() => {
+                                resetTemplateUploadModal();
+                                setShowTemplateUploadModal(true);
+                            }}
+                        >
+                            <div className="admin-template-upload-tile__box">+</div>
+                            <div className="admin-template-upload-tile__text">Upload new template</div>
+                        </button>
+                    </div>
+
+                    {showTemplateUploadModal && (
+                        <div className="admin-template-modal-backdrop">
+                            <div className="admin-template-modal">
+                                <div className="admin-template-modal__topbar" />
+
+                                <div className="admin-template-modal__content">
+                                    <h3 className="admin-template-modal__title">Upload new template</h3>
+
+                                    <input
+                                        type="text"
+                                        className="admin-template-modal__input"
+                                        placeholder="Template display name"
+                                        value={templateName}
+                                        onChange={(e) => setTemplateName(e.target.value)}
+                                    />
+
+                                    <select
+                                        className="admin-template-modal__input"
+                                        value={newTemplateCategory}
+                                        onChange={(e) => setNewTemplateCategory(e.target.value)}
+                                    >
+                                        <option value="">Select Category</option>
+                                        <option value="CV">CV</option>
+                                        <option value="CONTRACT">CONTRACT</option>
+                                        <option value="OTHER">OTHER</option>
+                                    </select>
+
+                                    <input
+                                        ref={templateFileInputRef}
+                                        type="file"
+                                        accept=".pdf,.docx"
+                                        className="admin-template-modal__file-input"
+                                        onChange={(e) => setTemplateFile(e.target.files[0])}
+                                    />
+
+                                    {templateFile && (
+                                        <p className="admin-template-modal__selected-file">
+                                            Selected file: {templateFile.name}
+                                        </p>
+                                    )}
+
+                                    <div className="admin-template-modal__actions">
+                                        <button
+                                            type="button"
+                                            className="admin-template-modal__save"
+                                            onClick={async () => {
+                                                const success = await handleUploadTemplate();
+                                                if (success) {
+                                                    resetTemplateUploadModal();
+                                                    setShowTemplateUploadModal(false);
+                                                }
+                                            }}
+                                            disabled={isUploadingTemplate}
+                                        >
+                                            {isUploadingTemplate ? "Uploading..." : "Upload Template"}
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className="admin-template-modal__cancel"
+                                            onClick={() => {
+                                                resetTemplateUploadModal();
+                                                setShowTemplateUploadModal(false);
+                                            }}
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+
+                                    {templateActionMessage && (
+                                        <p className="admin-template-modal__message success">
+                                            {templateActionMessage}
+                                        </p>
+                                    )}
+
+                                    {templateActionError && (
+                                        <p className="admin-template-modal__message error">
+                                            {templateActionError}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {isDraggingTemplate && (
+                        <div className="admin-template-drag-overlay">
+                            <div className="admin-template-drag-overlay__plus">+</div>
+                            <div className="admin-template-drag-overlay__text">
+                                Drop your template here
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -984,248 +1578,6 @@ export default function AdminDashboard() {
                     </div>
                 </div>
             )}
-
-            {totalPages > 1 && (
-                <div style={{ marginTop: "20px" }}>
-                    <button
-                        onClick={() => handlePageChange(0)}
-                        disabled={currentPage === 0}
-                    >
-                        First
-                    </button>
-
-                    <button
-                        onClick={() => handlePageChange(Math.max(startPage - pagesPerBlock, 0))}
-                        disabled={startPage === 0}
-                        style={{ marginLeft: "8px" }}
-                    >
-                        Previous
-                    </button>
-
-                    {Array.from({ length: endPage - startPage }, (_, index) => {
-                        const pageNumber = startPage + index;
-
-                        return (
-                            <button
-                                key={pageNumber}
-                                onClick={() => handlePageChange(pageNumber)}
-                                style={{
-                                marginLeft: "8px",
-                                fontWeight: currentPage === pageNumber ? "bold" : "normal",
-                                }}
-                            >
-                                {pageNumber + 1}
-                            </button>
-                        );
-                    })}
-
-                    <button
-                        onClick={() => handlePageChange(endPage)}
-                        disabled={endPage >= totalPages}
-                        style={{ marginLeft: "8px" }}
-                    >
-                        Next
-                    </button>
-
-                    <button
-                        onClick={() => handlePageChange(totalPages - 1)}
-                        disabled={currentPage === totalPages - 1}
-                        style={{ marginLeft: "8px" }}
-                    >
-                        Last
-                    </button>
-                </div>
-            )}
-
-            <h3 style={{marginTop: "30px"}}>Send Notification</h3>
-            
-            <textarea
-                rows="5"
-                cols="60"
-                placeholder="Enter message"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-            />
-            <br /><br />
-
-            <button onClick={handleNotificationAction}>
-                {getNotificationsButtonText()}
-            </button>
-
-            {statusMessage && <p>{statusMessage}</p>}
-
-            <br /><br />
-            <br /><br />
-
-            <h3>Templates Management</h3>
-
-            {templates.length === 0 ? (
-                <p>No templates uploaded yet</p>
-            ) : (
-                templates.map((template) => (
-                    <div
-                        key={template.id}
-                        style={{
-                            border: "1px solid #ccc",
-                            borderRadius: "8px",
-                            padding: "10px",
-                            marginBottom: "12px",
-                        }}
-                    >
-                        <div style={{marginBottom: "8px"}}>
-                            <strong>{template.displayName}</strong> ({template.category})
-                        </div>
-
-                        <div style={{display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "8px"}}>
-                            <button onClick={() => {
-                                setEditingTemplateId(template.id);
-                                setNewDisplayName(template.displayName);
-                            }}>
-                                Change Name
-                            </button>
-
-                            <button onClick={() => handleDownloadTemplateForAdmin(template.id, template.displayName)}>
-                                Download
-                            </button>
-
-                            <button onClick={() => handleDeleteTemplate(template.id)}>
-                                Delete
-                            </button>
-
-                            <select
-                                value={template.category}
-                                onChange={(e) => handleChangeTemplateCategory(template.id, e.target.value)}
-                            >
-                                <option value="">Select Category</option>
-                                <option value="CV">CV</option>
-                                <option value="CONTRACT">CONTRACT</option>
-                                <option value="OTHER">OTHER</option>
-                            </select>
-                        </div>
-
-                        {editingTemplateId === template.id && (
-                            <div style={{marginBottom: "8px"}}>
-                                <input
-                                    type="text"
-                                    value={newDisplayName}
-                                    onChange={(e) => setNewDisplayName(e.target.value)}
-                                    placeholder="New display name"
-                                />
-                                <button
-                                    style={{marginLeft: "8px"}}
-                                    onClick={() => handleChangeTemplateName(template.id)}
-                                >
-                                    Save Name
-                                </button>
-                            </div>
-                        )}
-
-                        <div style={{marginBottom: "8px"}}>
-                            <input 
-                                ref={(el) => {
-                                    replaceFileInputRef.current[template.id] = el;
-                                }}
-                                type="file"
-                                onChange={(e) => setReplaceFile(e.target.files[0])}
-                            />
-                            <button
-                                style={{marginLeft: "8px"}}
-                                onClick={() => handleReplaceTemplateFile(template.id)}
-                                disabled={replacingTemplateId === template.id}
-                            >
-                                {replacingTemplateId === template.id ? "Replacing..." : "Replace File"}
-                            </button>
-                        </div>
-                    </div>
-                ))
-            )}
-
-            <br /><br />
-
-            {templateActionMessage && (
-                <p style={{color: "green"}}>{templateActionMessage}</p>
-            )}
-
-            {templateActionError && (
-                <p style={{color: "red"}}>{templateActionError}</p>
-            )}
-
-            <br /><br />
-
-
-            <hr />
-            
-            <h4>Upload New Template</h4>
-            
-            <input 
-                type="text"
-                placeholder="Template display name"
-                value={templateName}
-                onChange={(e) => setTemplateName(e.target.value)}
-            />
-
-            <br /><br />
-
-            <select
-                value={newTemplateCategory}
-                onChange={(e) => setNewTemplateCategory(e.target.value)}
-            >
-                <option value="">Select Category</option>
-                <option value="CV">CV</option>
-                <option value="CONTRACT">CONTRACT</option>
-                <option value="OTHER">OTHER</option>
-            </select>
-
-            <br /><br />
-
-            <input 
-                ref={templateFileInputRef}
-                type="file"
-                onChange={(e) => setTemplateFile(e.target.files[0])}
-            />
-
-            <br /><br />
-
-            <button onClick={handleUploadTemplate}>
-                Upload Template
-            </button>
-
-            <br /><br />
-            <br /><br />
-
-            <h3>Change Password</h3>
-
-            <input 
-                type={showCurrentPassword ? "text" : "password"}
-                placeholder="Current Password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-            />
-            <br /><br />
-
-            <button type="button" onClick={() => setShowCurrentPassword((prev) => !prev)}>
-                {showCurrentPassword ? "Hide Current Password" : "Show Current Password"}
-            </button>
-
-            <br /><br />
-
-            <input 
-                type={showNewPassword ? "text" : "password"}
-                placeholder="New Password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-            />
-            <br /><br />
-
-            <button type="button" onClick={() => setShowNewPassword((prev) => !prev)}>
-                {showNewPassword ? "Hide New Password" : "Show New Password"}
-            </button>
-
-            <br /><br />
-
-            <button onClick={handleChangePassword}>Change Password</button>
-
-            {passwordMessage && <p>{passwordMessage}</p>}
-        </div>
+        </AdminLayout>
     );
 }

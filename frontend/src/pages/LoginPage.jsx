@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { loginRequest } from "../api/authApi";
-import {saveToken, saveRole, getToken, getRole} from "../auth/auth";
+import { saveToken, saveRole, getToken, getRole } from "../auth/auth";
+import AuthLayout from "../layouts/AuthLayout";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -24,6 +25,8 @@ export default function LoginPage() {
 
     const handleLogin = async () => {
         try {
+            setError("");
+
             const data = await loginRequest(email, password);
 
             localStorage.removeItem("token");
@@ -34,51 +37,65 @@ export default function LoginPage() {
 
             if (data.role === "STUDENT") {
                 navigate("/student");
-            }
-            else if (data.role === "ADMIN") {
+            } else if (data.role === "ADMIN") {
                 navigate("/admin");
             }
-        } 
-        catch (err) {
+        } catch (err) {
             setError("Invalid email or password");
         }
     };
 
     return (
-        <div style={{padding: "40px"}}>
-            <h2>Digital Career Platform</h2>
+        <AuthLayout>
+            <div className="app-auth-card__logo">
+                <img src="/aitu-logo.png" alt="Astana IT University" />
+            </div>
 
-            <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-            />
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    handleLogin();
+                }}
+            >
+                <div className="app-auth-form-group">
+                    <div className="app-auth-input-wrap">
+                        <input
+                            className="app-auth-input"
+                            type="email"
+                            placeholder="Login"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                    </div>
+                </div>
 
-            <br /><br />
+                <div className="app-auth-form-group">
+                    <div className="app-auth-input-wrap">
+                        <input
+                            className="app-auth-input"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
 
-            <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-            />
+                        <button
+                            type="button"
+                            className="app-auth-password-toggle"
+                            onClick={() => setShowPassword((prev) => !prev)}
+                            title={showPassword ? "Hide password" : "Show password"}
+                        >
+                            {showPassword ? "👁" : "⌣"}
+                        </button>
+                    </div>
+                </div>
 
-            <br /><br />
+                <button type="submit" className="app-auth-submit">
+                    Log in
+                </button>
 
-            <button type="button" onClick={() => setShowPassword((prev) => !prev)}>
-                {showPassword ? "Hide Password" : "Show Password"}
-            </button>
-            
-            <br /><br />
-
-            <button onClick={handleLogin}>
-                Login
-            </button>
-
-            {error && (
-                <p style={{color: "red"}}>{error}</p>
-            )}
-        </div>
+                {error && <div className="app-auth-error">{error}</div>}
+            </form>
+        </AuthLayout>
     );
 }
