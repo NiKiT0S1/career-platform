@@ -279,14 +279,14 @@
   width: 100%;
   max-width: 1080px;
   margin: 0 auto;
-  position: relative;
+  /* position: relative; */
 }
 
 .student-cv-page--dragging {
   filter: blur(0.2px);
 }
 
-.student-cv-drag-overlay {
+/* .student-cv-drag-overlay {
   position: absolute;
   inset: 70px 0 0 0;
   border: 2px dashed #7c93d8;
@@ -298,6 +298,21 @@
   align-items: center;
   justify-content: center;
   z-index: 20;
+} */
+
+.student-cv-drag-overlay {
+  position: absolute;
+  inset: 0;
+  border: 2px dashed #7c93d8;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(2px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  pointer-events: none;
 }
 
 .student-cv-drag-overlay__plus {
@@ -383,7 +398,7 @@
   text-align: center;
 }
 
-.student-cv-upload-tile__box {
+/* .student-cv-upload-tile__box {
   width: 140px;
   height: 180px;
   border: 1px solid #8d8d8d;
@@ -393,6 +408,18 @@
   justify-content: center;
   font-size: 56px;
   border-radius: 2px;
+} */
+
+.student-cv-upload-tile__box {
+  width: 150px;
+  height: 210px;
+  border: 2px dashed #8d8d8d;
+  border-radius: 10px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
 }
 
 .student-cv-upload-tile__text {
@@ -516,4 +543,18 @@
   font-size: 13px;
   color: #555;
   word-break: break-word;
+}
+
+.student-inline-message--error {
+  color: #d92d20;
+}
+
+.student-inline-message--success {
+  color: #1f9d55;
+}
+
+.student-cv-dropzone {
+  position: relative;
+  min-height: 420px;
+  border-radius: 18px;
 }

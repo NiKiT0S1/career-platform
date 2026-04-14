@@ -23,6 +23,7 @@ import { logout } from "../auth/auth";
 import { useNavigate } from "react-router-dom";
 
 import AdminLayout from "../layouts/AdminLayout";
+import { isAllowedTemplateFile, isDraggedTemplateFile } from "../utils/fileValidation";
 
 export default function AdminDashboard() {
     const [admin, setAdmin] = useState(null);
@@ -71,7 +72,7 @@ export default function AdminDashboard() {
 
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
-    const [passwordMessage, setPasswordMessage] = useState("");
+    // const [passwordMessage, setPasswordMessage] = useState("");
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
 
@@ -83,7 +84,7 @@ export default function AdminDashboard() {
 
     const [editingTemplateId, setEditingTemplateId] = useState(null);
     const [newDisplayName, setNewDisplayName] = useState("");
-    const [replaceFile, setReplaceFile] = useState(null);
+    // const [replaceFile, setReplaceFile] = useState(null);
 
     const templateFileInputRef = useRef(null);
     const replaceFileInputRef = useRef({});
@@ -92,7 +93,11 @@ export default function AdminDashboard() {
     const [templateActionError, setTemplateActionError] = useState("");
     const [replacingTemplateId, setReplacingTemplateId] = useState(null);
 
-    const [activePage, setActivePage] = useState("students");
+    // const [activePage, setActivePage] = useState("students");
+    const [activePage, setActivePage] = useState(() => {
+        return localStorage.getItem("adminActivePage") || "students";
+    });
+
     const [accountOpen, setAccountOpen] = useState(false);
     const [showPasswordForm, setShowPasswordForm] = useState(false);
     const [accountPasswordMessage, setAccountPasswordMessage] = useState("");
@@ -106,6 +111,8 @@ export default function AdminDashboard() {
 
     const [isUploadingTemplate, setIsUploadingTemplate] = useState(false);
 
+    const [isTemplateDraggedUpload, setIsTemplateDraggedUpload] = useState(false);
+
 
     useEffect(() => {
         loadCurrentAdmin();
@@ -114,6 +121,10 @@ export default function AdminDashboard() {
         loadGroups();
         loadTemplatesAdmin();
     }, []);
+
+    useEffect(() => {
+        localStorage.setItem("adminActivePage", activePage);
+    }, [activePage]);
 
     useEffect(() => {
         if (!notificationViewerOpen || !currentStudentNotificationId) return;
@@ -229,15 +240,15 @@ export default function AdminDashboard() {
         return () => clearTimeout(timeout);
     }, [statusMessage]);
 
-    useEffect(() => {
-        if (!passwordMessage) return;
+    // useEffect(() => {
+    //     if (!passwordMessage) return;
 
-        const timeout = setTimeout(() => {
-            setPasswordMessage("");
-        }, 1500);
+    //     const timeout = setTimeout(() => {
+    //         setPasswordMessage("");
+    //     }, 1500);
 
-        return () => clearTimeout(timeout);
-    }, [passwordMessage]);
+    //     return () => clearTimeout(timeout);
+    // }, [passwordMessage]);
 
     useEffect(() => {
         if (!accountPasswordMessage) return;
@@ -569,14 +580,19 @@ export default function AdminDashboard() {
             return false;
         }
 
-        const allowedExtensions = [".pdf", ".docx"];
-        const lowerName = templateFile.name.toLowerCase();
-        const isAllowed = allowedExtensions.some((ext) => lowerName.endsWith(ext));
-
-        if (!isAllowed) {
+        if (!isAllowedTemplateFile(templateFile)) {
             setTemplateActionError("Only PDF and DOCX files are allowed");
             return false;
         }
+
+        // const allowedExtensions = [".pdf", ".docx"];
+        // const lowerName = templateFile.name.toLowerCase();
+        // const isAllowed = allowedExtensions.some((ext) => lowerName.endsWith(ext));
+
+        // if (!isAllowed) {
+        //     setTemplateActionError("Only PDF and DOCX files are allowed");
+        //     return false;
+        // }
         
         const formData = new FormData();
         formData.append("file", templateFile);
@@ -603,7 +619,7 @@ export default function AdminDashboard() {
         }
         catch (error) {
             console.error(error);
-            setTemplateActionError("Failed to upload template");
+            setTemplateActionError(error?.response?.data || "Failed to upload template");
             return false;
         }
         finally {
@@ -634,16 +650,29 @@ export default function AdminDashboard() {
     };
 
     const handleChangeTemplateName = async (templateId) => {
-        if (!newDisplayName.trim()) return;
+        if (!newDisplayName.trim()) {
+            setTemplateActionMessage("");
+            setTemplateActionError("Display name cannot be empty");
+            return;
+        }
         
         try {
+            setTemplateActionMessage("");
+            setTemplateActionError("");
+
             await updateTemplateDisplayName(templateId, newDisplayName);
+
             setEditingTemplateId(null);
             setNewDisplayName("");
+            setTemplateActionMessage("Display name changed successfully");
+
             await loadTemplatesAdmin();
         }
         catch (error) {
             console.error(error);
+            setTemplateActionError(
+                error?.response?.data || "Failed to change display name"
+            );
         }
     };
 
@@ -662,17 +691,15 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleReplaceTemplateFile = async (templateId) => {
-        if (!replaceFile) {
+    const handleReplaceTemplateFile = async (templateId, file) => {
+        if (!file) {
+            setTemplateActionMessage("");
             setTemplateActionError("Please select a file");
             return;
         }
 
-        const allowedExtensions = [".pdf", ".docx"];
-        const lowerName = replaceFile.name.toLowerCase();
-        const isAllowed = allowedExtensions.some((ext) => lowerName.endsWith(ext));
-
-        if (!isAllowed) {
+        if (!isAllowedTemplateFile(file)) {
+            setTemplateActionMessage("");
             setTemplateActionError("Only PDF and DOCX files are allowed");
             return;
         }
@@ -682,9 +709,8 @@ export default function AdminDashboard() {
             setTemplateActionMessage("");
             setTemplateActionError("");
             
-            await replaceTemplateFile(templateId, replaceFile);
+            await replaceTemplateFile(templateId, file);
 
-            setReplaceFile(null);
             setTemplateActionMessage("Template file updated successfully");
             
             if (replaceFileInputRef.current[templateId]) {
@@ -695,7 +721,9 @@ export default function AdminDashboard() {
         }
         catch (error) {
             console.error(error);
-            setTemplateActionError("Failed to update template file");
+            setTemplateActionError(
+                error?.response?.data || "Failed to update template file"
+            );
         }
         finally {
             setReplacingTemplateId(null);
@@ -742,7 +770,7 @@ export default function AdminDashboard() {
         return "Send Notification For Current Students By Filter";
     };
 
-    const getSortIcon = (field) => {``
+    const getSortIcon = (field) => {
         if (sortBy !== field) return "↕";
         return sortDir === "asc" ? "▲" : "▼";
     };
@@ -773,53 +801,83 @@ export default function AdminDashboard() {
         try {
             const response = await changeAdminPassword(currentPassword, newPassword);
             
-            setPasswordMessage(response);
+            setAccountPasswordMessage(response || "Password changed successfully");
             setCurrentPassword("");
             setNewPassword("");
+            setShowCurrentPassword(false);
+            setShowNewPassword(false);
         } 
         catch (error) {
             console.error(error);
-            setPasswordMessage(error?.response?.data || "Failed to change password");
+            setAccountPasswordMessage(error?.response?.data || "Failed to change password");
         }
     };
 
-    const isAllowedTemplateFile = (file) => {
-        if (!file) return false;
+    // const isAllowedTemplateFile = (file) => {
+    //     if (!file) return false;
 
-        const allowedExtensions = [".pdf", ".docx"];
-        const lowerName = file.name.toLowerCase();
+    //     const allowedExtensions = [".pdf", ".docx"];
+    //     const lowerName = file.name.toLowerCase();
 
-        return allowedExtensions.some((ext) => lowerName.endsWith(ext));
-    };
+    //     return allowedExtensions.some((ext) => lowerName.endsWith(ext));
+    // };
 
     const handleTemplateDragEnter = (e) => {
         e.preventDefault();
+        e.stopPropagation();
 
-        const file = e.dataTransfer?.items?.[0];
-        if (!file || file.kind !== "file") return;
+        // dragTemplateCounterRef.current += 1;
 
-        dragTemplateCounterRef.current += 1;
-        setIsDraggingTemplate(true);
+        // if (!isDraggedTemplateFile(e)) {
+        //     setIsDraggingTemplate(true);
+        // }
+        // else {
+        //     setIsDraggingTemplate(false);
+        // }
     };
 
     const handleTemplateDragOver = (e) => {
+        // if (!isDraggedTemplateFile(e)) return;
+        
         e.preventDefault();
+        e.stopPropagation();
+
+        if (isDraggedTemplateFile(e)) {
+            if (!isDraggingTemplate) {
+                setIsDraggingTemplate(true);
+            }
+        }
+        else {
+            if (isDraggingTemplate) {
+                setIsDraggingTemplate(false);
+            }
+        }
     };
 
     const handleTemplateDragLeave = (e) => {
         e.preventDefault();
+        e.stopPropagation();
 
-        dragTemplateCounterRef.current -= 1;
-        if (dragTemplateCounterRef.current <= 0) {
-            dragTemplateCounterRef.current = 0;
-            setIsDraggingTemplate(false);
+        // dragTemplateCounterRef.current -= 1;
+
+        // if (dragTemplateCounterRef.current <= 0) {
+        //     dragTemplateCounterRef.current = 0;
+        //     setIsDraggingTemplate(false);
+        // }
+
+        const relatedTarget = e.relatedTarget;
+        if (e.currentTarget.contains(relatedTarget)) {
+            return;
         }
+
+        setIsDraggingTemplate(false);
     };
 
     const handleTemplateDrop = (e) => {
         e.preventDefault();
+        e.stopPropagation();
 
-        dragTemplateCounterRef.current = 0;
+        // dragTemplateCounterRef.current = 0;
         setIsDraggingTemplate(false);
 
         const file = e.dataTransfer.files?.[0];
@@ -831,7 +889,10 @@ export default function AdminDashboard() {
             return;
         }
 
+        setTemplateActionMessage("");
+        setTemplateActionError("");
         setTemplateFile(file);
+        setIsTemplateDraggedUpload(true);
         setShowTemplateUploadModal(true);
     };
 
@@ -857,6 +918,7 @@ export default function AdminDashboard() {
         setNewTemplateCategory("");
         setTemplateActionMessage("");
         setTemplateActionError("");
+        setIsTemplateDraggedUpload(false);
 
         if (templateFileInputRef.current) {
             templateFileInputRef.current.value = "";
@@ -1179,14 +1241,16 @@ export default function AdminDashboard() {
                                                     onChange={() => handleSelectStudent(student.id)}
                                                 />
                                             </td>
-                                            <td>{student.fullName}</td>
-                                            <td>{student.email}</td>
+                                            <td title={student.fullName}>{student.fullName}</td>
+                                            <td title={student.email}>{student.email}</td>
                                             <td>{student.groupName}</td>
                                             <td>{student.course}</td>
-                                            <td>{student.educationalProgram}</td>
+                                            <td title={student.educationalProgram}>{student.educationalProgram}</td>
                                             <td>{student.phone || "Not specified"}</td>
                                             <td>{student.gpa ?? "Not specified"}</td>
-                                            <td>{student.companyName || "Not specified"}</td>
+                                            <td title={student.companyName || "Not specified"}>
+                                                {student.companyName || "Not specified"}
+                                            </td>
                                             <td>{formatPracticeStatus(student.practiceStatus) || "Not specified"}</td>
                                             <td style={{ textAlign: "center" }}>
                                                 {student.resumePath ? (
@@ -1271,225 +1335,266 @@ export default function AdminDashboard() {
             )}
 
             {activePage === "templates" && (
-                <div
-                    className={`admin-templates-page ${isDraggingTemplate ? "admin-templates-page--dragging" : ""}`}
-                    onDragEnter={handleTemplateDragEnter}
-                    onDragOver={handleTemplateDragOver}
-                    onDragLeave={handleTemplateDragLeave}
-                    onDrop={handleTemplateDrop}
-                >
-                    <h2 className="admin-templates-title">Templates Management</h2>
+                <div className="admin-templates-page">
+                    <div
+                        className={`admin-templates-dropzone ${isDraggingTemplate ? "admin-templates-page-dropzone--dragging" : ""}`}
+                        onDragEnter={handleTemplateDragEnter}
+                        onDragOver={handleTemplateDragOver}
+                        onDragLeave={handleTemplateDragLeave}
+                        onDrop={handleTemplateDrop}
+                    >
+                        <h2 className="admin-templates-title">Templates Management</h2>
 
-                    {!showTemplateUploadModal && templateActionMessage && (
-                        <p className="admin-template-inline-message success">{templateActionMessage}</p>
-                    )}
+                        {!showTemplateUploadModal && templateActionMessage && (
+                            <p className="admin-template-inline-message success">{templateActionMessage}</p>
+                        )}
 
-                    {!showTemplateUploadModal && templateActionError && (
-                        <p className="admin-template-inline-message error">{templateActionError}</p>
-                    )}
-                    
-                    <div className="admin-templates-grid">
-                        {templates.map((template) => (
-                            <div
-                                key={template.id}
-                                className="admin-template-card"
-                                onMouseEnter={() => setHoveredTemplateId(template.id)}
-                                onMouseLeave={() => setHoveredTemplateId(null)}
-                            >
-                                <button
-                                    type="button"
-                                    className="admin-template-card__button"
-                                    onClick={() => handleDownloadTemplateForAdmin(template.id, template.fileName)}
+                        {!showTemplateUploadModal && templateActionError && (
+                            <p className="admin-template-inline-message error">{templateActionError}</p>
+                        )}
+                        
+                        <div className="admin-templates-grid">
+                            {templates.map((template) => (
+                                <div
+                                    key={template.id}
+                                    className="admin-template-card"
+                                    onMouseEnter={() => setHoveredTemplateId(template.id)}
+                                    onMouseLeave={() => setHoveredTemplateId(null)}
                                 >
-                                    <div className="admin-template-card__preview">📄</div>
-                                    <div 
-                                    className="admin-template-card__name"
-                                    title={template.displayName}
+                                    <button
+                                        type="button"
+                                        className="admin-template-card__button"
+                                        onClick={() => handleDownloadTemplateForAdmin(template.id, template.fileName)}
                                     >
-                                        {getDisplayFileName(template.displayName, 20)}
-                                    </div>
-                                </button>
-
-                                <select
-                                    className="admin-template-card__category"
-                                    value={template.category}
-                                    onChange={(e) => handleChangeTemplateCategory(template.id, e.target.value)}
-                                >
-                                    <option value="CV">CV</option>
-                                    <option value="CONTRACT">CONTRACT</option>
-                                    <option value="OTHER">OTHER</option>
-                                </select>
-
-                                {hoveredTemplateId === template.id && (
-                                    <div className="admin-template-card__actions">
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                replaceFileInputRef.current[template.id]?.click();
-                                            }}
+                                        <div className="admin-template-card__preview">📄</div>
+                                        <div 
+                                        className="admin-template-card__name"
+                                        title={template.displayName}
                                         >
-                                            Replace
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setEditingTemplateId(template.id);
-                                                setNewDisplayName(template.displayName);
-                                            }}
-                                        >
-                                            Rename
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDeleteTemplate(template.id);
-                                            }}
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
-                                )}
-
-                                <input
-                                    ref={(el) => {
-                                        replaceFileInputRef.current[template.id] = el;
-                                    }}
-                                    type="file"
-                                    accept=".pdf,.docx"
-                                    style={{ display: "none" }}
-                                    onChange={(e) => {
-                                        setReplaceFile(e.target.files[0]);
-                                        setTimeout(() => handleReplaceTemplateFile(template.id), 0);
-                                    }}
-                                />
-
-                                {editingTemplateId === template.id && (
-                                    <div className="admin-template-card__rename-box" ref={renameBoxRef}>
-                                        <input
-                                            type="text"
-                                            value={newDisplayName}
-                                            onChange={(e) => setNewDisplayName(e.target.value)}
-                                            placeholder="New display name"
-                                        />
-                                        <button onClick={() => handleChangeTemplateName(template.id)}>
-                                            Save
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-
-                        <button
-                            type="button"
-                            className="admin-template-upload-tile"
-                            onClick={() => {
-                                resetTemplateUploadModal();
-                                setShowTemplateUploadModal(true);
-                            }}
-                        >
-                            <div className="admin-template-upload-tile__box">+</div>
-                            <div className="admin-template-upload-tile__text">Upload new template</div>
-                        </button>
-                    </div>
-
-                    {showTemplateUploadModal && (
-                        <div className="admin-template-modal-backdrop">
-                            <div className="admin-template-modal">
-                                <div className="admin-template-modal__topbar" />
-
-                                <div className="admin-template-modal__content">
-                                    <h3 className="admin-template-modal__title">Upload new template</h3>
-
-                                    <input
-                                        type="text"
-                                        className="admin-template-modal__input"
-                                        placeholder="Template display name"
-                                        value={templateName}
-                                        onChange={(e) => setTemplateName(e.target.value)}
-                                    />
+                                            {getDisplayFileName(template.displayName, 20)}
+                                        </div>
+                                    </button>
 
                                     <select
-                                        className="admin-template-modal__input"
-                                        value={newTemplateCategory}
-                                        onChange={(e) => setNewTemplateCategory(e.target.value)}
+                                        className="admin-template-card__category"
+                                        value={template.category}
+                                        onChange={(e) => handleChangeTemplateCategory(template.id, e.target.value)}
                                     >
-                                        <option value="">Select Category</option>
                                         <option value="CV">CV</option>
                                         <option value="CONTRACT">CONTRACT</option>
                                         <option value="OTHER">OTHER</option>
                                     </select>
 
+                                    {hoveredTemplateId === template.id && (
+                                        <div className="admin-template-card__actions">
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    replaceFileInputRef.current[template.id]?.click();
+                                                }}
+                                            >
+                                                Replace
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setEditingTemplateId(template.id);
+                                                    setNewDisplayName(template.displayName);
+                                                }}
+                                            >
+                                                Rename
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteTemplate(template.id);
+                                                }}
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    )}
+
                                     <input
-                                        ref={templateFileInputRef}
+                                        ref={(el) => {
+                                            replaceFileInputRef.current[template.id] = el;
+                                        }}
                                         type="file"
                                         accept=".pdf,.docx"
-                                        className="admin-template-modal__file-input"
-                                        onChange={(e) => setTemplateFile(e.target.files[0])}
+                                        style={{ display: "none" }}
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            handleReplaceTemplateFile(template.id, file);
+                                        }}
                                     />
 
-                                    {templateFile && (
-                                        <p className="admin-template-modal__selected-file">
-                                            Selected file: {templateFile.name}
-                                        </p>
-                                    )}
-
-                                    <div className="admin-template-modal__actions">
-                                        <button
-                                            type="button"
-                                            className="admin-template-modal__save"
-                                            onClick={async () => {
-                                                const success = await handleUploadTemplate();
-                                                if (success) {
-                                                    resetTemplateUploadModal();
-                                                    setShowTemplateUploadModal(false);
-                                                }
-                                            }}
-                                            disabled={isUploadingTemplate}
-                                        >
-                                            {isUploadingTemplate ? "Uploading..." : "Upload Template"}
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            className="admin-template-modal__cancel"
-                                            onClick={() => {
-                                                resetTemplateUploadModal();
-                                                setShowTemplateUploadModal(false);
-                                            }}
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
-
-                                    {templateActionMessage && (
-                                        <p className="admin-template-modal__message success">
-                                            {templateActionMessage}
-                                        </p>
-                                    )}
-
-                                    {templateActionError && (
-                                        <p className="admin-template-modal__message error">
-                                            {templateActionError}
-                                        </p>
+                                    {editingTemplateId === template.id && (
+                                        <div className="admin-template-card__rename-box" ref={renameBoxRef}>
+                                            <input
+                                                type="text"
+                                                value={newDisplayName}
+                                                onChange={(e) => setNewDisplayName(e.target.value)}
+                                                placeholder="New display name"
+                                            />
+                                            <button onClick={() => handleChangeTemplateName(template.id)}>
+                                                Save
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
-                            </div>
-                        </div>
-                    )}
+                            ))}
 
-                    {isDraggingTemplate && (
-                        <div className="admin-template-drag-overlay">
-                            <div className="admin-template-drag-overlay__plus">+</div>
-                            <div className="admin-template-drag-overlay__text">
-                                Drop your template here
-                            </div>
+                            <button
+                                type="button"
+                                className="admin-template-upload-tile"
+                                onClick={() => {
+                                    resetTemplateUploadModal();
+                                    setIsTemplateDraggedUpload(false);
+                                    setShowTemplateUploadModal(true);
+                                }}
+                            >
+                                <div className="admin-template-upload-tile__box">+</div>
+                                <div className="admin-template-upload-tile__text">Upload new template</div>
+                            </button>
                         </div>
-                    )}
+
+                        {showTemplateUploadModal && (
+                            <div className="admin-template-modal-backdrop">
+                                <div className="admin-template-modal">
+                                    <div className="admin-template-modal__topbar" />
+
+                                    <div className="admin-template-modal__content">
+                                        <h3 className="admin-template-modal__title">Upload new template</h3>
+
+                                        <input
+                                            type="text"
+                                            className="admin-template-modal__input"
+                                            placeholder="Template display name"
+                                            value={templateName}
+                                            onChange={(e) => setTemplateName(e.target.value)}
+                                        />
+
+                                        <select
+                                            className="admin-template-modal__input"
+                                            value={newTemplateCategory}
+                                            onChange={(e) => setNewTemplateCategory(e.target.value)}
+                                        >
+                                            <option value="">Select Category</option>
+                                            <option value="CV">CV</option>
+                                            <option value="CONTRACT">CONTRACT</option>
+                                            <option value="OTHER">OTHER</option>
+                                        </select>
+
+                                        {/* <input
+                                            ref={templateFileInputRef}
+                                            type="file"
+                                            accept=".pdf,.docx"
+                                            className="admin-template-modal__file-input"
+                                            onChange={(e) => setTemplateFile(e.target.files[0])}
+                                        />
+
+                                        {templateFile && (
+                                            <p className="admin-template-modal__selected-file">
+                                                Selected file: {templateFile.name}
+                                            </p>
+                                        )} */}
+
+                                        {!isTemplateDraggedUpload && (
+                                            <>
+                                                <input
+                                                    ref={templateFileInputRef}
+                                                    type="file"
+                                                    accept=".pdf,.docx"
+                                                    className="admin-template-modal__file-input"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+
+                                                        if (!file) return;
+
+                                                        if (!isAllowedTemplateFile(file)) {
+                                                            setTemplateActionMessage("");
+                                                            setTemplateActionError("Only PDF and DOCX files are allowed");
+                                                            setTemplateFile(null);
+
+                                                            if (templateFileInputRef.current) {
+                                                                templateFileInputRef.current.value = "";
+                                                            }
+
+                                                            return;
+                                                        }
+
+                                                        setTemplateActionMessage("");
+                                                        setTemplateActionError("");
+                                                        setTemplateFile(file);
+                                                    }}
+                                                />
+
+                                                {templateFile && (
+                                                    <p className="admin-template-modal__selected-file">
+                                                        Selected file: {templateFile.name}
+                                                    </p>
+                                                )}
+                                            </>
+                                        )}
+
+                                        <div className="admin-template-modal__actions">
+                                            <button
+                                                type="button"
+                                                className="admin-template-modal__save"
+                                                onClick={async () => {
+                                                    const success = await handleUploadTemplate();
+                                                    if (success) {
+                                                        resetTemplateUploadModal();
+                                                        setShowTemplateUploadModal(false);
+                                                    }
+                                                }}
+                                                disabled={isUploadingTemplate}
+                                            >
+                                                {isUploadingTemplate ? "Uploading..." : "Upload Template"}
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="admin-template-modal__cancel"
+                                                onClick={() => {
+                                                    resetTemplateUploadModal();
+                                                    setShowTemplateUploadModal(false);
+                                                }}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+
+                                        {templateActionMessage && (
+                                            <p className="admin-template-modal__message success">
+                                                {templateActionMessage}
+                                            </p>
+                                        )}
+
+                                        {templateActionError && (
+                                            <p className="admin-template-modal__message error">
+                                                {templateActionError}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {isDraggingTemplate && (
+                            <div className="admin-template-drag-overlay">
+                                <div className="admin-template-drag-overlay__plus">+</div>
+                                <div className="admin-template-drag-overlay__text">
+                                    Drop your template here
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 

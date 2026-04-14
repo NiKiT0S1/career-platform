@@ -18,6 +18,7 @@ import { pdfjs, Document, Page } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import StudentLayout from "../layouts/StudentLayout";
+import { isPdfFile, isDraggedPdf } from "../utils/fileValidation";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -28,7 +29,10 @@ export default function StudentDashboard() {
     const [message, setMessage] = useState("");
     const [notifications, setNotifications] = useState([]);
 
-    const [activePage, setActivePage] = useState("main");
+    // const [activePage, setActivePage] = useState("main");
+    const [activePage, setActivePage] = useState(() => {
+        return localStorage.getItem("studentActivePage") || "main";
+    });
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     
     const hasUnreadNotifications = notifications.some((notification) => !notification.isRead);
@@ -96,6 +100,10 @@ export default function StudentDashboard() {
         loadCurrentStudent();
         loadTemplates();
     }, []);
+
+    useEffect(() => {
+        localStorage.setItem("studentActivePage", activePage);
+    }, [activePage]);
 
     useEffect(() => {
         const interval = setInterval(async () => {
@@ -303,7 +311,13 @@ export default function StudentDashboard() {
             return false;
         }
 
-        if (resumeFile.type !== "application/pdf") {
+        // if (resumeFile.type !== "application/pdf") {
+        //     setResumeActionMessage("");
+        //     setResumeActionError("Only PDF files are allowed");
+        //     return false;
+        // }
+
+        if (!isAllowedResumeFile(resumeFile)) {
             setResumeActionMessage("");
             setResumeActionError("Only PDF files are allowed");
             return false;
@@ -327,11 +341,12 @@ export default function StudentDashboard() {
             }
 
             await loadCurrentStudent();
+            return true;
         } 
         catch (error) {
             console.error(error);
             // setResumeMessage("Failed to upload resume");
-            setResumeActionError("Failed to upload CV");
+            setResumeActionError(error?.response?.data || "Failed to upload CV");
             return false;
         }
         finally {
@@ -413,36 +428,66 @@ export default function StudentDashboard() {
         if (student?.resumePath) return;
 
         e.preventDefault();
+        e.stopPropagation();
 
-        const file = e.dataTransfer?.items?.[0];
-        if (!file || file.kind !== "file") return;
+        // if (!isDraggedPdf(e)) return;
 
-        dragCounterRef.current += 1;
-        setIsDraggingCv(true);
+        // dragCounterRef.current += 1;
+
+        // if (isDraggedPdf(e)) {
+        //     setIsDraggingCv(true);
+        // }
+        // else {
+        //     setIsDraggingCv(false);
+        // }
     };
 
     const handleCvDragOver = (e) => {
         if (student?.resumePath) return;
+
+        // if (!isDraggedPdf(e)) return;
+
         e.preventDefault();
+        e.stopPropagation();
+
+        if (isDraggedPdf(e)) {
+            if (!isDraggingCv) {
+                setIsDraggingCv(true);
+            }
+        } else {
+            if (isDraggingCv) {
+                setIsDraggingCv(false);
+            }
+        }
     };
 
     const handleCvDragLeave = (e) => {
         if (student?.resumePath) return;
-        e.preventDefault();
 
-        dragCounterRef.current -= 1;
-        if (dragCounterRef.current <= 0) {
-            dragCounterRef.current = 0;
-            setIsDraggingCv(false);
+        e.preventDefault();
+        e.stopPropagation();
+
+        // dragCounterRef.current -= 1;
+        // if (dragCounterRef.current <= 0) {
+        //     dragCounterRef.current = 0;
+        //     setIsDraggingCv(false);
+        // }
+
+        const relatedTarget = e.relatedTarget;
+        if (e.currentTarget.contains(relatedTarget)) {
+            return;
         }
+
+        setIsDraggingCv(false);
     };
 
-    const handleCvDrop = (e) => {
+    const handleCvDrop = async (e) => {
         if (student?.resumePath) return;
 
         e.preventDefault();
+        e.stopPropagation();
 
-        dragCounterRef.current = 0;
+        // dragCounterRef.current = 0;
         setIsDraggingCv(false);
 
         const file = e.dataTransfer.files?.[0];
@@ -454,8 +499,29 @@ export default function StudentDashboard() {
             return;
         }
 
-        setResumeFile(file);
-        setShowCvUploadModal(true);
+        try {
+            setShowCvUploadModal(false);
+            setResumeActionMessage("");
+            setResumeActionError("");
+            setIsUploadingResume(true);
+
+            await uploadStudentResume(file);
+
+            setResumeActionMessage("CV uploaded successfully");
+            setResumeFile(null);
+
+            if (resumeFileInputRef.current) {
+                resumeFileInputRef.current.value = "";
+            }
+
+            await loadCurrentStudent();
+        } catch (error) {
+            console.error(error);
+            setResumeActionMessage("");
+            setResumeActionError(error?.response?.data || "Failed to upload CV");
+        } finally {
+            setIsUploadingResume(false);
+        }
     };
 
     const handleDownloadTemplate = async (templateId, fileName) => {
@@ -525,8 +591,7 @@ export default function StudentDashboard() {
     };
 
     const isAllowedResumeFile = (file) => {
-        if (!file) return false;
-        return file.name.toLowerCase().endsWith(".pdf");
+        return isPdfFile(file);
     };
 
     const handleResumeFileChange = (e) => {
@@ -545,6 +610,7 @@ export default function StudentDashboard() {
             return;
         }
 
+        setResumeActionMessage("");
         setResumeActionError("");
         setResumeFile(file);
     };
@@ -558,6 +624,8 @@ export default function StudentDashboard() {
             resumeFileInputRef.current.value = "";
         }
     };
+
+    const hasPracticeStatusChanged = practiceStatus !== (student?.practiceStatus || "");
 
     const navigate = useNavigate();
 
@@ -659,7 +727,8 @@ export default function StudentDashboard() {
                                 <p
                                     className={`student-account-password-box__message ${
                                         accountPasswordMessage.toLowerCase().includes("incorrect") ||
-                                        accountPasswordMessage.toLowerCase().includes("failed")
+                                        accountPasswordMessage.toLowerCase().includes("failed") ||
+                                        accountPasswordMessage.toLowerCase().includes("different")
                                             ? "error"
                                             : "success"
                                     }`}
@@ -788,12 +857,21 @@ export default function StudentDashboard() {
                                         <option value="NOT_FOUND">NOT FOUND</option>
                                     </select>
 
-                                    <button
+                                    {/* <button
                                         className="primary-btn student-status-save-inline"
                                         onClick={handleUpdatePracticeStatus}
                                     >
                                         Save
-                                    </button>
+                                    </button> */}
+
+                                    {hasPracticeStatusChanged && (
+                                        <button
+                                            className="primary-btn student-status-save-inline"
+                                            onClick={handleUpdatePracticeStatus}
+                                        >
+                                            Save
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                             {message && <p className="student-action-message">{message}</p>}
@@ -805,140 +883,168 @@ export default function StudentDashboard() {
             )}
 
             {activePage === "resume" && (
-                <div
-                    className={`student-cv-page ${!student.resumePath && isDraggingCv ? "student-cv-page--dragging" : ""}`}
-                    onDragEnter={handleCvDragEnter}
-                    onDragOver={handleCvDragOver}
-                    onDragLeave={handleCvDragLeave}
-                    onDrop={handleCvDrop}
-                >
-                    <h1 className="student-page-title">CV</h1>
+                <div className="student-cv-page">
+                    <div
+                        // className={`student-cv-page ${!student.resumePath && isDraggingCv ? "student-cv-page--dragging" : ""}`}
+                        className="student-cv-dropzone"
+                        onDragEnter={handleCvDragEnter}
+                        onDragOver={handleCvDragOver}
+                        onDragLeave={handleCvDragLeave}
+                        onDrop={handleCvDrop}
+                    >
+                        <h1 className="student-page-title">CV</h1>
 
-                    <div className="student-cv-grid">
-                        {student.resumePath && (
-                            <div
-                                className="student-cv-card"
-                                onMouseEnter={() => setIsCvHovered(true)}
-                                onMouseLeave={() => setIsCvHovered(false)}
-                            >
-                                <button
-                                    type="button"
-                                    className="student-cv-preview-button"
-                                    onClick={handlePreviewResume}
+                        {resumeActionError && !showCvUploadModal && (
+                            <p className="student-inline-message student-inline-message--error">
+                                {resumeActionError}
+                            </p>
+                        )}
+
+                        {resumeActionMessage && !showCvUploadModal && (
+                            <p className="student-inline-message student-inline-message--success">
+                                {resumeActionMessage}
+                            </p>
+                        )}
+
+                        <div className="student-cv-grid">
+                            {/* {resumeActionError && !showCvUploadModal && (
+                                <p className="student-inline-message student-inline-message--error">
+                                    {resumeActionError}
+                                </p>
+                            )}
+
+                            {resumeActionMessage && !showCvUploadModal && (
+                                <p className="student-inline-message student-inline-message--success">
+                                    {resumeActionMessage}
+                                </p>
+                            )} */}
+
+                            {student.resumePath && (
+                                <div
+                                    className="student-cv-card"
+                                    onMouseEnter={() => setIsCvHovered(true)}
+                                    onMouseLeave={() => setIsCvHovered(false)}
                                 >
-                                    <div className="student-cv-thumbnail">
-                                        <span className="student-cv-thumbnail__icon">📄</span>
-                                    </div>
-                                    <div 
-                                        className="student-cv-file-name"
-                                        title={getResumeFileName(student.resumePath)}
-                                    >
-                                        {getDisplayFileName(getResumeFileName(student.resumePath), 22)}
-                                    </div>
-                                </button>
-
-                                {isCvHovered && (
                                     <button
                                         type="button"
-                                        className="student-cv-replace-button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setShowCvUploadModal(true);
-                                        }}
+                                        className="student-cv-preview-button"
+                                        onClick={handlePreviewResume}
                                     >
-                                        Replace CV
+                                        <div className="student-cv-thumbnail">
+                                            <span className="student-cv-thumbnail__icon">📄</span>
+                                        </div>
+                                        <div 
+                                            className="student-cv-file-name"
+                                            title={getResumeFileName(student.resumePath)}
+                                        >
+                                            {getDisplayFileName(getResumeFileName(student.resumePath), 22)}
+                                        </div>
                                     </button>
-                                )}
-                            </div>
-                        )}
 
-                        {!student.resumePath && (
-                            <button
-                                type="button"
-                                className="student-cv-upload-tile"
-                                onClick={() => {
-                                    resetCvUploadModal();
-                                    setShowCvUploadModal(true);
-                                }}
-                            >
-                                <div className="student-cv-upload-tile__box">+</div>
-                                <div className="student-cv-upload-tile__text">Upload new CV</div>
-                            </button>
-                        )}
-                    </div>
-
-                    {showCvUploadModal && (
-                        <div className="student-cv-modal-backdrop">
-                            <div className="student-cv-modal">
-                                <div className="student-cv-modal__topbar" />
-
-                                <div className="student-cv-modal__content">
-                                    <h3 className="student-cv-modal__title">Upload new CV</h3>
-
-                                    <input
-                                        ref={resumeFileInputRef}
-                                        type="file"
-                                        accept="application/pdf"
-                                        className="student-cv-modal__file-input"
-                                        // onChange={(e) => setResumeFile(e.target.files[0])}
-                                        onChange={handleResumeFileChange}
-                                    />
-
-                                    {resumeFile && (
-                                        <p className="student-cv-modal__selected-file">
-                                            Selected file: {resumeFile.name}
-                                        </p>
-                                    )}
-
-                                    <div className="student-cv-modal__actions">
+                                    {isCvHovered && (
                                         <button
                                             type="button"
-                                            className="student-cv-modal__save"
-                                            onClick={async () => {
-                                                await handleResumeUpload();
-                                                if (!resumeActionError) {
-                                                    resetCvUploadModal();
-                                                    setShowCvUploadModal(false);
-                                                }
-                                            }}
-                                            disabled={isUploadingResume}
-                                        >
-                                            {isUploadingResume ? "Uploading..." : "Save CV"}
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            className="student-cv-modal__cancel"
-                                            onClick={() => {
-                                                resetCvUploadModal();
-                                                setShowCvUploadModal(false);
+                                            className="student-cv-replace-button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setShowCvUploadModal(true);
                                             }}
                                         >
-                                            Cancel
+                                            Replace CV
                                         </button>
-                                    </div>
-
-                                    {resumeActionMessage && (
-                                        <p className="student-cv-modal__message success">
-                                            {resumeActionMessage}
-                                        </p>
-                                    )}
-
-                                    {resumeActionError && (
-                                        <p className="student-cv-modal__message error">
-                                            {resumeActionError}
-                                        </p>
                                     )}
                                 </div>
+                            )}
+
+                            {!student.resumePath && (
+                                <button
+                                    type="button"
+                                    className="student-cv-upload-tile"
+                                    onClick={() => {
+                                        resetCvUploadModal();
+                                        setShowCvUploadModal(true);
+                                    }}
+                                >
+                                    <div className="student-cv-upload-tile__box">+</div>
+                                    <div className="student-cv-upload-tile__text">Upload new CV</div>
+                                </button>
+                            )}
+                        </div>
+
+                        {showCvUploadModal && (
+                            <div className="student-cv-modal-backdrop">
+                                <div className="student-cv-modal">
+                                    <div className="student-cv-modal__topbar" />
+
+                                    <div className="student-cv-modal__content">
+                                        <h3 className="student-cv-modal__title">Upload new CV</h3>
+
+                                        <input
+                                            ref={resumeFileInputRef}
+                                            type="file"
+                                            accept="application/pdf"
+                                            className="student-cv-modal__file-input"
+                                            // onChange={(e) => setResumeFile(e.target.files[0])}
+                                            onChange={handleResumeFileChange}
+                                        />
+
+                                        {resumeFile && (
+                                            <p className="student-cv-modal__selected-file">
+                                                Selected file: {resumeFile.name}
+                                            </p>
+                                        )}
+
+                                        <div className="student-cv-modal__actions">
+                                            <button
+                                                type="button"
+                                                className="student-cv-modal__save"
+                                                onClick={async () => {
+                                                    const success = await handleResumeUpload();
+
+                                                    if (success) {
+                                                        resetCvUploadModal();
+                                                        setShowCvUploadModal(false);
+                                                    }
+                                                }}
+                                                disabled={isUploadingResume}
+                                            >
+                                                {isUploadingResume ? "Uploading..." : "Save CV"}
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="student-cv-modal__cancel"
+                                                onClick={() => {
+                                                    resetCvUploadModal();
+                                                    setShowCvUploadModal(false);
+                                                }}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+
+                                        {resumeActionMessage && (
+                                            <p className="student-cv-modal__message success">
+                                                {resumeActionMessage}
+                                            </p>
+                                        )}
+
+                                        {resumeActionError && (
+                                            <p className="student-cv-modal__message error">
+                                                {resumeActionError}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    )}
-                    {!student.resumePath && isDraggingCv && (
-                        <div className="student-cv-drag-overlay">
-                            <div className="student-cv-drag-overlay__plus">+</div>
-                            <div className="student-cv-drag-overlay__text">Drop your CV here</div>
-                        </div>
-                    )}
+                        )}
+                        {!student.resumePath && isDraggingCv && (
+                            <div className="student-cv-drag-overlay">
+                                <div className="student-cv-drag-overlay__plus">+</div>
+                                <div className="student-cv-drag-overlay__text">Drop your CV here</div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 
