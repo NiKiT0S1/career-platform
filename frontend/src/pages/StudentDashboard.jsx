@@ -81,6 +81,9 @@ export default function StudentDashboard() {
 
     const companyEditRef = useRef(null);
 
+    const [isCompanyConfirmed, setIsCompanyConfirmed] = useState(false);
+    const [companyConfirmError, setCompanyConfirmError] = useState("");
+
 
     const loadCurrentStudent = async () => {
         try {
@@ -249,14 +252,24 @@ export default function StudentDashboard() {
     };
 
     const handleUpdateCompany = async () => {
+        if (!isCompanyConfirmed) {
+            setCompanyConfirmError("Please confirm company name");
+            return false;
+        }
+        
         try {
+            setCompanyConfirmError("");
+            
             const updateStudent = await updateStudentCompany(companyName);
             setStudent(updateStudent);
             setMessage("Company updated successfully");
+            setIsCompanyConfirmed(false);
+            return true;
         } 
         catch (error) {
             console.error(error);
             setMessage("Failed to update company");
+            return false;
         }
     };
 
@@ -811,10 +824,22 @@ export default function StudentDashboard() {
                                 <span>Company: {student.companyName || "-"}</span>
 
                                 {!isEditingCompany && (
+                                    // <button
+                                    //     type="button"
+                                    //     className="student-inline-icon-btn"
+                                    //     onClick={() => setIsEditingCompany(true)}
+                                    //     title="Edit company"
+                                    // >
+                                    //     ✎
+                                    // </button>
                                     <button
                                         type="button"
                                         className="student-inline-icon-btn"
-                                        onClick={() => setIsEditingCompany(true)}
+                                        onClick={() => {
+                                            setIsEditingCompany(true);
+                                            setIsCompanyConfirmed(false);
+                                            setCompanyConfirmError("");
+                                        }}
                                         title="Edit company"
                                     >
                                         ✎
@@ -822,7 +847,7 @@ export default function StudentDashboard() {
                                 )}
                             </div>
 
-                            {isEditingCompany && (
+                            {/* {isEditingCompany && (
                                 <div className="student-company-edit" ref={companyEditRef}>
                                     <input
                                         type="text"
@@ -830,6 +855,16 @@ export default function StudentDashboard() {
                                         onChange={(e) => setCompanyName(e.target.value)}
                                         placeholder="Enter company name"
                                     />
+                                    
+                                    <label className="student-company-confirm">
+                                        <input
+                                            type="checkbox"
+                                            checked={isCompanyConfirmed}
+                                            onChange={(e) => setIsCompanyConfirmed(e.target.checked)}
+                                        />
+                                        I confirm that the company name is correct
+                                    </label>
+
                                     <button
                                         className="primary-btn"
                                         onClick={async () => {
@@ -839,6 +874,67 @@ export default function StudentDashboard() {
                                     >
                                         Save
                                     </button>
+                                </div>
+                            )} */}
+
+                            {isEditingCompany && (
+                                <div className="student-company-edit" ref={companyEditRef}>
+                                    <div className="student-company-edit__row">
+                                        <input
+                                            type="text"
+                                            value={companyName}
+                                            onChange={(e) => setCompanyName(e.target.value)}
+                                            placeholder="Enter company name"
+                                        />
+
+                                        <label className="student-company-confirm">
+                                            <input
+                                                type="checkbox"
+                                                checked={isCompanyConfirmed}
+                                                onChange={(e) => {
+                                                    setIsCompanyConfirmed(e.target.checked);
+                                                    if (e.target.checked) {
+                                                        setCompanyConfirmError("");
+                                                    }
+                                                }}
+                                            />
+                                            <span>I confirm that the company name is correct</span>
+                                        </label>
+
+                                        {/* <button
+                                            className="primary-btn"
+                                            onClick={async () => {
+                                                const previousCompanyName = student?.companyName || "";
+
+                                                await handleUpdateCompany();
+
+                                                if (companyName !== previousCompanyName && isCompanyConfirmed) {
+                                                    setIsEditingCompany(false);
+                                                }
+                                            }}
+                                        >
+                                            Save
+                                        </button> */}
+
+                                        <button
+                                            className="primary-btn"
+                                            onClick={async () => {
+                                                const success = await handleUpdateCompany();
+
+                                                if (success) {
+                                                    setIsEditingCompany(false);
+                                                }
+                                            }}
+                                        >
+                                            Save
+                                        </button>
+                                    </div>
+
+                                    {companyConfirmError && (
+                                        <p className="student-company-confirm__error">
+                                            {companyConfirmError}
+                                        </p>
+                                    )}
                                 </div>
                             )}
 

@@ -652,3 +652,8 @@
 .admin-templates-dropzone--dragging {
   overflow: hidden;
 }
+
+.admin-row-selected {
+  outline: 2px solid #0f63b8;
+  outline-offset: -2px;
+}
