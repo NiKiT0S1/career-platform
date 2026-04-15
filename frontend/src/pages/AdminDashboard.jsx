@@ -18,6 +18,8 @@ import {
     updateTemplateDisplayName,
     replaceTemplateFile,
     updateTemplateCategory,
+    updateStudentField,
+    getCourses,
 } from "../api/adminApi";
 import { logout } from "../auth/auth";
 import { useNavigate } from "react-router-dom";
@@ -119,9 +121,19 @@ export default function AdminDashboard() {
 
     const MAX_TEMPLATE_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
+    const [courses, setCourses] = useState([]);
+    const [editingGroups, setEditingGroups] = useState([]);
+    
+    const [editingCell, setEditingCell] = useState({ studentId: null, field: null });
+    const [editingValue, setEditingValue] = useState("");
+    const editingCellRef = useRef(null);
+
+    const selectEditableFields = ["groupName", "course", "educationalProgram", "practiceStatus"];
+
 
     useEffect(() => {
         loadCurrentAdmin();
+        loadCourses();
         loadStudentsPage(0);
         loadEducationalPrograms();
         loadGroups();
@@ -164,21 +176,6 @@ export default function AdminDashboard() {
 
         return () => clearInterval(interval);
     }, []);
-
-    useEffect(() => {
-        const interval = setInterval(async () => {
-            if (document.visibilityState !== "visible") return;
-            
-            try {
-                await refreshStudentsForPolling();
-            }
-            catch (error) {
-                console.error(error);
-            }
-        }, 30000);
-
-        return () => clearInterval(interval);
-    }, [filters, currentPage, studentsPerPage, sortBy, sortDir]);
 
     useEffect (() => {
         const timeout = setTimeout(async () => {
@@ -314,6 +311,29 @@ export default function AdminDashboard() {
         };
     }, []);
 
+    useEffect(() => {
+        if (!editingCell.studentId || !editingCell.field) return;
+
+        if (selectEditableFields.includes(editingCell.field)) {
+            return;
+        }
+
+        const handleClickOutsideEditor = (event) => {
+            if (
+                editingCellRef.current &&
+                !editingCellRef.current.contains(event.target)
+            ) {
+                cancelEditingCell();
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutsideEditor);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutsideEditor);
+        };
+    }, [editingCell]);
+
     const refreshStudentsForPolling = async () => {
         const preparedFilters = {
                 fullName: filters.fullName || undefined,
@@ -366,6 +386,16 @@ export default function AdminDashboard() {
             setAdminLoadFailed(true);
         }
     };
+
+    const loadCourses = async () => {
+        try {
+            const data = await getCourses();
+            setCourses(data);
+        }
+        catch (error) {
+            console.error(error);
+        }
+    };
     
     const loadStudentsPage = async (page = 0) => {
         try {
@@ -409,6 +439,43 @@ export default function AdminDashboard() {
         catch (error) {
             console.error(error);
         }
+    };
+
+    // const startEditingCell = (studentId, field, currentValue) => {
+    //     setEditingCell({ studentId, field });
+    //     setEditingValue(currentValue ?? "");
+    // };
+
+    // const cancelEditingCell = () => {
+    //     setEditingCell({ studentId: null, field: null });
+    //     setEditingValue("");
+    // };
+
+    const startEditingCell = async (studentId, field, currentValue, studentRow) => {
+        if (editingCell.studentId === studentId && editingCell.field === field) {
+            return;
+        }
+        
+        setEditingCell({ studentId, field });
+        setEditingValue(currentValue ?? "");
+
+        if (field === "groupName") {
+            try {
+                const program = studentRow?.educationalProgram || "";
+                const data = await getGroups(program);
+                setEditingGroups(data);
+            }
+            catch (error) {
+                console.error(error);
+                setEditingGroups([]);
+            }
+        }
+    };
+
+    const cancelEditingCell = () => {
+        setEditingCell({ studentId: null, field: null });
+        setEditingValue("");
+        setEditingGroups([]);
     };
 
     const handleResetFilters = async () => {
@@ -785,6 +852,25 @@ export default function AdminDashboard() {
         !!filters.practiceStatus ||
         !!filters.minGpa;
 
+    useEffect(() => {
+        if (hasActiveFilters) return;
+        if (editingCell.studentId) return;
+        if (activePage !== "students") return;
+        
+        const interval = setInterval(async () => {
+            if (document.visibilityState !== "visible") return;
+            
+            try {
+                await refreshStudentsForPolling();
+            }
+            catch (error) {
+                console.error(error);
+            }
+        }, 30000);
+
+        return () => clearInterval(interval);
+    }, [hasActiveFilters, editingCell.studentId, activePage, currentPage, studentsPerPage, sortBy, sortDir]);
+
     const getNotificationsButtonText = () => {
         if (!hasActiveFilters && !hasSelectedStudent) {
             return "Send Notification For All Students";
@@ -932,6 +1018,57 @@ export default function AdminDashboard() {
         setIsTemplateDraggedUpload(true);
         setShowTemplateUploadModal(true);
     };
+
+    const handleSaveEditedCell = async (studentId, field, valueToSave) => {
+        // const { studentId, field } = editingCell;
+
+        if (!studentId || !field) return;
+
+        try {
+            const updatedStudent = await updateStudentField(studentId, field, valueToSave);
+
+            setStudents((prev) =>
+                prev.map((student) =>
+                    student.id === studentId ? updatedStudent : student
+                )
+            );
+
+            // setEditingCell({ studentId: null, field: null });
+            // setEditingValue("");
+            // setStatusMessage("Student data updated successfully");
+
+            setStatusMessage("Student data updated successfully");
+            cancelEditingCell();
+        } catch (error) {
+            console.error(error);
+            setStatusMessage(error?.response?.data || "Failed to update student data");
+        }
+    };
+
+    // const handleSaveEditedCellWithValue = async (valueToSave) => {
+    //     const { studentId, field } = editingCell;
+
+    //     if (!studentId || !field) return;
+
+    //     try {
+    //         const updatedStudent = await updateStudentField(studentId, field, valueToSave);
+
+    //         setStudents((prev) =>
+    //             prev.map((student) =>
+    //                 student.id === studentId ? updatedStudent : student
+    //             )
+    //         );
+
+    //         setStatusMessage("Student data updated successfully");
+    //         cancelEditingCell();
+    //     }
+    //     catch (error) {
+    //         console.error(error);
+    //         setStatusMessage(
+    //             error?.response?.data || "Failed to update student data"
+    //         );
+    //     }
+    // };
 
     const getDisplayFileName = (fileName, maxLength = 24) => {
         if (!fileName) return "";
@@ -1299,16 +1436,254 @@ export default function AdminDashboard() {
                                                 />
                                             </td>
                                             <td title={student.fullName}>{student.fullName}</td>
-                                            <td title={student.email}>{student.email}</td>
-                                            <td>{student.groupName}</td>
-                                            <td>{student.course}</td>
-                                            <td title={student.educationalProgram}>{student.educationalProgram}</td>
-                                            <td>{student.phone || "Not specified"}</td>
-                                            <td>{student.gpa ?? "Not specified"}</td>
-                                            <td title={student.companyName || "Not specified"}>
-                                                {student.companyName || "Not specified"}
+                                            {/* <td title={student.email}>{student.email}</td> */}
+                                            <td
+                                                title={student.email}
+                                                onDoubleClick={() => startEditingCell(student.id, "email", student.email || "", student)}
+                                            >
+                                                {editingCell.studentId === student.id && editingCell.field === "email" ? (
+                                                    <input
+                                                        ref={editingCellRef}
+                                                        className="admin-cell-editor"
+                                                        autoFocus
+                                                        value={editingValue}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onChange={(e) => setEditingValue(e.target.value)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === "Enter") {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                handleSaveEditedCell(student.id, "email", editingValue);
+                                                            }
+
+                                                            if (e.key === "Escape") {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                cancelEditingCell();
+                                                            }
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    student.email
+                                                )}
                                             </td>
-                                            <td>{formatPracticeStatus(student.practiceStatus) || "Not specified"}</td>
+                                            {/* <td>{student.groupName}</td> */}
+                                            <td
+                                                title={student.groupName}
+                                                onDoubleClick={() => startEditingCell(student.id, "groupName", student.groupName || "", student)}
+                                            >
+                                                {editingCell.studentId === student.id && editingCell.field === "groupName" ? (
+                                                    <select
+                                                        ref={editingCellRef}
+                                                        className="admin-cell-editor admin-cell-editor--select"
+                                                        autoFocus
+                                                        value={editingValue}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onChange={async (e) => {
+                                                            const newValue = e.target.value;
+                                                            setEditingValue(newValue);
+                                                            // await handleSaveEditedCellWithValue(newValue);
+                                                            await handleSaveEditedCell(student.id, "groupName", newValue);
+                                                        }}
+                                                        onBlur={() => cancelEditingCell()}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === "Escape") {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                cancelEditingCell();
+                                                            }
+                                                        }}
+                                                    >
+                                                        {/* <option value="">Select group</option> */}
+                                                        {editingGroups.map((group) => (
+                                                            <option key={group} value={group}>
+                                                                {group}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                ) : (
+                                                    student.groupName
+                                                )}
+                                            </td>
+                                            {/* <td>{student.course}</td> */}
+                                            <td
+                                                title={String(student.course ?? "")}
+                                                onDoubleClick={() => startEditingCell(student.id, "course", String(student.course ?? ""), student)}
+                                            >
+                                                {editingCell.studentId === student.id && editingCell.field === "course" ? (
+                                                    <select
+                                                        ref={editingCellRef}
+                                                        className="admin-cell-editor admin-cell-editor--select"
+                                                        autoFocus
+                                                        value={String(editingValue)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onChange={async (e) => {
+                                                            const newValue = e.target.value;
+                                                            setEditingValue(newValue);
+                                                            // await handleSaveEditedCellWithValue(newValue);
+                                                            await handleSaveEditedCell(student.id, "course", newValue);
+                                                        }}
+                                                        onBlur={() => cancelEditingCell()}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === "Escape") {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                cancelEditingCell();
+                                                            }
+                                                        }}
+                                                    >
+                                                        {/* <option value="">Select course</option> */}
+                                                        {courses.map((course) => (
+                                                            <option key={course} value={String(course)}>
+                                                                {course}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                ) : (
+                                                    student.course
+                                                )}
+                                            </td>
+                                            {/* <td title={student.educationalProgram}>{student.educationalProgram}</td> */}
+                                            <td
+                                                title={student.educationalProgram}
+                                                onDoubleClick={() =>
+                                                    startEditingCell(student.id, "educationalProgram", student.educationalProgram || "", student)
+                                                }
+                                            >
+                                                {editingCell.studentId === student.id && editingCell.field === "educationalProgram" ? (
+                                                    <select
+                                                        ref={editingCellRef}
+                                                        className="admin-cell-editor admin-cell-editor--select"
+                                                        autoFocus
+                                                        value={editingValue}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onChange={async (e) => {
+                                                            const newValue = e.target.value;
+                                                            setEditingValue(newValue);
+                                                            // await handleSaveEditedCellWithValue(newValue);
+                                                            await handleSaveEditedCell(student.id, "educationalProgram", newValue);
+                                                        }}
+                                                        onBlur={() => cancelEditingCell()}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === "Escape") {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                cancelEditingCell();
+                                                            }
+                                                        }}
+                                                    >
+                                                        {/* <option value="">Select program</option> */}
+                                                        {educationalPrograms.map((program) => (
+                                                            <option key={program} value={program}>
+                                                                {program}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                ) : (
+                                                    student.educationalProgram
+                                                )}
+                                            </td>
+                                            {/* <td>{student.phone || "Not specified"}</td> */}
+                                            <td
+                                                title={student.phone || "Not specified"}
+                                                onDoubleClick={() => startEditingCell(student.id, "phone", student.phone || "", student)}
+                                            >
+                                                {editingCell.studentId === student.id && editingCell.field === "phone" ? (
+                                                    <input
+                                                        ref={editingCellRef}
+                                                        className="admin-cell-editor"
+                                                        autoFocus
+                                                        value={editingValue}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onChange={(e) => setEditingValue(e.target.value)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === "Enter") {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                handleSaveEditedCell(student.id, "phone", editingValue);
+                                                            }
+
+                                                            if (e.key === "Escape") {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                cancelEditingCell();
+                                                            }
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    student.phone || "Not specified"
+                                                )}
+                                            </td>
+                                            <td>{student.gpa ?? "Not specified"}</td>
+                                            {/* <td title={student.companyName || "Not specified"}>
+                                                {student.companyName || "Not specified"}
+                                            </td> */}
+                                            <td
+                                                title={student.companyName || "Not specified"}
+                                                onDoubleClick={() => startEditingCell(student.id, "companyName", student.companyName || "", student)}
+                                            >
+                                                {editingCell.studentId === student.id && editingCell.field === "companyName" ? (
+                                                    <input
+                                                        ref={editingCellRef}
+                                                        className="admin-cell-editor"
+                                                        autoFocus
+                                                        value={editingValue}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onChange={(e) => setEditingValue(e.target.value)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === "Enter") {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                handleSaveEditedCell(student.id, "companyName", editingValue);
+                                                            }
+
+                                                            if (e.key === "Escape") {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                cancelEditingCell();
+                                                            }
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    student.companyName || "Not specified"
+                                                )}
+                                            </td>
+                                            {/* <td>{formatPracticeStatus(student.practiceStatus) || "Not specified"}</td> */}
+                                            <td
+                                                title={formatPracticeStatus(student.practiceStatus) || "Not specified"}
+                                                onDoubleClick={() =>
+                                                    startEditingCell(student.id, "practiceStatus", student.practiceStatus || "NOT_FOUND", student)
+                                                }
+                                            >
+                                                {editingCell.studentId === student.id && editingCell.field === "practiceStatus" ? (
+                                                    <select
+                                                        ref={editingCellRef}
+                                                        className="admin-cell-editor admin-cell-editor--select"
+                                                        autoFocus
+                                                        value={editingValue}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onChange={async (e) => {
+                                                            const newValue = e.target.value;
+                                                            setEditingValue(newValue);
+                                                            // await handleSaveEditedCellWithValue(newValue);
+                                                            await handleSaveEditedCell(student.id, "practiceStatus", newValue);
+                                                        }}
+                                                        onBlur={() => cancelEditingCell()}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === "Escape") {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                cancelEditingCell();
+                                                            }
+                                                        }}
+                                                    >
+                                                        <option value="EMPLOYED">EMPLOYED</option>
+                                                        <option value="NOT_FOUND">NOT FOUND</option>
+                                                    </select>
+                                                ) : (
+                                                    formatPracticeStatus(student.practiceStatus) || "Not specified"
+                                                )}
+                                            </td>
                                             <td style={{ textAlign: "center" }}>
                                                 {student.resumePath ? (
                                                     // <span

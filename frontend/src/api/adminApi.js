@@ -5,6 +5,11 @@ export const getCurrentAdmin = async () => {
     return response.data
 };
 
+export const getCourses = async () => {
+    const response = await api.get("/api/admin/students/courses");
+    return response.data;
+};
+
 export const getStudentsPage = async (page = 0, size = 20, sortBy = "", sortDir = "asc") => {
     const response = await api.get("/api/admin/students", {
         params: {
@@ -134,6 +139,15 @@ export const changeAdminPassword = async (currentPassword, newPassword) => {
     const response = await api.put("/api/admin/change-password", {
         currentPassword,
         newPassword,
+    });
+
+    return response.data;
+};
+
+export const updateStudentField = async (studentId, field, value) => {
+    const response = await api.patch(`/api/admin/students/${studentId}`, {
+        field,
+        value,
     });
 
     return response.data;

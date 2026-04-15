@@ -145,6 +145,22 @@ export default function StudentDashboard() {
     }, []);
 
     useEffect(() => {
+        if (document.visibilityState !== "visible") return;
+
+        const interval = setInterval(async () => {
+            if (document.visibilityState !== "visible") return;
+
+            try {
+                await loadCurrentStudent();
+            } catch (error) {
+                console.error(error);
+            }
+        }, 30000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
         return () => {
             if (pdfFile) {
                 URL.revokeObjectURL(pdfFile);

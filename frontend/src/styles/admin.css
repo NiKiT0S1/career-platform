@@ -664,3 +664,21 @@
   background-color: rgba(15, 99, 184, 0.15);
   backdrop-filter: blur(2px);
 } */
+
+.admin-cell-editor {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  box-sizing: border-box;
+  border: 1px solid #0f63b8;
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 10px;
+  font-family: inherit;
+  outline: none;
+  background: #fff;
+}
+
+.admin-cell-editor--select {
+  cursor: pointer;
+}
