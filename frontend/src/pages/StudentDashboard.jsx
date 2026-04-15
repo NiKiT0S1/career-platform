@@ -84,6 +84,10 @@ export default function StudentDashboard() {
     const [isCompanyConfirmed, setIsCompanyConfirmed] = useState(false);
     const [companyConfirmError, setCompanyConfirmError] = useState("");
 
+    const [studentLoadFailed, setStudentLoadFailed] = useState(false);
+
+    const MAX_CV_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
 
     const loadCurrentStudent = async () => {
         try {
@@ -91,11 +95,13 @@ export default function StudentDashboard() {
             setStudent(currentStudent);
             setCompanyName(currentStudent.companyName || "");
             setPracticeStatus(currentStudent.practiceStatus || "");
+            setStudentLoadFailed(false);
 
             await loadNotifications();
         } 
         catch (error) {
             console.error(error);
+            setStudentLoadFailed(true);
         }
     };
 
@@ -118,7 +124,7 @@ export default function StudentDashboard() {
             catch (error) {
                 console.error(error);
             }
-        }, 5000);
+        }, 15000);
 
         return () => clearInterval(interval);
     }, []);
@@ -133,7 +139,7 @@ export default function StudentDashboard() {
             catch (error) {
                 console.error(error);
             }
-        }, 10000);
+        }, 30000);
 
         return () => clearInterval(interval);
     }, []);
@@ -506,6 +512,12 @@ export default function StudentDashboard() {
         const file = e.dataTransfer.files?.[0];
         if (!file) return;
 
+        if (file.size > MAX_CV_FILE_SIZE) {
+            setResumeActionMessage("");
+            setResumeActionError("CV file size must be less than 10 MB");
+            return;
+        }
+
         if (!isAllowedResumeFile(file)) {
             setResumeActionMessage("");
             setResumeActionError("Only PDF files are allowed");
@@ -611,6 +623,18 @@ export default function StudentDashboard() {
         const file = e.target.files?.[0];
         if (!file) return;
 
+        if (file.size > MAX_CV_FILE_SIZE) {
+            setResumeActionMessage("");
+            setResumeActionError("CV file size must be less than 10 MB");
+            setResumeFile(null);
+
+            if (resumeFileInputRef.current) {
+                resumeFileInputRef.current.value = "";
+            }
+
+            return;
+        }
+
         if (!isAllowedResumeFile(file)) {
             setResumeActionMessage("");
             setResumeActionError("Only PDF files are allowed");
@@ -651,6 +675,14 @@ export default function StudentDashboard() {
         return (
             <div className="app-page-loader">
                 <div className="app-page-loader__text">Loading...</div>
+            </div>
+        );
+    }
+
+    if (studentLoadFailed) {
+        return (
+            <div className="app-page-loader">
+                <div className="app-page-loader__text">Session expired. Redirecting...</div>
             </div>
         );
     }

@@ -656,4 +656,11 @@
 .admin-row-selected {
   outline: 2px solid #0f63b8;
   outline-offset: -2px;
+  backdrop-filter: blur(2px);
+  background-color: rgba(217, 222, 233, 0.758);
 }
+
+/* .admin-row-selected {
+  background-color: rgba(15, 99, 184, 0.15);
+  backdrop-filter: blur(2px);
+} */

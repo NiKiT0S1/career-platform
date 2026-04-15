@@ -31,6 +31,8 @@ export default function AdminDashboard() {
 
     const [totalStudentsCount, setTotalStudentsCount] = useState(0);
 
+    const [clickedStudentId, setClickedStudentId] = useState(null);
+    
     const [selectedStudentIds, setSelectedStudentIds] = useState([]);
     const [message, setMessage] = useState("");
 
@@ -113,6 +115,10 @@ export default function AdminDashboard() {
 
     const [isTemplateDraggedUpload, setIsTemplateDraggedUpload] = useState(false);
 
+    const [adminLoadFailed, setAdminLoadFailed] = useState(false);
+
+    const MAX_TEMPLATE_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
 
     useEffect(() => {
         loadCurrentAdmin();
@@ -139,7 +145,7 @@ export default function AdminDashboard() {
             catch (error) {
                 console.error(error);
             }
-        }, 5000);
+        }, 15000);
 
         return () => clearInterval(interval);
     }, [notificationViewerOpen, currentStudentNotificationId]);
@@ -154,7 +160,7 @@ export default function AdminDashboard() {
             catch (error) {
                 console.error(error);
             }
-        }, 10000);
+        }, 30000);
 
         return () => clearInterval(interval);
     }, []);
@@ -169,7 +175,7 @@ export default function AdminDashboard() {
             catch (error) {
                 console.error(error);
             }
-        }, 10000);
+        }, 30000);
 
         return () => clearInterval(interval);
     }, [filters, currentPage, studentsPerPage, sortBy, sortDir]);
@@ -296,6 +302,18 @@ export default function AdminDashboard() {
         };
     }, [editingTemplateId]);
 
+    useEffect(() => {
+        const handleDocumentClick = () => {
+            setClickedStudentId(null);
+        };
+
+        document.addEventListener("click", handleDocumentClick);
+
+        return () => {
+            document.removeEventListener("click", handleDocumentClick);
+        };
+    }, []);
+
     const refreshStudentsForPolling = async () => {
         const preparedFilters = {
                 fullName: filters.fullName || undefined,
@@ -341,9 +359,11 @@ export default function AdminDashboard() {
         try {
             const data = await getCurrentAdmin();
             setAdmin(data);
+            setAdminLoadFailed(false);
         } 
         catch (error) {
             console.error(error);
+            setAdminLoadFailed(true);
         }
     };
     
@@ -469,8 +489,8 @@ export default function AdminDashboard() {
         }
 
         try {
-            console.log("Selected students: ", selectedStudentIds);
-            console.log("Message:", message);
+            // console.log("Selected students: ", selectedStudentIds);
+            // console.log("Message:", message);
 
             const response = await sendNotification(selectedStudentIds, message);
             setStatusMessage(response);
@@ -572,6 +592,11 @@ export default function AdminDashboard() {
 
         if (!templateFile) {
             setTemplateActionError("Please select a template file");
+            return false;
+        }
+
+        if (templateFile.size > MAX_TEMPLATE_FILE_SIZE) {
+            setTemplateActionError("Template file size must be less than 10 MB");
             return false;
         }
 
@@ -695,6 +720,12 @@ export default function AdminDashboard() {
         if (!file) {
             setTemplateActionMessage("");
             setTemplateActionError("Please select a file");
+            return;
+        }
+
+        if (file.size > MAX_TEMPLATE_FILE_SIZE) {
+            setTemplateActionMessage("");
+            setTemplateActionError("Template file size must be less than 10 MB");
             return;
         }
 
@@ -883,6 +914,12 @@ export default function AdminDashboard() {
         const file = e.dataTransfer.files?.[0];
         if (!file) return;
 
+        if (file.size > MAX_TEMPLATE_FILE_SIZE) {
+            setTemplateActionMessage("");
+            setTemplateActionError("Template file size must be less than 10 MB");
+            return;
+        }
+
         if (!isAllowedTemplateFile(file)) {
             setTemplateActionMessage("");
             setTemplateActionError("Only PDF and DOCX files are allowed");
@@ -936,6 +973,14 @@ export default function AdminDashboard() {
         return (
             <div className="app-page-loader">
                 <div className="app-page-loader__text">Loading...</div>
+            </div>
+        );
+    }
+
+    if (adminLoadFailed) {
+        return (
+            <div className="app-page-loader">
+                <div className="app-page-loader__text">Session expired. Redirecting...</div>
             </div>
         );
     }
@@ -1183,7 +1228,7 @@ export default function AdminDashboard() {
                         </div>
 
                         <div className="admin-table-wrapper">
-                            <table className="admin-table">
+                            <table className="admin-table" onClick={(e) => e.stopPropagation()}>
                                 <colgroup>
                                     <col style={{ width: "42px" }} />
                                     <col style={{ width: "110px" }} />
@@ -1233,11 +1278,23 @@ export default function AdminDashboard() {
 
                                 <tbody>
                                     {students.map((student) => (
-                                        <tr key={student.id} style={getRowStyle(student.practiceStatus)}>
+                                        // <tr key={student.id} style={getRowStyle(student.practiceStatus)}>
+                                        <tr
+                                            key={student.id}
+                                            style={getRowStyle(student.practiceStatus)}
+                                            className={clickedStudentId === student.id ? "admin-row-selected" : ""}
+                                            onClick={() => setClickedStudentId(student.id)}
+                                        >
                                             <td>
+                                                {/* <input
+                                                    type="checkbox"
+                                                    checked={selectedStudentIds.includes(student.id)}
+                                                    onChange={() => handleSelectStudent(student.id)}
+                                                /> */}
                                                 <input
                                                     type="checkbox"
                                                     checked={selectedStudentIds.includes(student.id)}
+                                                    onClick={(e) => e.stopPropagation()}
                                                     onChange={() => handleSelectStudent(student.id)}
                                                 />
                                             </td>
@@ -1254,10 +1311,20 @@ export default function AdminDashboard() {
                                             <td>{formatPracticeStatus(student.practiceStatus) || "Not specified"}</td>
                                             <td style={{ textAlign: "center" }}>
                                                 {student.resumePath ? (
+                                                    // <span
+                                                    //     className="admin-check"
+                                                    //     style={{ cursor: "pointer" }}
+                                                    //     onClick={() => handleDownloadResume(student.id)}
+                                                    // >
+                                                    //     ✅
+                                                    // </span>
                                                     <span
                                                         className="admin-check"
                                                         style={{ cursor: "pointer" }}
-                                                        onClick={() => handleDownloadResume(student.id)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDownloadResume(student.id);
+                                                        }}
                                                     >
                                                         ✅
                                                     </span>
@@ -1266,9 +1333,18 @@ export default function AdminDashboard() {
                                                 )}
                                             </td>
                                             <td>
-                                                <button
+                                                {/* <button
                                                     className="admin-view-btn"
                                                     onClick={() => handleViewNotifications(student)}
+                                                >
+                                                    View
+                                                </button> */}
+                                                <button
+                                                    className="admin-view-btn"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleViewNotifications(student);
+                                                    }}
                                                 >
                                                     View
                                                 </button>
@@ -1515,6 +1591,18 @@ export default function AdminDashboard() {
                                                         const file = e.target.files?.[0];
 
                                                         if (!file) return;
+
+                                                        if (file.size > MAX_TEMPLATE_FILE_SIZE) {
+                                                            setTemplateActionMessage("");
+                                                            setTemplateActionError("Template file size must be less than 10 MB");
+                                                            setTemplateFile(null);
+
+                                                            if (templateFileInputRef.current) {
+                                                                templateFileInputRef.current.value = "";
+                                                            }
+
+                                                            return;
+                                                        }
 
                                                         if (!isAllowedTemplateFile(file)) {
                                                             setTemplateActionMessage("");
