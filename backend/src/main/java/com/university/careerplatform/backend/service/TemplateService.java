@@ -35,6 +35,9 @@ public class TemplateService {
     @Value("${r2.bucket-name}")
     private String bucketName;
 
+    private static final long MAX_TEMPLATE_SIZE = 10 * 1024 * 1024; // 10 MB
+
+
     public TemplateService(TemplateDocumentRepository templateDocumentRepository, S3Client s3Client) {
         this.templateDocumentRepository = templateDocumentRepository;
         this.s3Client = s3Client;
@@ -45,6 +48,10 @@ public class TemplateService {
                                            MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             throw new RuntimeException("Template file is empty");
+        }
+
+        if (file.getSize() > MAX_TEMPLATE_SIZE) {
+            throw new RuntimeException("Template file size must be less than 10 MB");
         }
 
         String originalFilename = file.getOriginalFilename();
@@ -130,6 +137,10 @@ public class TemplateService {
 
         if (newFile.isEmpty()) {
             throw new RuntimeException("New template file is empty");
+        }
+
+        if (newFile.getSize() > MAX_TEMPLATE_SIZE) {
+            throw new RuntimeException("CV file size must be less than 10 MB");
         }
 
         String oldStorageKey = templateDocument.getStorageKey();

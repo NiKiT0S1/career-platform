@@ -38,6 +38,8 @@ public class ResumeService {
     @Value("${r2.bucket-name}")
     private String bucketName;
 
+    private static final long MAX_RESUME_SIZE = 10 * 1024 * 1024; // 10 MB
+
     public ResumeService(StudentRepository studentRepository,
                          @Value("${file.contracts-dir}") String contractsDir,
                          S3Client s3Client) throws IOException {
@@ -53,6 +55,10 @@ public class ResumeService {
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
         validatePdf(file);
+
+        if (file.getSize() > MAX_RESUME_SIZE) {
+            throw new RuntimeException("CV file size must be less than 10 MB");
+        }
 
         if (student.getResumePath() != null && !student.getResumePath().isBlank()) {
             s3Client.deleteObject(
