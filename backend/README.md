@@ -76,6 +76,7 @@ src/main/java/com/university/careerplatform/backend
 │   ├── PracticeStatusUpdateRequest.java
 │   ├── SendNotificationByFilterRequest.java
 │   ├── SendNotificationRequest.java
+│   ├── UpdateStudentFieldRequest.java
 │   ├── UpdateTemplateCategoryRequest.java
 │   └── UpdateTemplateDisplayNameRequest.java
 │
@@ -179,6 +180,7 @@ Examples:
 * `SendNotificationRequest`
 * `SendNotificationByFilterRequest`
 * `PracticeStatusUpdateRequest`
+* `UpdateStudentFieldRequest`
 * `UpdateTemplateDisplayNameRequest`
 * `UpdateTemplateCategoryRequest`
 
@@ -458,23 +460,24 @@ PUT    /api/student/change-password
 ### Admin API
 
 ```http
-GET    /api/admin/me
-GET    /api/admin/students
-GET    /api/admin/students/filter
-GET    /api/admin/students/educational-programs
-GET    /api/admin/students/groups
-POST   /api/admin/notifications/send
-POST   /api/admin/notifications/send-by-filter
-GET    /api/admin/students/{studentId}/resume
-GET    /api/admin/students/{studentId}/notifications
-PUT    /api/admin/change-password
-POST   /api/admin/students/sync-practice-statuses
-GET    /api/admin/templates
-POST   /api/admin/templates
-PUT   /api/admin/templates/{templateId}/display-name
-PUT   /api/admin/templates/{templateId}/category
-PUT   /api/admin/templates/{templateId}/file
+GET      /api/admin/me
+GET      /api/admin/students
+GET      /api/admin/students/filter
+GET      /api/admin/students/educational-programs
+GET      /api/admin/students/groups
+POST     /api/admin/notifications/send
+POST     /api/admin/notifications/send-by-filter
+GET      /api/admin/students/{studentId}/resume
+GET      /api/admin/students/{studentId}/notifications
+PUT      /api/admin/change-password
+POST     /api/admin/students/sync-practice-statuses
+GET      /api/admin/templates
+POST     /api/admin/templates
+PUT      /api/admin/templates/{templateId}/display-name
+PUT      /api/admin/templates/{templateId}/category
+PUT      /api/admin/templates/{templateId}/file
 DELETE   /api/admin/templates/{templateId}
+PATCH    /api/admin/students/{studentId}
 ```
 
 ---

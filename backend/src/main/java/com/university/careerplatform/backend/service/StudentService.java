@@ -85,6 +85,10 @@ public class StudentService {
         return studentRepository.findByCourse(course);
     }
 
+    public List<Integer> getAllCourses() {
+        return studentRepository.findAllDistinctCourses();
+    }
+
     public List<Student> getStudentsByExactGpa(Double gpa) {
         return studentRepository.findByGpa(gpa);
     }
@@ -217,5 +221,24 @@ public class StudentService {
         int employedUpdated = studentRepository.markStudentsAsEmployed();
         int notFoundUpdated = studentRepository.markStudentsAsNotFound();
         return employedUpdated + notFoundUpdated;
+    }
+
+    @Transactional
+    public Student updateStudentField(Long studentId, String field, String value) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        switch (field) {
+            case "email" -> student.setEmail(value.trim());
+            case "groupName" -> student.setGroupName(value.trim());
+            case "course" -> student.setCourse(Integer.parseInt(value));
+            case "educationalProgram" -> student.setEducationalProgram(value.trim());
+            case "phone" -> student.setPhone(value.trim());
+            case "companyName" -> student.setCompanyName(value.trim());
+            case "practiceStatus" -> student.setPracticeStatus(PracticeStatus.valueOf(value.trim()));
+            default -> throw new RuntimeException("Unsupported field: " + field);
+        }
+
+        return studentRepository.save(student);
     }
 }

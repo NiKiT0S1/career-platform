@@ -35,10 +35,14 @@ public class Student {
     private Integer course;
 
     @Column(name = "educational_program")
-    @Pattern(
-            regexp = "^[a-zA-Z0-9\\s\\-]+$",
-            message = "Educational program must contain only latin letters, digits, spaces and hyphens"
-    )
+//    @Pattern(
+//            regexp = "^[a-zA-Z0-9\\s\\-]+$",
+//            message = "Educational program must contain only latin letters, digits, spaces and hyphens"
+//    )
+//    @Pattern(
+//            regexp = "^[A-Za-z0-9&()\\-., ]+$",
+//            message = "Educational program contains unsupported characters"
+//    )
     private String educationalProgram;
 
     @Column(nullable = false, unique = true)

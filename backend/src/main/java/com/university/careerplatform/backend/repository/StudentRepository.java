@@ -44,13 +44,16 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
        """)
     List<String> findDistinctGroupNamesByEducationalProgram(@Param("educationalProgram") String educationalProgram);
 
+    @Query("select distinct s.course from Student s where s.course is not null order by s.course")
+    List<Integer> findAllDistinctCourses();
+
     @Modifying
     @Query("""
         UPDATE Student s
         SET s.practiceStatus = 'EMPLOYED'
         WHERE s.companyName IS NOT NULL
             AND TRIM(s.companyName) <> ''
-""")
+    """)
     int markStudentsAsEmployed();
 
     @Modifying

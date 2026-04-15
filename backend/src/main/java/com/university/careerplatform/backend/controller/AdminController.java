@@ -63,6 +63,11 @@ public class AdminController {
         return ResponseEntity.ok(studentService.getStudentPage(page, size, sortBy, sortDir));
     }
 
+    @GetMapping("/students/courses")
+    public ResponseEntity<List<Integer>> getCourses() {
+        return ResponseEntity.ok(studentService.getAllCourses());
+    }
+
     @GetMapping("/students/filter")
     public ResponseEntity<Page<Student>> filterStudents(
             @RequestParam(required = false) String fullName,
@@ -268,4 +273,40 @@ public class AdminController {
         templateService.deleteTemplate(templateId);
         return ResponseEntity.ok("Template deleted successfully");
     }
+
+    @PatchMapping("/students/{studentId}")
+    public ResponseEntity<Student> updateStudentField(
+            @PathVariable Long studentId,
+            @RequestBody UpdateStudentFieldRequest request
+    ) {
+        try {
+            Student updateStudent = studentService.updateStudentField(
+                    studentId,
+                    request.getField(),
+                    request.getValue()
+            );
+
+            return ResponseEntity.ok(updateStudent);
+        }
+        catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+//    @PatchMapping("/students/{studentId}")
+//    public ResponseEntity<?> updateStudentField(
+//            @PathVariable Long studentId,
+//            @RequestBody UpdateStudentFieldRequest request
+//    ) {
+//        try {
+//            Student updatedStudent = studentService.updateStudentField(
+//                    studentId,
+//                    request.getField(),
+//                    request.getValue()
+//            );
+//            return ResponseEntity.ok(updatedStudent);
+//        } catch (RuntimeException e) {
+//            e.printStackTrace();
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        }
+//    }
 }
