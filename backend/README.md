@@ -438,7 +438,9 @@ You can run the project:
 ### Authentication
 
 ```http
-POST /api/auth/login
+GET    /api/admin/me
+POST   /api/auth/login
+POST   /api/auth/logout
 ```
 
 ### Student API
