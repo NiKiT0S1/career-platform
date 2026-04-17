@@ -22,10 +22,12 @@ import {
     getCourses,
 } from "../api/adminApi";
 import { logout } from "../auth/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import AdminLayout from "../layouts/AdminLayout";
 import { isAllowedTemplateFile, isDraggedTemplateFile } from "../utils/fileValidation";
+
+import { logoutRequest } from "../api/authApi";
 
 export default function AdminDashboard() {
     const [admin, setAdmin] = useState(null);
@@ -98,9 +100,13 @@ export default function AdminDashboard() {
     const [replacingTemplateId, setReplacingTemplateId] = useState(null);
 
     // const [activePage, setActivePage] = useState("students");
-    const [activePage, setActivePage] = useState(() => {
-        return localStorage.getItem("adminActivePage") || "students";
-    });
+    // const [activePage, setActivePage] = useState(() => {
+    //     return localStorage.getItem("adminActivePage") || "students";
+    // });
+
+    const {page} = useParams();
+    const allowedAdminPages = ["students", "templates"];
+    const activePage = allowedAdminPages.includes(page) ? page : "students";
 
     const [accountOpen, setAccountOpen] = useState(false);
     const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -140,9 +146,9 @@ export default function AdminDashboard() {
         loadTemplatesAdmin();
     }, []);
 
-    useEffect(() => {
-        localStorage.setItem("adminActivePage", activePage);
-    }, [activePage]);
+    // useEffect(() => {
+    //     localStorage.setItem("adminActivePage", activePage);
+    // }, [activePage]);
 
     useEffect(() => {
         if (!notificationViewerOpen || !currentStudentNotificationId) return;
@@ -1101,9 +1107,20 @@ export default function AdminDashboard() {
 
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        logout();
-        navigate("/login");
+    // const handleLogout = () => {
+    //     logout();
+    //     navigate("/login");
+    // };
+
+    const handleLogout = async () => {
+        try {
+            await logoutRequest();
+        } catch (error) {
+            console.error(error);
+        } finally {
+            logout();
+            navigate("/login");
+        }
     };
 
     if (!admin) {
@@ -1125,7 +1142,8 @@ export default function AdminDashboard() {
     return (
         <AdminLayout
             activePage={activePage}
-            onChangePage={setActivePage}
+            // onChangePage={setActivePage}
+            onChangePage={(nextPage) => navigate(`/admin/${nextPage}`)}
             onLogout={handleLogout}
 
             adminName={admin?.fullName}

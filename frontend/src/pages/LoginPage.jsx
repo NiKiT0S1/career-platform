@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { loginRequest } from "../api/authApi";
-import { saveToken, saveRole, getToken, getRole } from "../auth/auth";
+// import { saveToken, saveRole, getToken, getRole } from "../auth/auth";
+// import { saveRole, getRole, isAuthenticated } from "../auth/auth";
+import { useAuth } from "../context/AuthContext";
 import AuthLayout from "../layouts/AuthLayout";
 
 export default function LoginPage() {
@@ -12,15 +14,41 @@ export default function LoginPage() {
 
     const navigate = useNavigate();
 
-    const token = getToken();
-    const role = getRole();
+    // const token = getToken();
+    // const role = getRole();
 
-    if (token && role === "STUDENT") {
-        return <Navigate to="/student" replace />;
+    const {role, setRole, loading} = useAuth();
+
+    // if (token && role === "STUDENT") {
+    //     return <Navigate to="/student" replace />;
+    // }
+
+    // if (token && role === "ADMIN") {
+    //     return <Navigate to="/admin" replace />;
+    // }
+
+    // if (isAuthenticated() && role === "STUDENT") {
+    //     return <Navigate to="/student" replace />;
+    // }
+
+    // if (isAuthenticated() && role === "ADMIN") {
+    //     return <Navigate to="/admin" replace />;
+    // }
+
+    if (loading) {
+        return (
+            <div className="app-page-loader">
+                <div className="app-page-loader__text">Loading...</div>
+            </div>
+        );
     }
 
-    if (token && role === "ADMIN") {
-        return <Navigate to="/admin" replace />;
+    if (role === "STUDENT") {
+        return <Navigate to="/student/main" replace />;
+    }
+
+    if (role === "ADMIN") {
+        return <Navigate to="/admin/students" replace />;
     }
 
     const handleLogin = async () => {
@@ -29,18 +57,26 @@ export default function LoginPage() {
 
             const data = await loginRequest(email, password);
 
-            localStorage.removeItem("token");
-            localStorage.removeItem("role");
+            // localStorage.removeItem("token");
+            // localStorage.removeItem("role");
 
-            saveToken(data.token);
-            saveRole(data.role);
+            // saveToken(data.token);
+            // saveRole(data.role);
+            setRole(data.role);
 
+            // if (data.role === "STUDENT") {
+            //     navigate("/student");
+            // } else if (data.role === "ADMIN") {
+            //     navigate("/admin");
+            // }
             if (data.role === "STUDENT") {
-                navigate("/student");
-            } else if (data.role === "ADMIN") {
-                navigate("/admin");
+                navigate("/student/main");
+            } 
+            else if (data.role === "ADMIN") {
+                navigate("/admin/students");
             }
-        } catch (err) {
+        } 
+        catch (err) {
             setError("Invalid email or password");
         }
     };

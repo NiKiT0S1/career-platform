@@ -13,12 +13,13 @@ import {
     previewStudentResume,
 } from "../api/studentApi";
 import { logout } from "../auth/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { pdfjs, Document, Page } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import StudentLayout from "../layouts/StudentLayout";
 import { isPdfFile, isDraggedPdf } from "../utils/fileValidation";
+import { logoutRequest } from "../api/authApi";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -30,9 +31,14 @@ export default function StudentDashboard() {
     const [notifications, setNotifications] = useState([]);
 
     // const [activePage, setActivePage] = useState("main");
-    const [activePage, setActivePage] = useState(() => {
-        return localStorage.getItem("studentActivePage") || "main";
-    });
+    // const [activePage, setActivePage] = useState(() => {
+    //     return localStorage.getItem("studentActivePage") || "main";
+    // });
+
+    const {page} = useParams();
+    const allowedStudentPages = ["main", "resume", "templates"];
+    const activePage = allowedStudentPages.includes(page) ? page : "main";
+
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     
     const hasUnreadNotifications = notifications.some((notification) => !notification.isRead);
@@ -110,9 +116,9 @@ export default function StudentDashboard() {
         loadTemplates();
     }, []);
 
-    useEffect(() => {
-        localStorage.setItem("studentActivePage", activePage);
-    }, [activePage]);
+    // useEffect(() => {
+    //     localStorage.setItem("studentActivePage", activePage);
+    // }, [activePage]);
 
     useEffect(() => {
         const interval = setInterval(async () => {
@@ -682,9 +688,22 @@ export default function StudentDashboard() {
 
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        logout();
-        navigate("/login");
+    // const handleLogout = () => {
+    //     logout();
+    //     navigate("/login");
+    // };
+
+    const handleLogout = async () => {
+        try {
+            await logoutRequest();
+        }
+        catch (error) {
+            console.error(error);
+        }
+        finally {
+            logout();
+            navigate("/login");
+        }
     };
 
     if (!student) {
@@ -706,7 +725,8 @@ export default function StudentDashboard() {
     return (
         <StudentLayout
             activePage={activePage}
-            onChangePage={setActivePage}
+            // onChangePage={setActivePage}
+            onChangePage={(nextPage) => navigate(`/student/${nextPage}`)}
             notifications={notifications}
             hasUnreadNotifications={hasUnreadNotifications}
             notificationsOpen={notificationsOpen}

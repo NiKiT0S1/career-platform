@@ -4,23 +4,37 @@ import StudentDashboard from "../pages/StudentDashboard";
 import AdminDashboard from "../pages/AdminDashboard";
 import ProtectedRoute from "./ProtectedRoute";
 import RoleProtectedRoute from "./RoleProtectedRoute";
-import { getToken, getRole } from "../auth/auth";
+// import { getToken, getRole } from "../auth/auth";
+// import { getRole, isAuthenticated } from "../auth/auth";
+import { useAuth } from "../context/AuthContext";
 
 function DefaultRedirect() {
-    const token = getToken();
-    const role = getRole();
+    // const token = getToken();
+    // const role = getRole();
+    const {role, loading} = useAuth();
 
-    if (!token) {
-        return <Navigate to="/login" replace />;
-    }
+    // if (!token) {
+    //     return <Navigate to="/login" replace />;
+    // }
 
-    if (role === "STUDENT") {
-        return <Navigate to="/student" replace />;
-    }
+    // if (!isAuthenticated()) {
+    //     return <Navigate to="/login" replace />;
+    // }
 
-    if (role === "ADMIN") {
-        return <Navigate to="/admin" replace />;
-    }
+    if (loading) return <div>Loading...</div>;
+
+    if (!role) return <Navigate to="/login" replace />;
+
+    // if (role === "STUDENT") {
+    //     return <Navigate to="/student" replace />;
+    // }
+
+    // if (role === "ADMIN") {
+    //     return <Navigate to="/admin" replace />;
+    // }
+
+    if (role === "STUDENT") return <Navigate to="/student/main" replace />;
+    if (role === "ADMIN") return <Navigate to="/admin/students" replace />;
 
     return <Navigate to="/login" replace />;
 }
@@ -31,7 +45,7 @@ export default function AppRouter() {
             <Routes>
                 <Route path="/login" element={<LoginPage />} />
 
-                <Route 
+                {/* <Route 
                     path="/student" 
                     element={
                         <ProtectedRoute>
@@ -44,6 +58,28 @@ export default function AppRouter() {
 
                 <Route 
                     path="/admin" 
+                    element={
+                        <ProtectedRoute>
+                            <RoleProtectedRoute allowedRole="ADMIN">
+                                <AdminDashboard />
+                            </RoleProtectedRoute>
+                        </ProtectedRoute>
+                    } 
+                /> */}
+
+                <Route 
+                    path="/student/:page" 
+                    element={
+                        <ProtectedRoute>
+                            <RoleProtectedRoute allowedRole="STUDENT">
+                                <StudentDashboard />
+                            </RoleProtectedRoute>
+                        </ProtectedRoute>
+                    } 
+                />
+
+                <Route 
+                    path="/admin/:page" 
                     element={
                         <ProtectedRoute>
                             <RoleProtectedRoute allowedRole="ADMIN">

@@ -2,17 +2,18 @@ import axios from "axios";
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
+    withCredentials: true,
 });
 
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token");
+// api.interceptors.request.use((config) => {
+//     const token = localStorage.getItem("token");
 
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
+//     if (token) {
+//         config.headers.Authorization = `Bearer ${token}`;
+//     }
 
-    return config;
-});
+//     return config;
+// });
 
 api.interceptors.response.use(
     (response) => response,
@@ -20,11 +21,16 @@ api.interceptors.response.use(
         const status = error?.response?.status;
 
         if (status === 401 || status === 403 || status === 404) {
-            const isAdminRoute = window.location.pathname.startsWith("/admin");
-            const isStudentRoute = window.location.pathname.startsWith("/student");
+            // const isAdminRoute = window.location.pathname.startsWith("/admin");
+            // const isStudentRoute = window.location.pathname.startsWith("/student");
 
-            if (isAdminRoute || isStudentRoute) {
-                localStorage.removeItem("token");
+            const isProtectedRoute = 
+                window.location.pathname.startsWith("/admin") ||
+                window.location.pathname.startsWith("/student");
+
+            // if (isAdminRoute || isStudentRoute) {
+            if (isProtectedRoute ) {
+                // localStorage.removeItem("token");
                 localStorage.removeItem("role");
                 localStorage.removeItem("adminActivePage");
                 localStorage.removeItem("studentActivePage");
