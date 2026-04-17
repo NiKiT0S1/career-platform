@@ -29,6 +29,10 @@ import { isAllowedTemplateFile, isDraggedTemplateFile } from "../utils/fileValid
 
 import { logoutRequest } from "../api/authApi";
 
+import api from "../api/axios";
+
+import { useAuth } from "../context/AuthContext";
+
 export default function AdminDashboard() {
     const [admin, setAdmin] = useState(null);
     const [students, setStudents] = useState([]);
@@ -103,6 +107,8 @@ export default function AdminDashboard() {
     // const [activePage, setActivePage] = useState(() => {
     //     return localStorage.getItem("adminActivePage") || "students";
     // });
+
+    const {setRole} = useAuth();
 
     const {page} = useParams();
     const allowedAdminPages = ["students", "templates"];
@@ -1114,13 +1120,23 @@ export default function AdminDashboard() {
 
     const handleLogout = async () => {
         try {
+            await api.get("/health");
+            
             await logoutRequest();
-        } catch (error) {
-            console.error(error);
-        } finally {
+
             logout();
+            setRole(null);
             navigate("/login");
-        }
+        } 
+        catch (error) {
+            console.error(error);
+
+            alert("Server is waking up. Please try logout again.");
+        } 
+        // finally {
+        //     logout();
+        //     navigate("/login");
+        // }
     };
 
     if (!admin) {

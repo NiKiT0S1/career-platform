@@ -21,6 +21,10 @@ import StudentLayout from "../layouts/StudentLayout";
 import { isPdfFile, isDraggedPdf } from "../utils/fileValidation";
 import { logoutRequest } from "../api/authApi";
 
+import api from "../api/axios";
+
+import { useAuth } from "../context/AuthContext";
+
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export default function StudentDashboard() {
@@ -38,6 +42,8 @@ export default function StudentDashboard() {
     const {page} = useParams();
     const allowedStudentPages = ["main", "resume", "templates"];
     const activePage = allowedStudentPages.includes(page) ? page : "main";
+
+    const {setRole} = useAuth();
 
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     
@@ -695,15 +701,23 @@ export default function StudentDashboard() {
 
     const handleLogout = async () => {
         try {
+            await api.get("/health");
+
             await logoutRequest();
+
+            logout();
+            setRole(null);
+            navigate("/login");
         }
         catch (error) {
             console.error(error);
+
+            alert("Server is waking up. Please try logout again.");
         }
-        finally {
-            logout();
-            navigate("/login");
-        }
+        // finally {
+        //     logout();
+        //     navigate("/login");
+        // }
     };
 
     if (!student) {
