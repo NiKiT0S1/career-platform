@@ -1,3 +1,4 @@
+// 1. imports
 import { useEffect, useState, useRef } from "react";
 import { 
     getCurrentStudent, 
@@ -14,30 +15,30 @@ import {
 } from "../api/studentApi";
 import { logout } from "../auth/auth";
 import { useNavigate, useParams } from "react-router-dom";
-import { pdfjs, Document, Page } from "react-pdf";
+import { pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import StudentLayout from "../layouts/StudentLayout";
 import { isPdfFile, isDraggedPdf } from "../utils/fileValidation";
+import { getDisplayFileName, getResumeFileName } from "../utils/fileUtils";
 import { logoutRequest } from "../api/authApi";
-
+import StudentAccountDropdown from "../components/student/StudentAccountDropdown";
+import StudentTemplatesSection from "../components/student/StudentTemplatesSection";
+import StudentPdfPreviewModal from "../components/student/StudentPdfPreviewModal";
+import StudentProfileSection from "../components/student/StudentProfileSection";
+import StudentCvSection from "../components/student/StudentCvSection";
 import api from "../api/axios";
-
 import { useAuth } from "../context/AuthContext";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export default function StudentDashboard() {
+    // 2. state
     const [student, setStudent] = useState(null);
     const [companyName, setCompanyName] = useState("");
     const [practiceStatus, setPracticeStatus] = useState("");
     const [message, setMessage] = useState("");
     const [notifications, setNotifications] = useState([]);
-
-    // const [activePage, setActivePage] = useState("main");
-    // const [activePage, setActivePage] = useState(() => {
-    //     return localStorage.getItem("studentActivePage") || "main";
-    // });
 
     const {page} = useParams();
     const allowedStudentPages = ["main", "resume", "templates"];
@@ -50,23 +51,13 @@ export default function StudentDashboard() {
     const hasUnreadNotifications = notifications.some((notification) => !notification.isRead);
 
     const [resumeFile, setResumeFile] = useState(null);
-
-    const resumeFileInputRef = useRef(null);
-
-    // const [resumeMessage, setResumeMessage] = useState("");
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
-    const [passwordMessage, setPasswordMessage] = useState("");
 
     const [showAccountCurrentPassword, setShowAccountCurrentPassword] = useState(false);
     const [showAccountNewPassword, setShowAccountNewPassword] = useState(false);
     const [accountPasswordMessage, setAccountPasswordMessage] = useState("");
 
-    // const [resumePreviewUrl, setResumePreviewUrl] = useState("");
-    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-    const [showNewPassword, setShowNewPassword] = useState(false);
-
-    const previewContainerRef = useRef(null);
     const [pageWidth, setPageWidth] = useState(700);
 
     const [pdfFile, setPdfFile] = useState(null);
@@ -89,10 +80,6 @@ export default function StudentDashboard() {
 
     const [isDraggingCv, setIsDraggingCv] = useState(false);
 
-    const dragCounterRef = useRef(0);
-
-    const companyEditRef = useRef(null);
-
     const [isCompanyConfirmed, setIsCompanyConfirmed] = useState(false);
     const [companyConfirmError, setCompanyConfirmError] = useState("");
 
@@ -100,31 +87,21 @@ export default function StudentDashboard() {
 
     const MAX_CV_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
+    const hasPracticeStatusChanged = practiceStatus !== (student?.practiceStatus || "");
 
-    const loadCurrentStudent = async () => {
-        try {
-            const currentStudent = await getCurrentStudent();
-            setStudent(currentStudent);
-            setCompanyName(currentStudent.companyName || "");
-            setPracticeStatus(currentStudent.practiceStatus || "");
-            setStudentLoadFailed(false);
+    // 3. refs
+    const resumeFileInputRef = useRef(null);
+    const previewContainerRef = useRef(null);
+    const companyEditRef = useRef(null);
+    const isEditingCompanyRef = useRef(false);
+    const hasPracticeStatusChangedRef = useRef(false);
 
-            await loadNotifications();
-        } 
-        catch (error) {
-            console.error(error);
-            setStudentLoadFailed(true);
-        }
-    };
-
+    // 4. effects
     useEffect(() => {
         loadCurrentStudent();
         loadTemplates();
+        loadNotifications();
     }, []);
-
-    // useEffect(() => {
-    //     localStorage.setItem("studentActivePage", activePage);
-    // }, [activePage]);
 
     useEffect(() => {
         const interval = setInterval(async () => {
@@ -155,6 +132,14 @@ export default function StudentDashboard() {
 
         return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+        isEditingCompanyRef.current = isEditingCompany;
+    }, [isEditingCompany]);
+
+    useEffect(() => {
+        hasPracticeStatusChangedRef.current = hasPracticeStatusChanged;
+    }, [hasPracticeStatusChanged]);
 
     useEffect(() => {
         if (document.visibilityState !== "visible") return;
@@ -195,10 +180,6 @@ export default function StudentDashboard() {
         return () => window.removeEventListener("resize", updatePageWidth);
     }, [isPreviewOpen]);
 
-    // useEffect(() => {
-    //     loadTemplates();
-    // });
-
     useEffect(() => {
         if (!message) return;
 
@@ -208,16 +189,6 @@ export default function StudentDashboard() {
 
         return () => clearTimeout(timeout);
     }, [message]);
-
-    useEffect(() => {
-        if (!passwordMessage) return;
-
-        const timeout = setTimeout(() => {
-            setPasswordMessage("");
-        }, 1500);
-
-        return () => clearTimeout(timeout);
-    }, [passwordMessage]);
 
     useEffect(() => {
         if (!accountPasswordMessage) return;
@@ -264,6 +235,29 @@ export default function StudentDashboard() {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [isEditingCompany, student?.companyName]);
+
+    // 5. handlers
+    const loadCurrentStudent = async () => {
+        try {
+            const currentStudent = await getCurrentStudent();
+
+            setStudent(currentStudent);
+            
+            if (!isEditingCompanyRef.current) {
+                setCompanyName(currentStudent.companyName || "");
+            }
+            
+            if (!hasPracticeStatusChangedRef.current) {
+                setPracticeStatus(currentStudent.practiceStatus || "");
+            }
+
+            setStudentLoadFailed(false);
+        } 
+        catch (error) {
+            console.error(error);
+            setStudentLoadFailed(true);
+        }
+    };
 
     const loadTemplates = async () => {
         try {
@@ -319,18 +313,6 @@ export default function StudentDashboard() {
         }
     };
 
-    const getPracticeStatusColor = (status) => {
-        if (status === "EMPLOYED") return "green";
-        if (status === "NOT_FOUND") return "red";
-        return "gray";
-    };
-
-    const formatPracticeStatus = (status) => {
-        if (status === "NOT_FOUND") return "NOT FOUND";
-        if (status === "EMPLOYED") return "EMPLOYED";
-        return status;
-    }
-
     const handleMarkAsRead = async (notificationId) => {
         try {
             await markNotificationAsRead(notificationId);
@@ -358,13 +340,7 @@ export default function StudentDashboard() {
             return false;
         }
 
-        // if (resumeFile.type !== "application/pdf") {
-        //     setResumeActionMessage("");
-        //     setResumeActionError("Only PDF files are allowed");
-        //     return false;
-        // }
-
-        if (!isAllowedResumeFile(resumeFile)) {
+        if (!isPdfFile(resumeFile)) {
             setResumeActionMessage("");
             setResumeActionError("Only PDF files are allowed");
             return false;
@@ -374,10 +350,6 @@ export default function StudentDashboard() {
             setIsUploadingResume(true);
             setResumeActionMessage("");
             setResumeActionError("");
-            
-            // const updateStudent = await uploadStudentResume(resumeFile);
-            // setStudent(updateStudent);
-            // setResumeMessage("Resume uploaded successfully");
 
             await uploadStudentResume(resumeFile);
             setResumeActionMessage("CV uploaded successfully");
@@ -392,7 +364,6 @@ export default function StudentDashboard() {
         } 
         catch (error) {
             console.error(error);
-            // setResumeMessage("Failed to upload resume");
             setResumeActionError(error?.response?.data || "Failed to upload CV");
             return false;
         }
@@ -401,19 +372,9 @@ export default function StudentDashboard() {
         }
     };
 
-    const onDocumentLoadSuccess = ({numPages}) => {
-        setNumPages(numPages);
-    };
-
-    const onDocumentLoadError = (error) => {
-        console.error("PDF load error:", error);
-    };
-    
     const handlePreviewResume = async () => {
         try {
             const blob = await previewStudentResume();
-            // const url = window.URL.createObjectURL(blob);
-            // setResumePreviewUrl(url);
             setPdfFile(blob);
             setIsPreviewOpen(true);
         } 
@@ -426,73 +387,17 @@ export default function StudentDashboard() {
         setPdfFile(null);
         setNumPages(null);
         setIsPreviewOpen(false);
-
-        // if (resumePreviewUrl) {
-        //     window.URL.revokeObjectURL(resumePreviewUrl);
-        //     setResumePreviewUrl("");
-        // }
     };
-
-    // const handleDownloadResumeTemplate = async () => {
-    //     try {
-    //         const blob = await downloadResumeTemplate();
-    //         const url = window.URL.createObjectURL(blob);
-
-    //         const link = document.createElement("a");
-    //         link.href = url;
-    //         link.download = "resume-template.docx";
-    //         document.body.appendChild(link);
-    //         link.click();
-    //         link.remove();
-
-    //         window.URL.revokeObjectURL(url);
-    //     }
-    //     catch (error) {
-    //         console.error(error);
-    //     }
-    // };
-    
-    // const handleDownloadContract = async () => {
-    //     try {
-    //         const blob = await downloadThreeSidedContract();
-    //         const url = window.URL.createObjectURL(blob);
-
-    //         const link = document.createElement("a");
-    //         link.href = url;
-    //         link.download = "three-sided-contract.docx";
-    //         document.body.appendChild(link);
-    //         link.click();
-    //         link.remove();
-
-    //         window.URL.revokeObjectURL(url);
-    //     } 
-    //     catch (error) {
-    //         console.error(error);
-    //     }
-    // };
 
     const handleCvDragEnter = (e) => {
         if (student?.resumePath) return;
 
         e.preventDefault();
         e.stopPropagation();
-
-        // if (!isDraggedPdf(e)) return;
-
-        // dragCounterRef.current += 1;
-
-        // if (isDraggedPdf(e)) {
-        //     setIsDraggingCv(true);
-        // }
-        // else {
-        //     setIsDraggingCv(false);
-        // }
     };
 
     const handleCvDragOver = (e) => {
         if (student?.resumePath) return;
-
-        // if (!isDraggedPdf(e)) return;
 
         e.preventDefault();
         e.stopPropagation();
@@ -514,12 +419,6 @@ export default function StudentDashboard() {
         e.preventDefault();
         e.stopPropagation();
 
-        // dragCounterRef.current -= 1;
-        // if (dragCounterRef.current <= 0) {
-        //     dragCounterRef.current = 0;
-        //     setIsDraggingCv(false);
-        // }
-
         const relatedTarget = e.relatedTarget;
         if (e.currentTarget.contains(relatedTarget)) {
             return;
@@ -534,7 +433,6 @@ export default function StudentDashboard() {
         e.preventDefault();
         e.stopPropagation();
 
-        // dragCounterRef.current = 0;
         setIsDraggingCv(false);
 
         const file = e.dataTransfer.files?.[0];
@@ -546,7 +444,7 @@ export default function StudentDashboard() {
             return;
         }
 
-        if (!isAllowedResumeFile(file)) {
+        if (!isPdfFile(file)) {
             setResumeActionMessage("");
             setResumeActionError("Only PDF files are allowed");
             return;
@@ -598,11 +496,6 @@ export default function StudentDashboard() {
         }
     };
 
-    const getResumeFileName = (resumePath) => {
-        if (!resumePath) return "CV.pdf";
-        return resumePath.split("/").pop();
-    };
-
     const handleChangePassword = async () => {
         if (currentPassword === newPassword) {
             setAccountPasswordMessage("New password must be different from current password");
@@ -611,44 +504,22 @@ export default function StudentDashboard() {
         
         try {
             const response = await changeStudentPassword(currentPassword, newPassword);
-            // setPasswordMessage(response);
             
             setAccountPasswordMessage(response || "Password changed successfully");
             setCurrentPassword("");
             setNewPassword("");
             setShowAccountCurrentPassword(false);
             setShowAccountNewPassword(false);
-            // setShowPasswordForm(false);
         } 
         catch (error) {
             console.error(error);
-            // setPasswordMessage(error?.response?.data || "Failed to change password");
             setAccountPasswordMessage(error?.response?.data || "Failed to change password");
         }
     };
 
-    const getDisplayFileName = (fileName, maxLength = 24) => {
-        if (!fileName) return "";
-
-        const cleanedName = fileName.replace(/_\d+\.(pdf|docx)$/i, ".$1");
-
-        if (cleanedName.length <= maxLength) {
-            return cleanedName;
-        }
-
-        const dotIndex = cleanedName.lastIndexOf(".");
-        const extension = dotIndex !== -1 ? cleanedName.slice(dotIndex) : "";
-        const baseName = dotIndex !== -1 ? cleanedName.slice(0, dotIndex) : cleanedName;
-
-        return `${baseName.slice(0, maxLength)}...${extension}`;
-    };
-
-    const isAllowedResumeFile = (file) => {
-        return isPdfFile(file);
-    };
-
     const handleResumeFileChange = (e) => {
         const file = e.target.files?.[0];
+
         if (!file) return;
 
         if (file.size > MAX_CV_FILE_SIZE) {
@@ -663,7 +534,7 @@ export default function StudentDashboard() {
             return;
         }
 
-        if (!isAllowedResumeFile(file)) {
+        if (!isPdfFile(file)) {
             setResumeActionMessage("");
             setResumeActionError("Only PDF files are allowed");
             setResumeFile(null);
@@ -690,14 +561,7 @@ export default function StudentDashboard() {
         }
     };
 
-    const hasPracticeStatusChanged = practiceStatus !== (student?.practiceStatus || "");
-
     const navigate = useNavigate();
-
-    // const handleLogout = () => {
-    //     logout();
-    //     navigate("/login");
-    // };
 
     const handleLogout = async () => {
         try {
@@ -714,12 +578,9 @@ export default function StudentDashboard() {
 
             alert("Server is waking up. Please try logout again.");
         }
-        // finally {
-        //     logout();
-        //     navigate("/login");
-        // }
     };
 
+    // 6. return (JSX)
     if (!student) {
         return (
             <div className="app-page-loader">
@@ -739,7 +600,6 @@ export default function StudentDashboard() {
     return (
         <StudentLayout
             activePage={activePage}
-            // onChangePage={setActivePage}
             onChangePage={(nextPage) => navigate(`/student/${nextPage}`)}
             notifications={notifications}
             hasUnreadNotifications={hasUnreadNotifications}
@@ -761,79 +621,20 @@ export default function StudentDashboard() {
                 setShowPasswordForm(false);
             }}
             renderAccountDropdown={() => (
-                <div className="student-account-menu">
-                    {!showPasswordForm ? (
-                        <button
-                            type="button"
-                            className="student-account-menu__item"
-                            onClick={() => setShowPasswordForm(true)}
-                        >
-                            Change Password
-                        </button>
-                    ) : (
-                        <div className="student-account-password-box">
-                            <h4 className="student-account-password-box__title">
-                                Change Password
-                            </h4>
-
-                            <div className="student-account-password-box__field">
-                                <input
-                                    type={showAccountCurrentPassword ? "text" : "password"}
-                                    className="student-account-password-box__input"
-                                    placeholder="Current Password"
-                                    value={currentPassword}
-                                    onChange={(e) => setCurrentPassword(e.target.value)}
-                                />
-                                <button
-                                    type="button"
-                                    className="student-account-password-box__toggle"
-                                    onClick={() => setShowAccountCurrentPassword((prev) => !prev)}
-                                >
-                                    {showAccountCurrentPassword ? "Hide" : "Show"}
-                                </button>
-                            </div>
-
-                            <div className="student-account-password-box__field">
-                                <input
-                                    type={showAccountNewPassword ? "text" : "password"}
-                                    className="student-account-password-box__input"
-                                    placeholder="New Password"
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
-                                />
-                                <button
-                                    type="button"
-                                    className="student-account-password-box__toggle"
-                                    onClick={() => setShowAccountNewPassword((prev) => !prev)}
-                                >
-                                    {showAccountNewPassword ? "Hide" : "Show"}
-                                </button>
-                            </div>
-
-                            <button
-                                type="button"
-                                className="student-account-password-box__save"
-                                onClick={handleChangePassword}
-                            >
-                                Save Password
-                            </button>
-
-                            {accountPasswordMessage && (
-                                <p
-                                    className={`student-account-password-box__message ${
-                                        accountPasswordMessage.toLowerCase().includes("incorrect") ||
-                                        accountPasswordMessage.toLowerCase().includes("failed") ||
-                                        accountPasswordMessage.toLowerCase().includes("different")
-                                            ? "error"
-                                            : "success"
-                                    }`}
-                                >
-                                    {accountPasswordMessage}
-                                </p>
-                            )}
-                        </div>
-                    )}
-                </div>
+                <StudentAccountDropdown
+                    showPasswordForm={showPasswordForm}
+                    setShowPasswordForm={setShowPasswordForm}
+                    currentPassword={currentPassword}
+                    setCurrentPassword={setCurrentPassword}
+                    newPassword={newPassword}
+                    setNewPassword={setNewPassword}
+                    showAccountCurrentPassword={showAccountCurrentPassword}
+                    setShowAccountCurrentPassword={setShowAccountCurrentPassword}
+                    showAccountNewPassword={showAccountNewPassword}
+                    setShowAccountNewPassword={setShowAccountNewPassword}
+                    handleChangePassword={handleChangePassword}
+                    accountPasswordMessage={accountPasswordMessage}
+                />
             )}
             
             onLogout={handleLogout}
@@ -862,482 +663,69 @@ export default function StudentDashboard() {
             )}
         >
             {activePage === "main" && (
-                <div className="student-profile-page">
-                    <h1 className="student-profile-page__title">Profile</h1>
-
-                    <div className="student-profile-hero">
-                        <div className="student-profile-avatar student-profile-avatar--placeholder">
-                            <span>👤</span>
-                        </div>
-
-                        <div className="student-profile-hero__info">
-                            <h2 className="student-profile-name">{student.fullName}</h2>
-                            <p className="student-profile-subtext">{student.email}</p>
-                            <p className="student-profile-subtext">{student.groupName}</p>
-                        </div>
-                    </div>
-
-                    <div className="student-profile-details">
-                        <div className="student-profile-details__column">
-                            <div className="student-detail-row">
-                                <span className="student-detail-icon">🎓</span>
-                                <span>Course: {student.course}</span>
-                            </div>
-
-                            <div className="student-detail-row">
-                                <span className="student-detail-icon">📚</span>
-                                <span>Educational Program: {student.educationalProgram}</span>
-                            </div>
-
-                            <div className="student-detail-row">
-                                <span className="student-detail-icon">📊</span>
-                                <span>GPA: {student.gpa}</span>
-                            </div>
-
-                            <div className="student-detail-row">
-                                <span className="student-detail-icon">📞</span>
-                                <span>Phone: {student.phone || "-"}</span>
-                            </div>
-                        </div>
-
-                        <div className="student-profile-details__column">
-                            <div className="student-detail-row student-detail-row--company">
-                                <span className="student-detail-icon">💼</span>
-                                <span>Company: {student.companyName || "-"}</span>
-
-                                {!isEditingCompany && (
-                                    // <button
-                                    //     type="button"
-                                    //     className="student-inline-icon-btn"
-                                    //     onClick={() => setIsEditingCompany(true)}
-                                    //     title="Edit company"
-                                    // >
-                                    //     ✎
-                                    // </button>
-                                    <button
-                                        type="button"
-                                        className="student-inline-icon-btn"
-                                        onClick={() => {
-                                            setIsEditingCompany(true);
-                                            setIsCompanyConfirmed(false);
-                                            setCompanyConfirmError("");
-                                        }}
-                                        title="Edit company"
-                                    >
-                                        ✎
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* {isEditingCompany && (
-                                <div className="student-company-edit" ref={companyEditRef}>
-                                    <input
-                                        type="text"
-                                        value={companyName}
-                                        onChange={(e) => setCompanyName(e.target.value)}
-                                        placeholder="Enter company name"
-                                    />
-                                    
-                                    <label className="student-company-confirm">
-                                        <input
-                                            type="checkbox"
-                                            checked={isCompanyConfirmed}
-                                            onChange={(e) => setIsCompanyConfirmed(e.target.checked)}
-                                        />
-                                        I confirm that the company name is correct
-                                    </label>
-
-                                    <button
-                                        className="primary-btn"
-                                        onClick={async () => {
-                                            await handleUpdateCompany();
-                                            setIsEditingCompany(false);
-                                        }}
-                                    >
-                                        Save
-                                    </button>
-                                </div>
-                            )} */}
-
-                            {isEditingCompany && (
-                                <div className="student-company-edit" ref={companyEditRef}>
-                                    <div className="student-company-edit__row">
-                                        <input
-                                            type="text"
-                                            value={companyName}
-                                            onChange={(e) => setCompanyName(e.target.value)}
-                                            placeholder="Enter company name"
-                                        />
-
-                                        <label className="student-company-confirm">
-                                            <input
-                                                type="checkbox"
-                                                checked={isCompanyConfirmed}
-                                                onChange={(e) => {
-                                                    setIsCompanyConfirmed(e.target.checked);
-                                                    if (e.target.checked) {
-                                                        setCompanyConfirmError("");
-                                                    }
-                                                }}
-                                            />
-                                            <span>I confirm that the company name is correct</span>
-                                        </label>
-
-                                        {/* <button
-                                            className="primary-btn"
-                                            onClick={async () => {
-                                                const previousCompanyName = student?.companyName || "";
-
-                                                await handleUpdateCompany();
-
-                                                if (companyName !== previousCompanyName && isCompanyConfirmed) {
-                                                    setIsEditingCompany(false);
-                                                }
-                                            }}
-                                        >
-                                            Save
-                                        </button> */}
-
-                                        <button
-                                            className="primary-btn"
-                                            onClick={async () => {
-                                                const success = await handleUpdateCompany();
-
-                                                if (success) {
-                                                    setIsEditingCompany(false);
-                                                }
-                                            }}
-                                        >
-                                            Save
-                                        </button>
-                                    </div>
-
-                                    {companyConfirmError && (
-                                        <p className="student-company-confirm__error">
-                                            {companyConfirmError}
-                                        </p>
-                                    )}
-                                </div>
-                            )}
-
-                            <div className="student-detail-row student-detail-row--status">
-                                <span className="student-detail-icon">🧍</span>
-                                <span>Status:</span>
-
-                                <div className="student-status-inline">
-                                    <select
-                                        className="student-status-select"
-                                        value={practiceStatus}
-                                        onChange={(e) => setPracticeStatus(e.target.value)}
-                                    >
-                                        {/* <option value="">Not selected</option> */}
-                                        <option value="EMPLOYED">EMPLOYED</option>
-                                        <option value="NOT_FOUND">NOT FOUND</option>
-                                    </select>
-
-                                    {/* <button
-                                        className="primary-btn student-status-save-inline"
-                                        onClick={handleUpdatePracticeStatus}
-                                    >
-                                        Save
-                                    </button> */}
-
-                                    {hasPracticeStatusChanged && (
-                                        <button
-                                            className="primary-btn student-status-save-inline"
-                                            onClick={handleUpdatePracticeStatus}
-                                        >
-                                            Save
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                            {message && <p className="student-action-message">{message}</p>}
-                        </div>
-                    </div>
-
-                    {/* {message && <p className="student-inline-message">{message}</p>} */}
-                </div>
+                <StudentProfileSection
+                    student={student}
+                    companyName={companyName}
+                    setCompanyName={setCompanyName}
+                    isEditingCompany={isEditingCompany}
+                    setIsEditingCompany={setIsEditingCompany}
+                    companyEditRef={companyEditRef}
+                    isCompanyConfirmed={isCompanyConfirmed}
+                    setIsCompanyConfirmed={setIsCompanyConfirmed}
+                    companyConfirmError={companyConfirmError}
+                    setCompanyConfirmError={setCompanyConfirmError}
+                    handleUpdateCompany={handleUpdateCompany}
+                    practiceStatus={practiceStatus}
+                    setPracticeStatus={setPracticeStatus}
+                    hasPracticeStatusChanged={hasPracticeStatusChanged}
+                    handleUpdatePracticeStatus={handleUpdatePracticeStatus}
+                    message={message}
+                />
             )}
 
             {activePage === "resume" && (
-                <div className="student-cv-page">
-                    <div
-                        // className={`student-cv-page ${!student.resumePath && isDraggingCv ? "student-cv-page--dragging" : ""}`}
-                        className="student-cv-dropzone"
-                        onDragEnter={handleCvDragEnter}
-                        onDragOver={handleCvDragOver}
-                        onDragLeave={handleCvDragLeave}
-                        onDrop={handleCvDrop}
-                    >
-                        <h1 className="student-page-title">CV</h1>
-
-                        {resumeActionError && !showCvUploadModal && (
-                            <p className="student-inline-message student-inline-message--error">
-                                {resumeActionError}
-                            </p>
-                        )}
-
-                        {resumeActionMessage && !showCvUploadModal && (
-                            <p className="student-inline-message student-inline-message--success">
-                                {resumeActionMessage}
-                            </p>
-                        )}
-
-                        <div className="student-cv-grid">
-                            {/* {resumeActionError && !showCvUploadModal && (
-                                <p className="student-inline-message student-inline-message--error">
-                                    {resumeActionError}
-                                </p>
-                            )}
-
-                            {resumeActionMessage && !showCvUploadModal && (
-                                <p className="student-inline-message student-inline-message--success">
-                                    {resumeActionMessage}
-                                </p>
-                            )} */}
-
-                            {student.resumePath && (
-                                <div
-                                    className="student-cv-card"
-                                    onMouseEnter={() => setIsCvHovered(true)}
-                                    onMouseLeave={() => setIsCvHovered(false)}
-                                >
-                                    <button
-                                        type="button"
-                                        className="student-cv-preview-button"
-                                        onClick={handlePreviewResume}
-                                    >
-                                        <div className="student-cv-thumbnail">
-                                            <span className="student-cv-thumbnail__icon">📄</span>
-                                        </div>
-                                        <div 
-                                            className="student-cv-file-name"
-                                            title={getResumeFileName(student.resumePath)}
-                                        >
-                                            {getDisplayFileName(getResumeFileName(student.resumePath), 22)}
-                                        </div>
-                                    </button>
-
-                                    {isCvHovered && (
-                                        <button
-                                            type="button"
-                                            className="student-cv-replace-button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setShowCvUploadModal(true);
-                                            }}
-                                        >
-                                            Replace CV
-                                        </button>
-                                    )}
-                                </div>
-                            )}
-
-                            {!student.resumePath && (
-                                <button
-                                    type="button"
-                                    className="student-cv-upload-tile"
-                                    onClick={() => {
-                                        resetCvUploadModal();
-                                        setShowCvUploadModal(true);
-                                    }}
-                                >
-                                    <div className="student-cv-upload-tile__box">+</div>
-                                    <div className="student-cv-upload-tile__text">Upload new CV</div>
-                                </button>
-                            )}
-                        </div>
-
-                        {showCvUploadModal && (
-                            <div className="student-cv-modal-backdrop">
-                                <div className="student-cv-modal">
-                                    <div className="student-cv-modal__topbar" />
-
-                                    <div className="student-cv-modal__content">
-                                        <h3 className="student-cv-modal__title">Upload new CV</h3>
-
-                                        <input
-                                            ref={resumeFileInputRef}
-                                            type="file"
-                                            accept="application/pdf"
-                                            className="student-cv-modal__file-input"
-                                            // onChange={(e) => setResumeFile(e.target.files[0])}
-                                            onChange={handleResumeFileChange}
-                                        />
-
-                                        {resumeFile && (
-                                            <p className="student-cv-modal__selected-file">
-                                                Selected file: {resumeFile.name}
-                                            </p>
-                                        )}
-
-                                        <div className="student-cv-modal__actions">
-                                            <button
-                                                type="button"
-                                                className="student-cv-modal__save"
-                                                onClick={async () => {
-                                                    const success = await handleResumeUpload();
-
-                                                    if (success) {
-                                                        resetCvUploadModal();
-                                                        setShowCvUploadModal(false);
-                                                    }
-                                                }}
-                                                disabled={isUploadingResume}
-                                            >
-                                                {isUploadingResume ? "Uploading..." : "Save CV"}
-                                            </button>
-
-                                            <button
-                                                type="button"
-                                                className="student-cv-modal__cancel"
-                                                onClick={() => {
-                                                    resetCvUploadModal();
-                                                    setShowCvUploadModal(false);
-                                                }}
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-
-                                        {resumeActionMessage && (
-                                            <p className="student-cv-modal__message success">
-                                                {resumeActionMessage}
-                                            </p>
-                                        )}
-
-                                        {resumeActionError && (
-                                            <p className="student-cv-modal__message error">
-                                                {resumeActionError}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        {!student.resumePath && isDraggingCv && (
-                            <div className="student-cv-drag-overlay">
-                                <div className="student-cv-drag-overlay__plus">+</div>
-                                <div className="student-cv-drag-overlay__text">Drop your CV here</div>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                <StudentCvSection
+                    student={student}
+                    handleCvDragEnter={handleCvDragEnter}
+                    handleCvDragOver={handleCvDragOver}
+                    handleCvDragLeave={handleCvDragLeave}
+                    handleCvDrop={handleCvDrop}
+                    resumeActionError={resumeActionError}
+                    resumeActionMessage={resumeActionMessage}
+                    showCvUploadModal={showCvUploadModal}
+                    setShowCvUploadModal={setShowCvUploadModal}
+                    resetCvUploadModal={resetCvUploadModal}
+                    isDraggingCv={isDraggingCv}
+                    isCvHovered={isCvHovered}
+                    setIsCvHovered={setIsCvHovered}
+                    handlePreviewResume={handlePreviewResume}
+                    getResumeFileName={getResumeFileName}
+                    getDisplayFileName={getDisplayFileName}
+                    resumeFile={resumeFile}
+                    resumeFileInputRef={resumeFileInputRef}
+                    handleResumeFileChange={handleResumeFileChange}
+                    handleResumeUpload={handleResumeUpload}
+                    isUploadingResume={isUploadingResume}
+                />
             )}
 
             {activePage === "templates" && (
-                <div className="student-templates-page">
-                    <h1 className="student-page-title">Templates</h1>
-
-                    <div className="student-templates-grid">
-                        {templates.length === 0 ? (
-                            <p>No templates available</p>
-                        ) : (
-                            templates.map((template) => (
-                                <button
-                                    key={template.id}
-                                    type="button"
-                                    className="student-template-card"
-                                    onClick={() => handleDownloadTemplate(template.id, template.fileName)}
-                                >
-                                    <div className="student-template-card__preview">📄</div>
-                                    <div 
-                                        className="student-template-card__name"
-                                        title={template.displayName}
-                                    >
-                                        {getDisplayFileName(template.displayName, 20)}
-                                    </div>
-                                </button>
-                            ))
-                        )}
-                    </div>
-                </div>
+                <StudentTemplatesSection
+                    templates={templates}
+                    handleDownloadTemplate={handleDownloadTemplate}
+                    getDisplayFileName={getDisplayFileName}
+                />
             )}
 
             {isPreviewOpen && pdfFile && (
-                <div
-                    style={{
-                        position: "fixed",
-                        inset: 0,
-                        backgroundColor: "rgba(0, 0, 0, 0.45)",
-                        backdropFilter: "blur(4px)",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        zIndex: 1000,
-                    }}
-                >
-                    <div
-                        style={{
-                            position: "relative",
-                            width: "85%",
-                            height: "85%",
-                            backgroundColor: "#fff",
-                            borderRadius: "12px",
-                            padding: "16px",
-                            boxSizing: "border-box",
-                            display: "flex",
-                            flexDirection: "column",
-                        }}
-                    >
-                        <button
-                            onClick={handleClosePreview}
-                            style={{
-                                position: "absolute",
-                                top: "-14px",
-                                right: "-14px",
-                                width: "42px",
-                                height: "42px",
-                                borderRadius: "50%",
-                                border: "none",
-                                backgroundColor: "#ffffff",
-                                color: "#222",
-                                fontSize: "26px",
-                                fontWeight: "bold",
-                                cursor: "pointer",
-                                boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
-                                zIndex: 1001,
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                lineHeight: "1",
-                            }}
-                        >
-                            ×
-                        </button>
-
-                        <div
-                            ref={previewContainerRef}
-                            style={{
-                                flex: 1,
-                                overflow: "auto",
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "flex-start",
-                                paddingTop: "12px",
-                            }}
-                        >
-                            <Document
-                                file={pdfFile}
-                                onLoadSuccess={onDocumentLoadSuccess}
-                                onLoadError={onDocumentLoadError}
-                                loading="Loading PDF..."
-                                error="Failed to load PDF file."
-                            >
-                                {Array.from(new Array(numPages || 0), (_, index) => (
-                                    <Page
-                                        key={`page_${index + 1}`}
-                                        pageNumber={index + 1}
-                                        width={pageWidth}
-                                        renderTextLayer={false}
-                                        renderAnnotationLayer={false}
-                                    />
-                                ))}
-                            </Document>
-                        </div>
-                    </div>
-                </div>
+                <StudentPdfPreviewModal
+                    pdfFile={pdfFile}
+                    numPages={numPages}
+                    setNumPages={setNumPages}
+                    pageWidth={pageWidth}
+                    previewContainerRef={previewContainerRef}
+                    handleClosePreview={handleClosePreview}
+                />
             )}
         </StudentLayout>
     );

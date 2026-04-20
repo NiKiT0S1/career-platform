@@ -57,7 +57,12 @@ export const sendNotification = async (studentIds, message) => {
 
 export const sendNotificationByFilter = async (filters, message) => {
     const response = await api.post("/api/admin/notifications/send-by-filter", {
+        fullName: filters.fullName || null,
+        
         educationalProgram: filters.educationalProgram || null,
+
+        groupName: filters.groupName || null,
+
         course: filters.course ? Number(filters.course) : null,
         practiceStatus: filters.practiceStatus || null,
         minGpa: filters.minGpa ? Number(filters.minGpa) : null,
