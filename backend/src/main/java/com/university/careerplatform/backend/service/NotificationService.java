@@ -9,6 +9,7 @@ import com.university.careerplatform.backend.entity.Student;
 import com.university.careerplatform.backend.repository.NotificationRepository;
 import com.university.careerplatform.backend.repository.StudentRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -86,9 +87,26 @@ public class NotificationService {
         notificationRepository.saveAll(notifications);
     }
 
+//    public void sendNotificationToMultipleStudents(List<Long> studentIds, String message) {
+//        for (Long studentId : studentIds) {
+//            createNotification(studentId, message);
+//        }
+//    }
+
+    @Transactional
     public void sendNotificationToMultipleStudents(List<Long> studentIds, String message) {
-        for (Long studentId : studentIds) {
-            createNotification(studentId, message);
-        }
+        List<Student> students = studentRepository.findAllById(studentIds);
+
+        List<Notification> notifications = students.stream()
+                .map(student -> {
+                    Notification notification = new Notification();
+                    notification.setStudent(student);
+                    notification.setMessage(message);
+                    notification.setIsRead(false);
+                    return notification;
+                })
+                .toList();
+
+        notificationRepository.saveAll(notifications);
     }
 }
