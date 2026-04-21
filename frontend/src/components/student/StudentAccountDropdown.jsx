@@ -1,3 +1,18 @@
+/**
+ * ================================
+ * StudentAccountDropdown
+ * ================================
+ * Account dropdown menu for student.
+ *
+ * Responsibilities:
+ * - Handles password change UI
+ * - Displays password status messages
+ *
+ * Notes:
+ * - UI-only component
+ * ================================
+ */
+
 export default function StudentAccountDropdown({
     showPasswordForm,
     setShowPasswordForm,

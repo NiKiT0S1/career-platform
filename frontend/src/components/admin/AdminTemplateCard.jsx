@@ -1,3 +1,18 @@
+/**
+ * ================================
+ * AdminTemplateCard
+ * ================================
+ * Single template item.
+ *
+ * Responsibilities:
+ * - Displays template data
+ * - Handles rename, replace and delete actions
+ *
+ * Notes:
+ * - Used inside templates section
+ * ================================
+ */
+
 export default function AdminTemplateCard({
     template,
     hoveredTemplateId,

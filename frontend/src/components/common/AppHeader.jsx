@@ -1,3 +1,19 @@
+/**
+ * ================================
+ * AppHeader
+ * ================================
+ * Shared header component.
+ *
+ * Responsibilities:
+ * - Displays page header area
+ * - Shows user/account controls
+ * - Shows notifications toggle when needed
+ *
+ * Notes:
+ * - Reused in admin and student layouts
+ * ================================
+ */
+
 import { useRef, useEffect } from "react";
 import IconButton from "./IconButton";
 import NotificationDropdown from "./NotificationDropdown";

@@ -1,3 +1,18 @@
+/**
+ * ================================
+ * layout.css
+ * ================================
+ * Shared layout styles.
+ *
+ * Responsibilities:
+ * - Defines common layout structure
+ * - Styles containers, sidebar, header and page shells
+ *
+ * Notes:
+ * - Used for shared layout-level styling
+ * ================================
+ */
+
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear {
   display: none;

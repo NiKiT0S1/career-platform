@@ -1,3 +1,18 @@
+/**
+ * ================================
+ * AdminAccountDropdown
+ * ================================
+ * Account dropdown menu for admin.
+ *
+ * Responsibilities:
+ * - Handles password change UI
+ * - Handles logout action
+ *
+ * Notes:
+ * - UI-only component
+ * ================================
+ */
+
 export default function AdminAccountDropdown({
     showPasswordForm,
     setShowPasswordForm,

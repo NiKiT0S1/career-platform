@@ -1,3 +1,18 @@
+/**
+ * ================================
+ * axios
+ * ================================
+ * Shared Axios instance for API communication.
+ *
+ * Responsibilities:
+ * - Configures base API URL
+ * - Sends requests with credentials
+ *
+ * Notes:
+ * - Used by all frontend API modules
+ * ================================
+ */
+
 import axios from "axios";
 
 const api = axios.create({
@@ -5,32 +20,18 @@ const api = axios.create({
     withCredentials: true,
 });
 
-// api.interceptors.request.use((config) => {
-//     const token = localStorage.getItem("token");
-
-//     if (token) {
-//         config.headers.Authorization = `Bearer ${token}`;
-//     }
-
-//     return config;
-// });
-
 api.interceptors.response.use(
     (response) => response,
     (error) => {
         const status = error?.response?.status;
 
         if (status === 401 || status === 403 || status === 404) {
-            // const isAdminRoute = window.location.pathname.startsWith("/admin");
-            // const isStudentRoute = window.location.pathname.startsWith("/student");
 
             const isProtectedRoute = 
                 window.location.pathname.startsWith("/admin") ||
                 window.location.pathname.startsWith("/student");
 
-            // if (isAdminRoute || isStudentRoute) {
             if (isProtectedRoute ) {
-                // localStorage.removeItem("token");
                 localStorage.removeItem("role");
                 localStorage.removeItem("adminActivePage");
                 localStorage.removeItem("studentActivePage");

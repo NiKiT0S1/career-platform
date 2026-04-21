@@ -1,3 +1,19 @@
+/**
+ * ================================
+ * authApi
+ * ================================
+ * Authentication API module.
+ *
+ * Responsibilities:
+ * - Sends login request
+ * - Sends logout request
+ * - Fetches current authenticated user info
+ *
+ * Notes:
+ * - Works with HttpOnly cookie authentication
+ * ================================
+ */
+
 import api from "./axios";
 
 export const getCurrentAuth = async () => {

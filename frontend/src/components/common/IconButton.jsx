@@ -1,3 +1,18 @@
+/**
+ * ================================
+ * IconButton
+ * ================================
+ * Reusable icon-based button component.
+ *
+ * Responsibilities:
+ * - Renders clickable icon button
+ * - Applies shared button styling
+ *
+ * Notes:
+ * - Used for compact actions in UI
+ * ================================
+ */
+
 export default function IconButton({
     children,
     onClick,

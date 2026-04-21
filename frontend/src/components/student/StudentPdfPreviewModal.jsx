@@ -1,3 +1,18 @@
+/**
+ * ================================
+ * StudentPdfPreviewModal
+ * ================================
+ * Modal for PDF preview.
+ *
+ * Responsibilities:
+ * - Displays PDF file
+ * - Handles loading and error states
+ *
+ * Notes:
+ * - Used for CV preview
+ * ================================
+ */
+
 import { Document, Page } from "react-pdf";
 
 export default function StudentPdfPreviewModal({

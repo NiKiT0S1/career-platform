@@ -1,3 +1,18 @@
+/**
+ * ================================
+ * StudentTemplatesSection
+ * ================================
+ * Templates section for students.
+ *
+ * Responsibilities:
+ * - Displays templates
+ * - Allows downloading
+ *
+ * Notes:
+ * - Read-only access
+ * ================================
+ */
+
 export default function StudentTemplatesSection({
     templates,
     handleDownloadTemplate,

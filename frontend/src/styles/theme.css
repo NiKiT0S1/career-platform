@@ -1,3 +1,18 @@
+/**
+ * ================================
+ * theme.css
+ * ================================
+ * Shared theme styles and variables.
+ *
+ * Responsibilities:
+ * - Defines global colors, spacing and UI theme tokens
+ * - Provides consistent visual foundation across the app
+ *
+ * Notes:
+ * - Used as a base theme layer
+ * ================================
+ */
+
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear {
   display: none;
@@ -46,11 +61,6 @@ input[type="password"]::-webkit-textfield-decoration-container {
   --font-family: "Montserrat", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
 }
-
-/* :root {
-  --color-primary: #0f63b8;
-  --color-primary-dark: #0b4f93;
-} */
 
 * {
   box-sizing: border-box;

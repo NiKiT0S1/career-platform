@@ -1,3 +1,19 @@
+/**
+ * ================================
+ * AdminLayout
+ * ================================
+ * Shared layout for admin pages.
+ *
+ * Responsibilities:
+ * - Renders sidebar and header
+ * - Handles account dropdown rendering
+ * - Displays active admin page content
+ *
+ * Notes:
+ * - Used by AdminDashboard
+ * ================================
+ */
+
 import AppHeader from "../components/common/AppHeader";
 
 export default function AdminLayout({

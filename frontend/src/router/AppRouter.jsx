@@ -1,37 +1,32 @@
+/**
+ * ================================
+ * AppRouter
+ * ================================
+ * Main application router.
+ *
+ * Responsibilities:
+ * - Declares public and protected routes
+ * - Redirects users based on authentication and role
+ *
+ * Notes:
+ * - Works together with ProtectedRoute and RoleProtectedRoute
+ * ================================
+ */
+
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "../pages/LoginPage";
 import StudentDashboard from "../pages/StudentDashboard";
 import AdminDashboard from "../pages/AdminDashboard";
 import ProtectedRoute from "./ProtectedRoute";
 import RoleProtectedRoute from "./RoleProtectedRoute";
-// import { getToken, getRole } from "../auth/auth";
-// import { getRole, isAuthenticated } from "../auth/auth";
 import { useAuth } from "../context/AuthContext";
 
 function DefaultRedirect() {
-    // const token = getToken();
-    // const role = getRole();
     const {role, loading} = useAuth();
-
-    // if (!token) {
-    //     return <Navigate to="/login" replace />;
-    // }
-
-    // if (!isAuthenticated()) {
-    //     return <Navigate to="/login" replace />;
-    // }
 
     if (loading) return <div>Loading...</div>;
 
     if (!role) return <Navigate to="/login" replace />;
-
-    // if (role === "STUDENT") {
-    //     return <Navigate to="/student" replace />;
-    // }
-
-    // if (role === "ADMIN") {
-    //     return <Navigate to="/admin" replace />;
-    // }
 
     if (role === "STUDENT") return <Navigate to="/student/main" replace />;
     if (role === "ADMIN") return <Navigate to="/admin/students" replace />;
@@ -44,28 +39,6 @@ export default function AppRouter() {
         <BrowserRouter>
             <Routes>
                 <Route path="/login" element={<LoginPage />} />
-
-                {/* <Route 
-                    path="/student" 
-                    element={
-                        <ProtectedRoute>
-                            <RoleProtectedRoute allowedRole="STUDENT">
-                                <StudentDashboard />
-                            </RoleProtectedRoute>
-                        </ProtectedRoute>
-                    } 
-                />
-
-                <Route 
-                    path="/admin" 
-                    element={
-                        <ProtectedRoute>
-                            <RoleProtectedRoute allowedRole="ADMIN">
-                                <AdminDashboard />
-                            </RoleProtectedRoute>
-                        </ProtectedRoute>
-                    } 
-                /> */}
 
                 <Route 
                     path="/student/:page" 

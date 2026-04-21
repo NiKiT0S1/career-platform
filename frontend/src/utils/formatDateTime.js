@@ -1,3 +1,17 @@
+/**
+ * ================================
+ * formatDateTime
+ * ================================
+ * Date-time formatting helper.
+ *
+ * Responsibilities:
+ * - Converts backend timestamps into readable UI text
+ *
+ * Notes:
+ * - Shared between notifications and other date-based UI
+ * ================================
+ */
+
 export const formatDateTime = (dateTime) => {
     if (!dateTime) return "-";
 

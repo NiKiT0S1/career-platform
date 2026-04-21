@@ -1,3 +1,17 @@
+/**
+ * ================================
+ * student.css
+ * ================================
+ * Styles for student pages and components.
+ *
+ * Responsibilities:
+ * - Styles student profile, CV and templates UI
+ *
+ * Notes:
+ * - Used by StudentDashboard and related components
+ * ================================
+ */
+
 .student-shell .app-main {
   padding: 20px 18px 18px 18px;
 }
@@ -193,21 +207,6 @@
   flex-shrink: 0;
 }
 
-/* .student-company-edit {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-left: 36px;
-}
-
-.student-company-edit input {
-  height: 40px;
-  border: 1px solid #d6d6d6;
-  border-radius: 12px;
-  padding: 0 14px;
-  min-width: 220px;
-} */
-
 .student-company-edit {
   display: flex;
   flex-direction: column;
@@ -326,27 +325,11 @@
   width: 100%;
   max-width: 1080px;
   margin: 0 auto;
-  /* position: relative; */
 }
 
 .student-cv-page--dragging {
   filter: blur(0.2px);
 }
-
-/* .student-cv-drag-overlay {
-  position: absolute;
-  inset: 70px 0 0 0;
-  border: 2px dashed #7c93d8;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(2px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 20;
-} */
-
 .student-cv-drag-overlay {
   position: absolute;
   inset: 0;
@@ -445,18 +428,6 @@
   text-align: center;
 }
 
-/* .student-cv-upload-tile__box {
-  width: 140px;
-  height: 180px;
-  border: 1px solid #8d8d8d;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 56px;
-  border-radius: 2px;
-} */
-
 .student-cv-upload-tile__box {
   width: 150px;
   height: 210px;
@@ -474,19 +445,6 @@
   font-size: 14px;
   font-weight: 600;
 }
-
-/* .student-cv-replace-overlay {
-  position: absolute;
-  inset: 0;
-  width: 150px;
-  height: 210px;
-  border: none;
-  border-radius: 10px;
-  background: rgba(15, 15, 15, 0.45);
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-} */
 
 .student-cv-replace-button {
   position: absolute;

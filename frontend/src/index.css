@@ -1,3 +1,18 @@
+/**
+ * ================================
+ * index.css
+ * ================================
+ * Global root styles.
+ *
+ * Responsibilities:
+ * - Applies base styles for html, body and root element
+ * - Normalizes default page appearance
+ *
+ * Notes:
+ * - Loaded at application startup
+ * ================================
+ */
+
 :root {
   --text: #6b6375;
   --text-h: #08060d;

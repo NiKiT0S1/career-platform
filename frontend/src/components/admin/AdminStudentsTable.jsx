@@ -1,3 +1,21 @@
+/**
+ * ================================
+ * AdminStudentsTable
+ * ================================
+ * Table component for displaying students.
+ *
+ * Responsibilities:
+ * - Renders students list
+ * - Handles inline editing (input and select)
+ * - Displays sorting indicators
+ * - Manages row selection (checkbox)
+ *
+ * Notes:
+ * - Pure UI component
+ * - All logic is passed via props
+ * ================================
+ */
+
 export default function AdminStudentsTable({
     students,
     clickedStudentId,

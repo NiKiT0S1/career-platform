@@ -1,3 +1,19 @@
+/**
+ * ================================
+ * AdminFiltersPanel
+ * ================================
+ * Filters panel for students.
+ *
+ * Responsibilities:
+ * - Displays filter inputs
+ * - Updates filter state
+ * - Triggers notification sending
+ *
+ * Notes:
+ * - Does not contain API logic
+ * ================================
+ */
+
 export default function AdminFiltersPanel({
     filters,
     setFilters,
@@ -106,7 +122,6 @@ export default function AdminFiltersPanel({
                     placeholder="Type..."
                     value={filters.minGpa}
                     onChange={(e) => {
-                        // setFilters((prev) => ({ ...prev, minGpa: e.target.value }));
                         const value = e.target.value;
 
                         if (value === "") {

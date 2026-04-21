@@ -1,8 +1,22 @@
+/**
+ * ================================
+ * LoginPage
+ * ================================
+ * Login page for students and admins.
+ *
+ * Responsibilities:
+ * - Handles authentication form
+ * - Sends login request
+ * - Redirects user after successful login
+ *
+ * Notes:
+ * - Uses AuthContext to restore and update auth state
+ * ================================
+ */
+
 import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { loginRequest } from "../api/authApi";
-// import { saveToken, saveRole, getToken, getRole } from "../auth/auth";
-// import { saveRole, getRole, isAuthenticated } from "../auth/auth";
 import { useAuth } from "../context/AuthContext";
 import AuthLayout from "../layouts/AuthLayout";
 
@@ -14,26 +28,7 @@ export default function LoginPage() {
 
     const navigate = useNavigate();
 
-    // const token = getToken();
-    // const role = getRole();
-
     const {role, setRole, loading} = useAuth();
-
-    // if (token && role === "STUDENT") {
-    //     return <Navigate to="/student" replace />;
-    // }
-
-    // if (token && role === "ADMIN") {
-    //     return <Navigate to="/admin" replace />;
-    // }
-
-    // if (isAuthenticated() && role === "STUDENT") {
-    //     return <Navigate to="/student" replace />;
-    // }
-
-    // if (isAuthenticated() && role === "ADMIN") {
-    //     return <Navigate to="/admin" replace />;
-    // }
 
     if (loading) {
         return (
@@ -57,18 +52,8 @@ export default function LoginPage() {
 
             const data = await loginRequest(email, password);
 
-            // localStorage.removeItem("token");
-            // localStorage.removeItem("role");
-
-            // saveToken(data.token);
-            // saveRole(data.role);
             setRole(data.role);
-
-            // if (data.role === "STUDENT") {
-            //     navigate("/student");
-            // } else if (data.role === "ADMIN") {
-            //     navigate("/admin");
-            // }
+            
             if (data.role === "STUDENT") {
                 navigate("/student/main");
             } 

@@ -1,3 +1,19 @@
+/**
+ * ================================
+ * AuthContext
+ * ================================
+ * Global authentication context.
+ *
+ * Responsibilities:
+ * - Stores current user role
+ * - Restores authentication state from backend
+ * - Provides auth state to the whole application
+ *
+ * Notes:
+ * - Used with HttpOnly cookie authentication
+ * ================================
+ */
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { getCurrentAuth } from "../api/authApi";
 

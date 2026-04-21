@@ -1,3 +1,19 @@
+/**
+ * ================================
+ * StudentLayout
+ * ================================
+ * Shared layout for student pages.
+ *
+ * Responsibilities:
+ * - Renders sidebar and header
+ * - Handles account and notifications dropdown rendering
+ * - Displays active student page content
+ *
+ * Notes:
+ * - Used by StudentDashboard
+ * ================================
+ */
+
 import StudentSidebar from "../components/common/Sidebar";
 import AppHeader from "../components/common/AppHeader";
 

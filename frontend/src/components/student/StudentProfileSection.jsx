@@ -1,3 +1,19 @@
+/**
+ * ================================
+ * StudentProfileSection
+ * ================================
+ * Student profile section component.
+ *
+ * Responsibilities:
+ * - Displays student profile data
+ * - Handles company editing UI
+ * - Handles practice status editing UI
+ *
+ * Notes:
+ * - Controlled by StudentDashboard
+ * ================================
+ */
+
 export default function StudentProfileSection({
     student,
     companyName,

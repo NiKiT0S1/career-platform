@@ -1,3 +1,19 @@
+/**
+ * ================================
+ * Sidebar
+ * ================================
+ * Shared sidebar navigation component.
+ *
+ * Responsibilities:
+ * - Displays navigation items
+ * - Highlights active page
+ * - Triggers page change actions
+ *
+ * Notes:
+ * - Reused in admin and student layouts
+ * ================================
+ */
+
 export default function Sidebar({
     navItems = [],
     activeKey = "",

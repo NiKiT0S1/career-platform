@@ -1,3 +1,18 @@
+/**
+ * ================================
+ * AdminStudentsPagination
+ * ================================
+ * Pagination component for students table.
+ *
+ * Responsibilities:
+ * - Handles page navigation
+ * - Displays current page state
+ *
+ * Notes:
+ * - Controlled via props
+ * ================================
+ */
+
 export default function AdminStudentsPagination({
     totalPages,
     currentPage,

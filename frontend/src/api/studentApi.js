@@ -1,3 +1,20 @@
+/**
+ * ================================
+ * studentApi
+ * ================================
+ * API module for student actions.
+ *
+ * Responsibilities:
+ * - Loads student profile
+ * - Updates student data
+ * - Handles CV upload and preview requests
+ * - Loads templates and notifications
+ *
+ * Notes:
+ * - Used by StudentDashboard
+ * ================================
+ */
+
 import api from "./axios";
 
 export const getCurrentStudent = async () => {
@@ -55,22 +72,6 @@ export const previewStudentResume = async () => {
 
     return response.data; 
 };
-
-// export const downloadResumeTemplate = async () => {
-//     const response = await api.get("api/student/resume/template", {
-//         responseType: "blob",
-//     });
-
-//     return response.data;
-// };
-
-// export const downloadThreeSidedContract = async () => {
-//     const response = await api.get("/api/student/contracts/three-sided", {
-//         responseType: "blob",
-//     });
-
-//     return response.data;
-// };
 
 export const getTemplates = async () => {
     const response = await api.get("/api/student/templates");

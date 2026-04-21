@@ -1,34 +1,19 @@
-// export const saveToken = (token) => {
-//     localStorage.setItem("token", token);
-// };
-
-// export const saveRole = (role) => {
-//     localStorage.setItem("role", role);
-// };
-
-// export const getToken = () => {
-//     return localStorage.getItem("token");
-// };
-
-// export const getRole = () => {
-//     return localStorage.getItem("role");
-// };
-
-// export const logout = () => {
-//     localStorage.removeItem("token");
-//     localStorage.removeItem("role");
-// };
-
-// export const isAuthenticated = () => {
-//     return !!localStorage.getItem("token");
-// };
+/**
+ * ================================
+ * auth
+ * ================================
+ * Helper functions for authentication-related client actions.
+ *
+ * Responsibilities:
+ * - Clears local client-side session state
+ *
+ * Notes:
+ * - Does not store sensitive auth data
+ * ================================
+ */
 
 export const logout = () => {
     // localStorage.removeItem("role");
     localStorage.removeItem("adminActivePage");
     localStorage.removeItem("studentActivePage");
 };
-
-// export const isAuthenticated = () => {
-//     return !!localStorage.getItem("role");
-// };

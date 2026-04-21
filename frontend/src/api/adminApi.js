@@ -1,3 +1,21 @@
+/**
+ * ================================
+ * adminApi
+ * ================================
+ * API module for admin actions.
+ *
+ * Responsibilities:
+ * - Loads students, filters, groups, programs and courses
+ * - Sends notifications
+ * - Manages templates
+ * - Updates student fields
+ * - Changes admin password
+ *
+ * Notes:
+ * - Used by AdminDashboard
+ * ================================
+ */
+
 import api from "./axios";
 
 export const getCurrentAdmin = async () => {

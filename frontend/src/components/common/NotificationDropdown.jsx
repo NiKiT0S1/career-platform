@@ -1,3 +1,19 @@
+/**
+ * ================================
+ * NotificationDropdown
+ * ================================
+ * Reusable dropdown for notifications.
+ *
+ * Responsibilities:
+ * - Displays notifications list
+ * - Shows unread/read state
+ * - Provides notification actions
+ *
+ * Notes:
+ * - Intended for notification-related UI
+ * ================================
+ */
+
 import {formatDateTime} from "../../utils/formatDateTime";
 
 export default function NotificationDropdown({

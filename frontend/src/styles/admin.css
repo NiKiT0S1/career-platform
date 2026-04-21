@@ -1,6 +1,19 @@
+/**
+ * ================================
+ * admin.css
+ * ================================
+ * Styles for admin pages and components.
+ *
+ * Responsibilities:
+ * - Styles filters, table, templates and admin interactions
+ *
+ * Notes:
+ * - Used by AdminDashboard and related components
+ * ================================
+ */
+
 .admin-layout {
   min-height: 100vh;
-  /* background: linear-gradient(180deg, #1f1aa8 0%, #1a1496 100%); */
   background: linear-gradient(180deg, #0f63b8 0%, #0b4f93 100%);
   padding: 28px 20px 20px;
 }
@@ -99,15 +112,6 @@
   font-weight: 500;
 }
 
-/* .admin-select,
-.admin-input {
-  height: 52px;
-  border-radius: 999px;
-  border: 1px solid #cfcfcf;
-  padding: 0 18px;
-  font-size: 15px;
-} */
-
 
 .admin-input,
 .admin-select,
@@ -196,14 +200,6 @@
   min-width: 0;
 }
 
-/* .admin-table-wrapper {
-  width: 100%;
-  overflow: hidden;
-  border: 1px solid #bdbdbd;
-  border-radius: 18px;
-  background: #fff;
-} */
-
 .admin-table-wrapper {
   width: 100%;
   overflow-x: auto;
@@ -220,14 +216,6 @@
   border-collapse: collapse;
   font-size: 10px;
 }
-
-/* .admin-table {
-  width: 100%;
-  min-width: 1200px;
-  table-layout: fixed;
-  border-collapse: collapse;
-  font-size: 10px;
-} */
 
 .admin-table th,
 .admin-table td {
@@ -278,13 +266,6 @@
   background: #0f63b8;
   color: #fff;
 }
-
-/* .admin-templates-page {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  position: relative;
-} */
 
 .admin-templates-page {
   width: 100%;
@@ -505,20 +486,6 @@
   color: #d92d20;
 }
 
-/* .admin-template-drag-overlay {
-  position: absolute;
-  inset: 70px 0 0 0;
-  border: 2px dashed #7c93d8;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(2px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 20;
-} */
-
 .admin-template-drag-overlay {
   position: absolute;
   inset: 0;
@@ -600,49 +567,6 @@
   }
 }
 
-/* .admin-table td:nth-child(2),
-.admin-table td:nth-child(3),
-.admin-table td:nth-child(6),
-.admin-table td:nth-child(9) {
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-} */
-
-/* .admin-table th {
-  background: #fafafa;
-  font-weight: 600;
-} */
-
-/* @media (max-width: 1600px) {
-  .admin-table {
-    font-size: 10px;
-  }
-
-  .admin-table th,
-  .admin-table td {
-    padding: 4px 3px;
-  }
-
-  .admin-view-btn {
-    padding: 5px 10px;
-    font-size: 11px;
-  }
-}
-
-@media (max-width: 1300px) {
-  .admin-table {
-    font-size: 9px;
-  }
-
-  .admin-table td:nth-child(2),
-  .admin-table td:nth-child(3),
-  .admin-table td:nth-child(6),
-  .admin-table td:nth-child(9) {
-    max-width: 90px;
-  }
-} */
-
 .admin-templates-dropzone {
   position: relative;
   min-height: 620px;
@@ -659,11 +583,6 @@
   backdrop-filter: blur(2px);
   background-color: rgba(217, 222, 233, 0.758);
 }
-
-/* .admin-row-selected {
-  background-color: rgba(15, 99, 184, 0.15);
-  backdrop-filter: blur(2px);
-} */
 
 .admin-cell-editor {
   width: 100%;

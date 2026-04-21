@@ -1,3 +1,19 @@
+/**
+ * ================================
+ * AdminTemplateUploadModal
+ * ================================
+ * Modal for uploading templates.
+ *
+ * Responsibilities:
+ * - Handles file selection
+ * - Validates file size and format
+ * - Displays upload status
+ *
+ * Notes:
+ * - Controlled by parent component
+ * ================================
+ */
+
 export default function AdminTemplateUploadModal({
     templateName,
     setTemplateName,

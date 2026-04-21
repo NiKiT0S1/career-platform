@@ -1,3 +1,19 @@
+/**
+ * ================================
+ * StudentCvUploadModal
+ * ================================
+ * Modal for CV upload.
+ *
+ * Responsibilities:
+ * - Handles file selection
+ * - Displays upload progress and messages
+ * - Saves or cancels CV upload
+ *
+ * Notes:
+ * - Used inside StudentCvSection
+ * ================================
+ */
+
 export default function StudentCvUploadModal({
     resumeFile,
     resumeFileInputRef,

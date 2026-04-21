@@ -1,3 +1,19 @@
+/**
+ * ================================
+ * AdminTemplatesSection
+ * ================================
+ * Templates management section.
+ *
+ * Responsibilities:
+ * - Displays templates list
+ * - Handles upload, rename, replace and delete
+ * - Controls upload modal
+ *
+ * Notes:
+ * - Uses child components for UI
+ * ================================
+ */
+
 import AdminTemplateCard from "./AdminTemplateCard";
 import AdminTemplateUploadModal from "./AdminTemplateUploadModal";
 

@@ -1,3 +1,18 @@
+/**
+ * ================================
+ * AdminNotificationViewerModal
+ * ================================
+ * Modal for viewing student notifications.
+ *
+ * Responsibilities:
+ * - Displays notifications list
+ * - Shows message, status and timestamps
+ *
+ * Notes:
+ * - Read-only UI component
+ * ================================
+ */
+
 import { formatDateTime } from "../../utils/formatDateTime";
 
 export default function AdminNotificationViewerModal({

@@ -1,3 +1,17 @@
+/**
+ * ================================
+ * fileUtils
+ * ================================
+ * Helper functions for file handling.
+ *
+ * Responsibilities:
+ * - Format file names
+ *
+ * Notes:
+ * - Shared between admin and student
+ * ================================
+ */
+
 export const getDisplayFileName = (fileName, maxLength = 24) => {
     if (!fileName) return "";
 

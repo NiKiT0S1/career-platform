@@ -1,3 +1,22 @@
+/**
+ * ================================
+ * StudentDashboard
+ * ================================
+ * Main student page
+ *
+ * Responsibilities:
+ * - Loads student profile data
+ * - Handles CV upload, preview and replace
+ * - Displays templates
+ * - Manages notifications
+ * - Handles password change and logout
+ *
+ * Notes:
+ * - Uses polling for data refresh
+ * - UI is split into separate components
+ * ================================
+ */
+
 // 1. imports
 import { useEffect, useState, useRef } from "react";
 import { 

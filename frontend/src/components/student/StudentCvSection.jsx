@@ -1,3 +1,19 @@
+/**
+ * ================================
+ * StudentCVSection
+ * ================================
+ * CV management section.
+ *
+ * Responsibilities:
+ * - Upload CV
+ * - Replace CV
+ * - Preview CV
+ *
+ * Notes:
+ * - Supports drag & drop
+ * ================================
+ */
+
 import StudentCvUploadModal from "./StudentCvUploadModal";
 
 export default function StudentCvSection({

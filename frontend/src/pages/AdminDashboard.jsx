@@ -1,3 +1,23 @@
+/**
+ * ================================
+ * AdminDashboard
+ * ================================
+ * Main admin page
+ *
+ * Responsibilities:
+ * - Loads and manages students data
+ * - Handles filtering, sorting and pagination
+ * - Manages inline editing of student fields
+ * - Handles notifications (selected and filtered)
+ * - Manages templates (upload, replace, delete)
+ * - Coordinates UI components
+ *
+ * Notes:
+ * - Contains business logic and API calls
+ * - UI is delegated to child components
+ * ================================
+ */
+
 // 1. imports
 import { useEffect, useState, useRef } from "react";
 import { formatDateTime } from "../utils/formatDateTime";

@@ -1,3 +1,18 @@
+/**
+ * ================================
+ * fileValidation
+ * ================================
+ * File validation helper functions.
+ *
+ * Responsibilities:
+ * - Validates allowed file formats
+ * - Validates dragged files
+ *
+ * Notes:
+ * - Shared between admin and student pages
+ * ================================
+ */
+
 export const isPdfFile = (file) => {
     if (!file) return false;
 
