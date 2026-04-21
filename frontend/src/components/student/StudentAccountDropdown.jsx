@@ -73,11 +73,9 @@ export default function StudentAccountDropdown({
                     {accountPasswordMessage && (
                         <p
                             className={`student-account-password-box__message ${
-                                accountPasswordMessage.toLowerCase().includes("incorrect") ||
-                                accountPasswordMessage.toLowerCase().includes("failed") ||
-                                accountPasswordMessage.toLowerCase().includes("different")
-                                    ? "error"
-                                    : "success"
+                                accountPasswordMessage.toLowerCase().includes("success")
+                                    ? "success"
+                                    : "error"
                             }`}
                         >
                             {accountPasswordMessage}
