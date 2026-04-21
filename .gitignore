@@ -33,3 +33,6 @@ backend/uploads/contracts/*
 
 !backend/uploads/resumes/.gitkeep
 !backend/uploads/contracts/.gitkeep
+
+database/*.csv
+!database/example.csv
