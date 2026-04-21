@@ -497,6 +497,11 @@ export default function StudentDashboard() {
     };
 
     const handleChangePassword = async () => {
+        if (!currentPassword.trim() || !newPassword.trim()) {
+            setAccountPasswordMessage("Both password fields are required");
+            return;
+        }
+        
         if (currentPassword === newPassword) {
             setAccountPasswordMessage("New password must be different from current password");
             return;
