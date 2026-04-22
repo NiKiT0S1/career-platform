@@ -84,15 +84,20 @@ src/main/java/com/university/careerplatform/backend
 │   ├── Admin.java
 │   ├── Notification.java
 │   ├── Student.java
+│   ├── StudentPractice.java
 │   └── TemplateDocument.java
 │
 ├── model
+│   ├── CompanyType.java
+│   ├── DocumentType.java
+│   ├── PracticeMode.java
 │   ├── PracticeStatus.java
 │   └── TemplateCategory.java
 │
 ├── repository
 │   ├── AdminRepository.java
 │   ├── NotificationRepository.java
+│   ├── StudentPracticeRepository.java
 │   ├── StudentRepository.java
 │   └── TemplateDocumentRepository.java
 │

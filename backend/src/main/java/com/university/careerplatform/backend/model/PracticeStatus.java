@@ -1,18 +1,30 @@
 /**
- * Enum representing student's internship (practice) status.
+ * ================================
+ * PracticeStatus Enum
+ * ================================
+ * Represents current internship state of a student.
  *
- * EMPLOYED   - student has found an internship/company
- * NOT_FOUND  - student has not found an internship yet
+ * Values:
+ * - EMPLOYED          (legacy)
+ * - NOT_FOUND         (legacy)
+ * - IN_PRACTICE       (active internship)
+ * - EARLY_COMPLETION  (early completion)
+ * - MOBILITY          (academic mobility)
  *
- * This enum is used:
- * - for filtering students in admin panel
- * - for updating status in student profile
- * - to ensure only valid values are stored in the database
+ * Notes:
+ * - Legacy values are kept for backward compatibility
+ * - Will be fully refactored in later stages
+ * ================================
  */
 
 package com.university.careerplatform.backend.model;
 
 public enum PracticeStatus {
-    EMPLOYED,
-    NOT_FOUND
+    EMPLOYED, // legacy
+    NOT_FOUND, // legacy
+
+    IN_PRACTICE, // НА ПРАКТИКЕ
+    NOT_ASSIGNED, // НЕ НАЗНАЧЕНО
+    EARLY_COMPLETION, // ДОСРОЧНО ЗАКРЫЛ
+    MOBILITY // МОБИЛЬНОСТЬ
 }
