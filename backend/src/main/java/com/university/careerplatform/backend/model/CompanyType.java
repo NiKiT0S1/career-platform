@@ -6,7 +6,7 @@
  *
  * Values:
  * - ZHSHS      (ЖШС)
- * - AQ         (АҚ)
+ * - AK         (АҚ)
  * - KB         (ҚБ)
  * - KEAK       (КЕАҚ)
  * - RMK        (РМК)
@@ -28,7 +28,7 @@ package com.university.careerplatform.backend.model;
 
 public enum CompanyType {
     ZHSHS,  // ЖШС
-    AQ,  // АҚ
+    AK,  // АҚ
     KB,  // ҚБ
     KEAK,  // КЕАҚ
     RMK,  // РМК

@@ -76,6 +76,7 @@ src/main/java/com/university/careerplatform/backend
 │   ├── PracticeStatusUpdateRequest.java
 │   ├── SendNotificationByFilterRequest.java
 │   ├── SendNotificationRequest.java
+│   ├── UpdatePracticeRequest.java
 │   ├── UpdateStudentFieldRequest.java
 │   ├── UpdateTemplateCategoryRequest.java
 │   └── UpdateTemplateDisplayNameRequest.java
@@ -114,6 +115,7 @@ src/main/java/com/university/careerplatform/backend
 │   ├── CompanyDirectoryService.java
 │   ├── NotificationService.java
 │   ├── ResumeService.java
+│   ├── StudentPracticeService.java
 │   ├── StudentService.java
 │   └── TemplateService.java
 │
@@ -169,6 +171,7 @@ Examples:
 * `AuthService`
 * `TemplateService`
 * `CompanyDirectoryService`
+* `StudentPracticeService`
 
 ### Controller
 
@@ -197,6 +200,7 @@ Examples:
 * `UpdateStudentFieldRequest`
 * `UpdateTemplateDisplayNameRequest`
 * `UpdateTemplateCategoryRequest`
+* `UpdatePracticeRequest`
 
 ### Security
 

@@ -31,19 +31,22 @@ public class AdminController {
     private final AdminService adminService;
     private final TemplateService templateService;
     private final CompanyDirectoryService companyDirectoryService;
+    private final StudentPracticeService studentPracticeService;
 
     public AdminController(StudentService studentService,
                            NotificationService notificationService,
                            ResumeService resumeService,
                            AdminService adminService,
                            TemplateService templateService,
-                           CompanyDirectoryService companyDirectoryService) {
+                           CompanyDirectoryService companyDirectoryService,
+                           StudentPracticeService studentPracticeService) {
         this.studentService = studentService;
         this.notificationService = notificationService;
         this.resumeService = resumeService;
         this.adminService = adminService;
         this.templateService = templateService;
         this.companyDirectoryService = companyDirectoryService;
+        this.studentPracticeService = studentPracticeService;
     }
 
     @GetMapping("/me")
@@ -317,5 +320,19 @@ public class AdminController {
             @RequestParam String query
     ) {
         return ResponseEntity.ok(companyDirectoryService.searchByCompanyName(query));
+    }
+
+    @PatchMapping("/students/{studentId}/practice")
+    public ResponseEntity<StudentPractice> updateStudentPractice(
+            @PathVariable Long studentId,
+            @RequestBody UpdatePracticeRequest request
+    ) {
+        try {
+            StudentPractice updatedPractice = studentPracticeService.updatePractice(studentId, request);
+            return ResponseEntity.ok(updatedPractice);
+        }
+        catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }
