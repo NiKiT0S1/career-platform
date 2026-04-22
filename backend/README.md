@@ -82,6 +82,7 @@ src/main/java/com/university/careerplatform/backend
 │
 ├── entity
 │   ├── Admin.java
+│   ├── CompanyDirectory.java
 │   ├── Notification.java
 │   ├── Student.java
 │   ├── StudentPractice.java
@@ -96,6 +97,7 @@ src/main/java/com/university/careerplatform/backend
 │
 ├── repository
 │   ├── AdminRepository.java
+│   ├── CompanyDirectoryRepository.java
 │   ├── NotificationRepository.java
 │   ├── StudentPracticeRepository.java
 │   ├── StudentRepository.java
@@ -109,6 +111,7 @@ src/main/java/com/university/careerplatform/backend
 ├── service
 │   ├── AdminService.java
 │   ├── AuthService.java
+│   ├── CompanyDirectoryService.java
 │   ├── NotificationService.java
 │   ├── ResumeService.java
 │   ├── StudentService.java
@@ -137,6 +140,8 @@ Examples:
 * `Admin`
 * `Notification`
 * `TemplateDocument`
+* `StudentPractice`
+* `CompanyDirectory`
 
 ### Repository
 
@@ -148,6 +153,8 @@ Examples:
 * `AdminRepository`
 * `NotificationRepository`
 * `TemplateDocumentRepository`
+* `CompanyDirectoryRepository`
+* `StudentPracticeRepository`
 
 ### Service
 
@@ -161,6 +168,7 @@ Examples:
 * `ResumeService`
 * `AuthService`
 * `TemplateService`
+* `CompanyDirectoryService`
 
 ### Controller
 
@@ -171,6 +179,7 @@ Examples:
 * `StudentController`
 * `AdminController`
 * `AuthController`
+* `HealthController`
 
 ### DTO
 
@@ -232,6 +241,9 @@ Example:
 
 * `PracticeStatus`
 * `TemplateCategory`
+* `CompanyType`
+* `DocumentType`
+* `PracticeMode`
 
 ---
 

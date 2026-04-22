@@ -6,10 +6,7 @@
 package com.university.careerplatform.backend.controller;
 
 import com.university.careerplatform.backend.dto.*;
-import com.university.careerplatform.backend.entity.Admin;
-import com.university.careerplatform.backend.entity.Notification;
-import com.university.careerplatform.backend.entity.Student;
-import com.university.careerplatform.backend.entity.TemplateDocument;
+import com.university.careerplatform.backend.entity.*;
 import com.university.careerplatform.backend.model.TemplateCategory;
 import com.university.careerplatform.backend.service.*;
 import org.springframework.core.io.Resource;
@@ -33,15 +30,20 @@ public class AdminController {
     private final ResumeService resumeService;
     private final AdminService adminService;
     private final TemplateService templateService;
+    private final CompanyDirectoryService companyDirectoryService;
 
     public AdminController(StudentService studentService,
                            NotificationService notificationService,
-                           ResumeService resumeService, AdminService adminService, TemplateService templateService) {
+                           ResumeService resumeService,
+                           AdminService adminService,
+                           TemplateService templateService,
+                           CompanyDirectoryService companyDirectoryService) {
         this.studentService = studentService;
         this.notificationService = notificationService;
         this.resumeService = resumeService;
         this.adminService = adminService;
         this.templateService = templateService;
+        this.companyDirectoryService = companyDirectoryService;
     }
 
     @GetMapping("/me")
@@ -309,4 +311,11 @@ public class AdminController {
 //            return ResponseEntity.badRequest().body(e.getMessage());
 //        }
 //    }
+
+    @GetMapping("/companies/search")
+    public ResponseEntity<List<CompanyDirectory>> searchCompanies(
+            @RequestParam String query
+    ) {
+        return ResponseEntity.ok(companyDirectoryService.searchByCompanyName(query));
+    }
 }
