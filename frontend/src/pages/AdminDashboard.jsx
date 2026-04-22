@@ -529,6 +529,7 @@ export default function AdminDashboard() {
     };
 
     const handlePageChange = async (page) => {
+        if (page < 0 || page >= totalPages) return;
         setCurrentPage(page);
     };
 
@@ -1038,6 +1039,7 @@ export default function AdminDashboard() {
                     <AdminFiltersPanel
                         filters={filters}
                         setFilters={setFilters}
+                        setCurrentPage={setCurrentPage}
                         educationalPrograms={educationalPrograms}
                         groups={groups}
                         courses={courses}

@@ -17,6 +17,7 @@
 export default function AdminFiltersPanel({
     filters,
     setFilters,
+    setCurrentPage,
     educationalPrograms,
     groups,
     courses,
@@ -40,6 +41,7 @@ export default function AdminFiltersPanel({
                     value={filters.fullName}
                     onChange={(e) => {
                         setFilters((prev) => ({ ...prev, fullName: e.target.value }));
+                        setCurrentPage(0);
                     }}
                 />
             </div>
@@ -67,6 +69,7 @@ export default function AdminFiltersPanel({
                     value={filters.groupName}
                     onChange={(e) => {
                         setFilters((prev) => ({ ...prev, groupName: e.target.value }));
+                        setCurrentPage(0);
                     }}
                 >
                     <option value="">All groups</option>
@@ -85,6 +88,7 @@ export default function AdminFiltersPanel({
                     value={filters.course}
                     onChange={(e) => {
                         setFilters((prev) => ({ ...prev, course: e.target.value }));
+                        setCurrentPage(0);
                     }}
                 >
                     <option value="">All courses</option>
@@ -103,6 +107,7 @@ export default function AdminFiltersPanel({
                     value={filters.practiceStatus}
                     onChange={(e) => {
                         setFilters((prev) => ({ ...prev, practiceStatus: e.target.value }));
+                        setCurrentPage(0);
                     }}
                 >
                     <option value="">All statuses</option>
@@ -137,6 +142,7 @@ export default function AdminFiltersPanel({
                         }
 
                         setFilters((prev) => ({...prev, minGpa: value }));
+                        setCurrentPage(0);
                     }}
                 />
             </div>
