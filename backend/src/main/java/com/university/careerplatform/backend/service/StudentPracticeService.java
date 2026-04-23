@@ -69,4 +69,32 @@ public class StudentPracticeService {
 
         return  studentPracticeRepository.save(practice);
     }
+
+//    @Transactional
+//    public StudentPractice getOrCreateByStudentId(Long studentId) {
+//        return studentPracticeRepository.findByStudentId(studentId)
+//                .orElseGet(() -> {
+//                    Student student = studentRepository.findById(studentId)
+//                            .orElseThrow(() -> new RuntimeException("Student not found"));
+//
+//                    StudentPractice practice = new StudentPractice();
+//                    practice.setStudent(student);
+//
+//                    return studentPracticeRepository.save(practice);
+//                });
+//    }
+
+    @Transactional
+    public StudentPractice getByStudentIdOrEmpty(Long studentId) {
+        return studentPracticeRepository.findByStudentId(studentId)
+                .orElseGet(() -> {
+                    Student student = studentRepository.findById(studentId)
+                            .orElseThrow(() -> new RuntimeException("Student not found"));
+
+                    StudentPractice practice = new StudentPractice();
+                    practice.setStudent(student);
+
+                    return practice;
+                });
+    }
 }

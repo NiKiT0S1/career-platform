@@ -335,4 +335,26 @@ public class AdminController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+//    @GetMapping("/students/{studentId}/practice")
+//    public ResponseEntity<StudentPractice> getStudentPractice(@PathVariable Long studentId) {
+//        try {
+//            StudentPractice practice = studentPracticeService.getOrCreateByStudentId(studentId);
+//            return ResponseEntity.ok(practice);
+//        }
+//        catch (RuntimeException e) {
+//            return ResponseEntity.badRequest().build();
+//        }
+//    }
+
+    @GetMapping("/students/{studentId}/practice")
+    public ResponseEntity<StudentPractice> getStudentPractice(@PathVariable Long studentId) {
+        try {
+            StudentPractice practice = studentPracticeService.getByStudentIdOrEmpty(studentId);
+            return ResponseEntity.ok(practice);
+        }
+        catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

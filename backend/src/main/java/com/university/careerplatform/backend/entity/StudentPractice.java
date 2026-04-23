@@ -30,6 +30,7 @@
 
 package com.university.careerplatform.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.university.careerplatform.backend.model.CompanyType;
 import com.university.careerplatform.backend.model.DocumentType;
 import com.university.careerplatform.backend.model.PracticeMode;
@@ -50,6 +51,7 @@ public class StudentPractice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @OneToOne
     @JoinColumn(name = "student_id", nullable = false, unique = true)
     private Student student;
