@@ -16,20 +16,20 @@
 
 export default function StudentProfileSection({
     student,
-    companyName,
-    setCompanyName,
-    isEditingCompany,
-    setIsEditingCompany,
-    companyEditRef,
-    isCompanyConfirmed,
-    setIsCompanyConfirmed,
-    companyConfirmError,
-    setCompanyConfirmError,
-    handleUpdateCompany,
-    practiceStatus,
-    setPracticeStatus,
-    hasPracticeStatusChanged,
-    handleUpdatePracticeStatus,
+    // companyName,
+    // setCompanyName,
+    // isEditingCompany,
+    // setIsEditingCompany,
+    // companyEditRef,
+    // isCompanyConfirmed,
+    // setIsCompanyConfirmed,
+    // companyConfirmError,
+    // setCompanyConfirmError,
+    // handleUpdateCompany,
+    // practiceStatus,
+    // setPracticeStatus,
+    // hasPracticeStatusChanged,
+    // handleUpdatePracticeStatus,
     message,
 }) {
     return (
@@ -60,7 +60,7 @@ export default function StudentProfileSection({
                         <span>Educational Program: {student.educationalProgram}</span>
                     </div>
 
-                    <div className="student-detail-row">
+                    {/* <div className="student-detail-row">
                         <span className="student-detail-icon">📊</span>
                         <span>GPA: {student.gpa}</span>
                     </div>
@@ -68,7 +68,7 @@ export default function StudentProfileSection({
                     <div className="student-detail-row">
                         <span className="student-detail-icon">📞</span>
                         <span>Phone: {student.phone || "-"}</span>
-                    </div>
+                    </div> */}
                 </div>
 
                 <div className="student-profile-details__column">
@@ -76,7 +76,7 @@ export default function StudentProfileSection({
                         <span className="student-detail-icon">💼</span>
                         <span>Company: {student.companyName || "-"}</span>
 
-                        {!isEditingCompany && (
+                        {/* {!isEditingCompany && (
                             <button
                                 type="button"
                                 className="student-inline-icon-btn"
@@ -89,10 +89,10 @@ export default function StudentProfileSection({
                             >
                                 ✎
                             </button>
-                        )}
+                        )} */}
                     </div>
 
-                    {isEditingCompany && (
+                    {/* {isEditingCompany && (
                         <div className="student-company-edit" ref={companyEditRef}>
                             <div className="student-company-edit__row">
                                 <input
@@ -136,13 +136,13 @@ export default function StudentProfileSection({
                                 </p>
                             )}
                         </div>
-                    )}
+                    )} */}
 
                     <div className="student-detail-row student-detail-row--status">
                         <span className="student-detail-icon">🧍</span>
-                        <span>Status:</span>
+                        <span>Status: {student.practiceStatus || "-"}</span>
 
-                        <div className="student-status-inline">
+                        {/* <div className="student-status-inline">
                             <select
                                 className="student-status-select"
                                 value={practiceStatus}
@@ -160,7 +160,7 @@ export default function StudentProfileSection({
                                     Save
                                 </button>
                             )}
-                        </div>
+                        </div> */}
                     </div>
 
                     {message && <p className="student-action-message">{message}</p>}

@@ -689,20 +689,20 @@ export default function StudentDashboard() {
             {activePage === "main" && (
                 <StudentProfileSection
                     student={student}
-                    companyName={companyName}
-                    setCompanyName={setCompanyName}
-                    isEditingCompany={isEditingCompany}
-                    setIsEditingCompany={setIsEditingCompany}
-                    companyEditRef={companyEditRef}
-                    isCompanyConfirmed={isCompanyConfirmed}
-                    setIsCompanyConfirmed={setIsCompanyConfirmed}
-                    companyConfirmError={companyConfirmError}
-                    setCompanyConfirmError={setCompanyConfirmError}
-                    handleUpdateCompany={handleUpdateCompany}
-                    practiceStatus={practiceStatus}
-                    setPracticeStatus={setPracticeStatus}
-                    hasPracticeStatusChanged={hasPracticeStatusChanged}
-                    handleUpdatePracticeStatus={handleUpdatePracticeStatus}
+                    // companyName={companyName}
+                    // setCompanyName={setCompanyName}
+                    // isEditingCompany={isEditingCompany}
+                    // setIsEditingCompany={setIsEditingCompany}
+                    // companyEditRef={companyEditRef}
+                    // isCompanyConfirmed={isCompanyConfirmed}
+                    // setIsCompanyConfirmed={setIsCompanyConfirmed}
+                    // companyConfirmError={companyConfirmError}
+                    // setCompanyConfirmError={setCompanyConfirmError}
+                    // handleUpdateCompany={handleUpdateCompany}
+                    // practiceStatus={practiceStatus}
+                    // setPracticeStatus={setPracticeStatus}
+                    // hasPracticeStatusChanged={hasPracticeStatusChanged}
+                    // handleUpdatePracticeStatus={handleUpdatePracticeStatus}
                     message={message}
                 />
             )}
