@@ -38,6 +38,7 @@ export default function AdminStudentsTable({
     getRowStyle,
     handleDownloadResume,
     handleViewNotifications,
+    handleOpenPracticeModal,
 }) {
     return (
         <div className="admin-table-wrapper">
@@ -51,6 +52,10 @@ export default function AdminStudentsTable({
                     <col style={{ width: "170px" }} />
                     <col style={{ width: "100px" }} />
                     <col style={{ width: "45px" }} />
+                    
+                    {/* Practice */}
+                    <col style={{ width: "90px" }} />
+
                     <col style={{ width: "120px" }} />
                     <col style={{ width: "75px" }} />
                     <col style={{ width: "55px" }} />
@@ -82,6 +87,9 @@ export default function AdminStudentsTable({
                         >
                             GPA {getSortIcon("gpa")}
                         </th>
+
+                        <th>Practice</th>
+
                         <th>Company</th>
                         <th>Status</th>
                         <th>CV</th>
@@ -299,6 +307,18 @@ export default function AdminStudentsTable({
                             </td>
 
                             <td>{student.gpa ?? "Not specified"}</td>
+
+                            <td>
+                                <button
+                                    className="admin-view-btn"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenPracticeModal(student);
+                                    }}
+                                >
+                                    Edit
+                                </button>
+                            </td>
 
                             <td
                                 title={student.companyName || "Not specified"}

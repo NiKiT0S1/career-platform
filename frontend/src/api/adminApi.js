@@ -175,3 +175,21 @@ export const updateStudentField = async (studentId, field, value) => {
 
     return response.data;
 };
+
+export const getStudentPractice = async (studentId) => {
+    const response = await api.get(`/api/admin/students/${studentId}/practice`);
+    return response.data;
+};
+
+export const updateStudentPractice = async (studentId, payload) => {
+    const response = await api.patch(`/api/admin/students/${studentId}/practice`, payload);
+    return response.data;
+};
+
+export const searchCompanies = async (query) => {
+    const response = await api.get(`/api/admin/companies/search`, {
+        params: {query},
+    });
+
+    return response.data;
+};

@@ -601,3 +601,157 @@
 .admin-cell-editor--select {
   cursor: pointer;
 }
+
+.admin-practice-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.38);
+    backdrop-filter: blur(3px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.admin-practice-modal {
+    width: 100%;
+    max-width: 860px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+.admin-practice-modal__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+}
+
+.admin-practice-modal__title {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+    color: #1c274c;
+}
+
+.admin-practice-modal__close {
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 50%;
+    background: #f1f3f8;
+    color: #1c274c;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.admin-practice-modal__close:hover {
+    background: #e5e9f5;
+}
+
+.admin-practice-modal__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 20px;
+}
+
+.admin-practice-modal__field {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-practice-modal__label {
+    margin-bottom: 7px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #4a5678;
+}
+
+.admin-practice-modal__input {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid #d5dbea;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 15px;
+    color: #1c274c;
+    background: #ffffff;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-practice-modal__input:focus {
+    border-color: #5b7cff;
+    box-shadow: 0 0 0 3px rgba(91, 124, 255, 0.12);
+}
+
+.admin-practice-modal__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 26px;
+}
+
+.admin-practice-modal__save,
+.admin-practice-modal__cancel {
+    min-width: 120px;
+    height: 44px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.admin-practice-modal__save {
+    background: #4f6df5;
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(79, 109, 245, 0.22);
+}
+
+.admin-practice-modal__save:hover {
+    background: #3f5ce0;
+}
+
+.admin-practice-modal__cancel {
+    background: #eef1f7;
+    color: #1c274c;
+}
+
+.admin-practice-modal__cancel:hover {
+    background: #e1e6f0;
+}
+
+@media (max-width: 768px) {
+    .admin-practice-modal {
+        max-width: 100%;
+        padding: 18px;
+        border-radius: 16px;
+    }
+
+    .admin-practice-modal__title {
+        font-size: 24px;
+    }
+
+    .admin-practice-modal__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-practice-modal__actions {
+        flex-direction: column;
+    }
+
+    .admin-practice-modal__save,
+    .admin-practice-modal__cancel {
+        width: 100%;
+    }
+}

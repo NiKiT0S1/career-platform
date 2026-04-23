@@ -41,6 +41,8 @@ import {
     updateTemplateCategory,
     updateStudentField,
     getCourses,
+    getStudentPractice,
+    updateStudentPractice,
 } from "../api/adminApi";
 import { logout } from "../auth/auth";
 import { useNavigate, useParams } from "react-router-dom";
@@ -58,6 +60,7 @@ import AdminStudentsTable from "../components/admin/AdminStudentsTable";
 import { formatPracticeStatus } from "../utils/formatPracticeStatus";
 import { getPracticeStatusRowStyle } from "../utils/getPracticeStatusRowStyle";
 import { getDisplayFileName } from "../utils/fileUtils";
+import AdminPracticeModal from "../components/admin/AdminPracticeModal";
 
 export default function AdminDashboard() {
     // 2. state
@@ -160,6 +163,11 @@ export default function AdminDashboard() {
         !!filters.course ||
         !!filters.practiceStatus ||
         !!filters.minGpa;
+
+    const [practieModalOpen, setPracticeModalOpen] = useState(false);
+    const [practiceStudent, setPracticeStudent] = useState(null);
+    const [practiceData, setPracticeData] = useState(null);
+    const [practiceStatusMessage, setPracticeStatusMessage] = useState("");
 
     // 3. refs
     const templateFileInputRef = useRef(null);
@@ -953,6 +961,36 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleOpenPracticeModal = async (student) => {
+        try {
+            const practice = await getStudentPractice(student.id);
+            setPracticeStudent(student);
+            setPracticeData(practice);
+            setPracticeModalOpen(true);
+        }
+        catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleClosePracticeModal = () => {
+        setPracticeModalOpen(false);
+        setPracticeStudent(null);
+        setPracticeData(null);
+    };
+
+    const handleSavePractice = async (payload) => {
+        try {
+            await updateStudentPractice(practiceStudent.id, payload);
+            setPracticeStatusMessage("Practice data updated successfully");
+            handleClosePracticeModal();
+        }
+        catch (error) {
+            console.error(error);
+            setPracticeStatusMessage("Failed to update practice data");
+        }
+    };
+
     const navigate = useNavigate();
 
     const handleLogout = async () => {
@@ -1079,6 +1117,7 @@ export default function AdminDashboard() {
                             getRowStyle={getPracticeStatusRowStyle}
                             handleDownloadResume={handleDownloadResume}
                             handleViewNotifications={handleViewNotifications}
+                            handleOpenPracticeModal={handleOpenPracticeModal}
                         />
 
                         <AdminStudentsPagination
@@ -1088,6 +1127,14 @@ export default function AdminDashboard() {
                             endPage={endPage}
                             pagesPerBlock={pagesPerBlock}
                             handlePageChange={handlePageChange}
+                        />
+
+                        <AdminPracticeModal
+                            isOpen={practieModalOpen}
+                            student={practiceStudent}
+                            practice={practiceData}
+                            onClose={handleClosePracticeModal}
+                            onSave={handleSavePractice}
                         />
                     </div>
                 </div>
