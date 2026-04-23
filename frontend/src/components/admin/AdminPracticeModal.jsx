@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { searchCompanies } from "../../api/adminApi";
 
 export default function AdminPracticeModal({
     isOpen,
@@ -8,10 +9,34 @@ export default function AdminPracticeModal({
     onSave,
 }) {
     const [localPractice, setLocalPractice] = useState({});
+    const [companySuggestions, setCompanySuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
+    const searchTimeoutRef = useRef(null);
+    const suggestionBoxRef = useRef(null);
+
 
     useEffect(() => {
         setLocalPractice(practice || {});
+        setCompanySuggestions([]);
+        setShowSuggestions(false);
     }, [practice]);
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const handleClickOutside = (event) => {
+            if (suggestionBoxRef.current && !suggestionBoxRef.current.contains(event.target)) {
+                setShowSuggestions(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isOpen]);
 
     if (!isOpen || !student || !localPractice) return null;
 
@@ -20,6 +45,45 @@ export default function AdminPracticeModal({
             ...prev,
             [field]: value,
         }));
+    };
+
+    const handleCompanyNameChange = async (value) => {
+        updateField("companyName", value);
+
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+
+        if (!value.trim()) {
+            setCompanySuggestions([]);
+            setShowSuggestions(false);
+            return;
+        }
+
+        searchTimeoutRef.current = setTimeout(async () => {
+            try {
+                const result = await searchCompanies(value.trim());
+                setCompanySuggestions(result || []);
+                setShowSuggestions(true);
+            }
+            catch (error) {
+                console.error(error);
+                setCompanySuggestions([]);
+                setShowSuggestions(false);
+            }
+        }, 300);
+    };
+
+    const handleSelectCompany = (company) => {
+        setLocalPractice((prev) => ({
+            ...prev,
+            companyName: company.companyName || "",
+            companyType: company.companyType || "",
+            documentType: company.documentType || "",
+        }));
+
+        setCompanySuggestions([]);
+        setShowSuggestions(false);
     };
 
     return (
@@ -46,7 +110,10 @@ export default function AdminPracticeModal({
                 </div>
 
                 <div className="admin-practice-modal__grid">
-                    <div className="admin-practice-modal__field">
+                    <div
+                        className="admin-practice-modal__field admin-practice-modal__field--company"
+                        ref={suggestionBoxRef}
+                    >
                         <label className="admin-practice-modal__label">
                             Company Name
                         </label>
@@ -54,8 +121,34 @@ export default function AdminPracticeModal({
                             className="admin-practice-modal__input"
                             type="text"
                             value={localPractice.companyName || ""}
-                            onChange={(e) => updateField("companyName", e.target.value)}
+                            onChange={(e) => handleCompanyNameChange(e.target.value)}
+                            onFocus={() => {
+                                if (companySuggestions.length > 0) {
+                                    setShowSuggestions(true);
+                                }
+                            }}
                         />
+
+                        {showSuggestions && companySuggestions.length > 0 && (
+                            <div className="admin-practice-modal__suggestions">
+                                {companySuggestions.map((company) => (
+                                    <button
+                                        key={company.id}
+                                        type="button"
+                                        className="admin-practice-modal__suggestion-item"
+                                        onClick={() => handleSelectCompany(company)}
+                                    >
+                                        <div className="admin-practice-modal__suggestion-name">
+                                            {company.companyName}
+                                        </div>
+                                        <div className="admin-practice-modal__suggestion-meta">
+                                            {company.companyType || "—"} ·{" "}
+                                            {company.defaultDocumentType || "—"}
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="admin-practice-modal__field">
