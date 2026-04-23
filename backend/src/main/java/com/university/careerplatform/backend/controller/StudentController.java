@@ -8,6 +8,7 @@ package com.university.careerplatform.backend.controller;
 import com.university.careerplatform.backend.dto.ChangePasswordRequest;
 import com.university.careerplatform.backend.dto.CompanyUpdateRequest;
 import com.university.careerplatform.backend.dto.PracticeStatusUpdateRequest;
+import com.university.careerplatform.backend.dto.StudentProfileResponse;
 import com.university.careerplatform.backend.entity.Notification;
 import com.university.careerplatform.backend.entity.Student;
 import com.university.careerplatform.backend.entity.TemplateDocument;
@@ -43,11 +44,32 @@ public class StudentController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<Student> getCurrentStudent(Authentication authentication) {
+//    public ResponseEntity<Student> getCurrentStudent(Authentication authentication) {
+    public ResponseEntity<StudentProfileResponse> getCurrentStudent(Authentication authentication) {
         try {
             String email = authentication.getName();
             Student student = studentService.getCurrentStudent(email);
-            return ResponseEntity.ok(student);
+//            return ResponseEntity.ok(student);
+
+            StudentProfileResponse response = new StudentProfileResponse();
+
+            response.setId(student.getId());
+            response.setFullName(student.getFullName());
+            response.setGroupName(student.getGroupName());
+            response.setCourse(student.getCourse());
+            response.setEducationalProgram(student.getEducationalProgram());
+            response.setEmail(student.getEmail());
+
+            response.setCompanyName(student.getCompanyName());
+            response.setPracticeStatus(
+                    student.getPracticeStatus() != null
+                            ? student.getPracticeStatus().name()
+                            : null
+            );
+
+            response.setResumePath(student.getResumePath());
+
+            return ResponseEntity.ok(response);
         }
         catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
