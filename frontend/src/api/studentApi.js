@@ -22,20 +22,20 @@ export const getCurrentStudent = async () => {
     return response.data
 };
 
-export const updateStudentCompany = async (companyName) => {
-    const response = await api.put("/api/student/company", {
-        companyName,
-    });
-    return response.data;
-};
+// export const updateStudentCompany = async (companyName) => {
+//     const response = await api.put("/api/student/company", {
+//         companyName,
+//     });
+//     return response.data;
+// };
 
-export const updateStudentPracticeStatus = async (practiceStatus) => {
-    const response = await api.put("/api/student/practice-status", {
-        practiceStatus,
-    });
+// export const updateStudentPracticeStatus = async (practiceStatus) => {
+//     const response = await api.put("/api/student/practice-status", {
+//         practiceStatus,
+//     });
 
-    return response.data;
-};
+//     return response.data;
+// };
 
 export const getStudentNotifications = async () => {
     const response = await api.get("/api/student/notifications");

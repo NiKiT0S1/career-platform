@@ -219,7 +219,52 @@ export default function AdminDashboard() {
         return () => clearInterval(interval);
     }, []);
 
+    // useEffect(() => {
+    //     const timeout = setTimeout(async () => {
+    //         const preparedFilters = {
+    //             fullName: filters.fullName || undefined,
+    //             educationalProgram: filters.educationalProgram || undefined,
+    //             groupName: filters.groupName || undefined,
+    //             course: filters.course ? Number(filters.course) : undefined,
+    //             practiceStatus: filters.practiceStatus || undefined,
+    //             minGpa: filters.minGpa ? Number(filters.minGpa) : undefined,
+    //         };
+
+    //         const hasAnyFilters = 
+    //             !!filters.fullName ||
+    //             !!filters.educationalProgram ||
+    //             !!filters.groupName ||
+    //             !!filters.course ||
+    //             !!filters.practiceStatus ||
+    //             !!filters.minGpa;
+
+    //         try {
+    //             if (hasAnyFilters) {
+    //                 const data = await filterStudents(preparedFilters, currentPage, studentsPerPage, sortBy, sortDir);
+                    
+    //                 setStudents(data.content);
+    //                 setTotalPages(data.totalPages);
+    //                 setTotalStudentsCount(data.totalElements);
+    //             }
+    //             else {
+    //                 const data = await getStudentsPage(currentPage, studentsPerPage, sortBy, sortDir);
+                    
+    //                 setStudents(data.content);
+    //                 setTotalPages(data.totalPages);
+    //                 setTotalStudentsCount(data.totalElements);
+    //             }
+    //         }
+    //         catch (error) {
+    //             console.error(error);
+    //         }
+    //     }, filters.fullName ? 500 : 0);
+
+    //     return () => clearTimeout(timeout);
+    // }, [filters, currentPage, studentsPerPage, sortBy, sortDir]);
+
     useEffect(() => {
+        let isCancelled = false;
+
         const timeout = setTimeout(async () => {
             const preparedFilters = {
                 fullName: filters.fullName || undefined,
@@ -230,7 +275,7 @@ export default function AdminDashboard() {
                 minGpa: filters.minGpa ? Number(filters.minGpa) : undefined,
             };
 
-            const hasAnyFilters = 
+            const hasAnyFilters =
                 !!filters.fullName ||
                 !!filters.educationalProgram ||
                 !!filters.groupName ||
@@ -239,27 +284,27 @@ export default function AdminDashboard() {
                 !!filters.minGpa;
 
             try {
-                if (hasAnyFilters) {
-                    const data = await filterStudents(preparedFilters, currentPage, studentsPerPage, sortBy, sortDir);
-                    
-                    setStudents(data.content);
-                    setTotalPages(data.totalPages);
-                    setTotalStudentsCount(data.totalElements);
-                }
-                else {
-                    const data = await getStudentsPage(currentPage, studentsPerPage, sortBy, sortDir);
-                    
-                    setStudents(data.content);
-                    setTotalPages(data.totalPages);
-                    setTotalStudentsCount(data.totalElements);
-                }
+                const data = hasAnyFilters
+                    ? await filterStudents(preparedFilters, currentPage, studentsPerPage, sortBy, sortDir)
+                    : await getStudentsPage(currentPage, studentsPerPage, sortBy, sortDir);
+
+                if (isCancelled) return;
+
+                setStudents(data.content);
+                setTotalPages(data.totalPages);
+                setTotalStudentsCount(data.totalElements);
             }
             catch (error) {
-                console.error(error);
+                if (!isCancelled) {
+                    console.error(error);
+                }
             }
         }, filters.fullName ? 500 : 0);
 
-        return () => clearTimeout(timeout);
+        return () => {
+            isCancelled = true;
+            clearTimeout(timeout);
+        };
     }, [filters, currentPage, studentsPerPage, sortBy, sortDir]);
 
     useEffect(() => {

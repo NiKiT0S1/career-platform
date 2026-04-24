@@ -21,8 +21,8 @@
 import { useEffect, useState, useRef } from "react";
 import { 
     getCurrentStudent, 
-    updateStudentCompany,
-    updateStudentPracticeStatus,
+    // updateStudentCompany,
+    // updateStudentPracticeStatus,
     getStudentNotifications,
     markNotificationAsRead ,
     uploadStudentResume,
@@ -55,8 +55,8 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 export default function StudentDashboard() {
     // 2. state
     const [student, setStudent] = useState(null);
-    const [companyName, setCompanyName] = useState("");
-    const [practiceStatus, setPracticeStatus] = useState("");
+    // const [companyName, setCompanyName] = useState("");
+    // const [practiceStatus, setPracticeStatus] = useState("");
     const [message, setMessage] = useState("");
     const [notifications, setNotifications] = useState([]);
 
@@ -93,28 +93,28 @@ export default function StudentDashboard() {
     const [showCvUploadModal, setShowCvUploadModal] = useState(false);
     const [isCvHovered, setIsCvHovered] = useState(false);
 
-    const [isEditingCompany, setIsEditingCompany] = useState(false);
+    // const [isEditingCompany, setIsEditingCompany] = useState(false);
 
     const [accountOpen, setAccountOpen] = useState(false);
     const [showPasswordForm, setShowPasswordForm] = useState(false);
 
     const [isDraggingCv, setIsDraggingCv] = useState(false);
 
-    const [isCompanyConfirmed, setIsCompanyConfirmed] = useState(false);
-    const [companyConfirmError, setCompanyConfirmError] = useState("");
+    // const [isCompanyConfirmed, setIsCompanyConfirmed] = useState(false);
+    // const [companyConfirmError, setCompanyConfirmError] = useState("");
 
     const [studentLoadFailed, setStudentLoadFailed] = useState(false);
 
     const MAX_CV_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
-    const hasPracticeStatusChanged = practiceStatus !== (student?.practiceStatus || "");
+    // const hasPracticeStatusChanged = practiceStatus !== (student?.practiceStatus || "");
 
     // 3. refs
     const resumeFileInputRef = useRef(null);
     const previewContainerRef = useRef(null);
-    const companyEditRef = useRef(null);
-    const isEditingCompanyRef = useRef(false);
-    const hasPracticeStatusChangedRef = useRef(false);
+    // const companyEditRef = useRef(null);
+    // const isEditingCompanyRef = useRef(false);
+    // const hasPracticeStatusChangedRef = useRef(false);
 
     // 4. effects
     useEffect(() => {
@@ -153,13 +153,13 @@ export default function StudentDashboard() {
         return () => clearInterval(interval);
     }, []);
 
-    useEffect(() => {
-        isEditingCompanyRef.current = isEditingCompany;
-    }, [isEditingCompany]);
+    // useEffect(() => {
+    //     isEditingCompanyRef.current = isEditingCompany;
+    // }, [isEditingCompany]);
 
-    useEffect(() => {
-        hasPracticeStatusChangedRef.current = hasPracticeStatusChanged;
-    }, [hasPracticeStatusChanged]);
+    // useEffect(() => {
+    //     hasPracticeStatusChangedRef.current = hasPracticeStatusChanged;
+    // }, [hasPracticeStatusChanged]);
 
     useEffect(() => {
         if (document.visibilityState !== "visible") return;
@@ -239,22 +239,22 @@ export default function StudentDashboard() {
         return () => clearTimeout(timeout);
     }, [resumeActionMessage, resumeActionError]);
 
-    useEffect(() => {
-        if (!isEditingCompany) return;
+    // useEffect(() => {
+    //     if (!isEditingCompany) return;
 
-        const handleClickOutside = (event) => {
-            if (companyEditRef.current && !companyEditRef.current.contains(event.target)) {
-                setIsEditingCompany(false);
-                setCompanyName(student?.companyName || "");
-            }
-        };
+    //     const handleClickOutside = (event) => {
+    //         if (companyEditRef.current && !companyEditRef.current.contains(event.target)) {
+    //             setIsEditingCompany(false);
+    //             setCompanyName(student?.companyName || "");
+    //         }
+    //     };
 
-        document.addEventListener("mousedown", handleClickOutside);
+    //     document.addEventListener("mousedown", handleClickOutside);
 
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [isEditingCompany, student?.companyName]);
+    //     return () => {
+    //         document.removeEventListener("mousedown", handleClickOutside);
+    //     };
+    // }, [isEditingCompany, student?.companyName]);
 
     // 5. handlers
     const loadCurrentStudent = async () => {
@@ -263,13 +263,13 @@ export default function StudentDashboard() {
 
             setStudent(currentStudent);
             
-            if (!isEditingCompanyRef.current) {
-                setCompanyName(currentStudent.companyName || "");
-            }
+            // if (!isEditingCompanyRef.current) {
+            //     setCompanyName(currentStudent.companyName || "");
+            // }
             
-            if (!hasPracticeStatusChangedRef.current) {
-                setPracticeStatus(currentStudent.practiceStatus || "");
-            }
+            // if (!hasPracticeStatusChangedRef.current) {
+            //     setPracticeStatus(currentStudent.practiceStatus || "");
+            // }
 
             setStudentLoadFailed(false);
         } 
@@ -299,39 +299,39 @@ export default function StudentDashboard() {
         }
     };
 
-    const handleUpdateCompany = async () => {
-        if (!isCompanyConfirmed) {
-            setCompanyConfirmError("Please confirm company name");
-            return false;
-        }
+    // const handleUpdateCompany = async () => {
+    //     if (!isCompanyConfirmed) {
+    //         setCompanyConfirmError("Please confirm company name");
+    //         return false;
+    //     }
         
-        try {
-            setCompanyConfirmError("");
+    //     try {
+    //         setCompanyConfirmError("");
             
-            const updateStudent = await updateStudentCompany(companyName);
-            setStudent(updateStudent);
-            setMessage("Company updated successfully");
-            setIsCompanyConfirmed(false);
-            return true;
-        } 
-        catch (error) {
-            console.error(error);
-            setMessage("Failed to update company");
-            return false;
-        }
-    };
+    //         const updateStudent = await updateStudentCompany(companyName);
+    //         setStudent(updateStudent);
+    //         setMessage("Company updated successfully");
+    //         setIsCompanyConfirmed(false);
+    //         return true;
+    //     } 
+    //     catch (error) {
+    //         console.error(error);
+    //         setMessage("Failed to update company");
+    //         return false;
+    //     }
+    // };
 
-    const handleUpdatePracticeStatus = async () => {
-        try {
-            const updateStudent = await updateStudentPracticeStatus(practiceStatus);
-            setStudent(updateStudent);
-            setMessage("Practice status updated successfully");
-        } 
-        catch (error) {
-            console.error(error);
-            setMessage("Failed to update practice status");
-        }
-    };
+    // const handleUpdatePracticeStatus = async () => {
+    //     try {
+    //         const updateStudent = await updateStudentPracticeStatus(practiceStatus);
+    //         setStudent(updateStudent);
+    //         setMessage("Practice status updated successfully");
+    //     } 
+    //     catch (error) {
+    //         console.error(error);
+    //         setMessage("Failed to update practice status");
+    //     }
+    // };
 
     const handleMarkAsRead = async (notificationId) => {
         try {

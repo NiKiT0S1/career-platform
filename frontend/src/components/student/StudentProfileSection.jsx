@@ -6,10 +6,11 @@
  *
  * Responsibilities:
  * - Displays student profile data
- * - Handles company editing UI
- * - Handles practice status editing UI
+ * - Displays assigned company
+ * - Displays practice status
  *
  * Notes:
+ * - Company and practice status are read-only for students
  * - Controlled by StudentDashboard
  * ================================
  */
