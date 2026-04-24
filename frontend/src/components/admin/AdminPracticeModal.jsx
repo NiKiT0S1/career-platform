@@ -17,10 +17,31 @@ export default function AdminPracticeModal({
 
 
     useEffect(() => {
-        setLocalPractice(practice || {});
+        // setLocalPractice(practice || {});
+
+        if (!isOpen || !student) {
+            setLocalPractice({});
+            setCompanySuggestions([]);
+            setShowSuggestions(false);
+            return;
+        }
+
+        setLocalPractice({
+            ...practice,
+            companyName: practice?.companyName || student?.companyName || "",
+            practiceStatus: practice?.practiceStatus || student?.practiceStatus || "",
+            companyType: practice?.companyType || "",
+            practiceMode: practice?.practiceMode || "",
+            documentType: practice?.documentType || "",
+            letterSent: practice?.letterSent ?? null,
+            contractNumber: practice?.contractNumber || "",
+            contractDate: practice?.contractDate || "",
+            practiceStartDate: practice?.practiceStartDate || "",
+            practiceEndDate: practice?.practiceEndDate || "",
+        });
         setCompanySuggestions([]);
         setShowSuggestions(false);
-    }, [practice]);
+    }, [isOpen, practice, student]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -79,7 +100,7 @@ export default function AdminPracticeModal({
             ...prev,
             companyName: company.companyName || "",
             companyType: company.companyType || "",
-            documentType: company.documentType || "",
+            documentType: company.defaultDocumentType || "",
         }));
 
         setCompanySuggestions([]);
