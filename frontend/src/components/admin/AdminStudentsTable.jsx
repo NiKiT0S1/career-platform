@@ -320,7 +320,7 @@ export default function AdminStudentsTable({
                                 </button>
                             </td>
 
-                            <td
+                            {/* <td
                                 title={student.companyName || "Not specified"}
                                 onDoubleClick={() =>
                                     startEditingCell(student.id, "companyName", student.companyName || "", student)
@@ -351,9 +351,13 @@ export default function AdminStudentsTable({
                                 ) : (
                                     student.companyName || "Not specified"
                                 )}
+                            </td> */}
+
+                            <td title={student.companyName || "Not specified"}>
+                                {student.companyName || "Not specified"}
                             </td>
 
-                            <td
+                            {/* <td
                                 title={formatPracticeStatus(student.practiceStatus) || "Not specified"}
                                 onDoubleClick={() =>
                                     startEditingCell(
@@ -392,6 +396,10 @@ export default function AdminStudentsTable({
                                 ) : (
                                     formatPracticeStatus(student.practiceStatus) || "Not specified"
                                 )}
+                            </td> */}
+
+                            <td title={formatPracticeStatus(student.practiceStatus) || "Not specified"}>
+                                {formatPracticeStatus(student.practiceStatus) || "Not specified"}
                             </td>
 
                             <td style={{ textAlign: "center" }}>

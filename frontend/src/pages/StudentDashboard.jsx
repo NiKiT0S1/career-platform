@@ -48,6 +48,7 @@ import StudentProfileSection from "../components/student/StudentProfileSection";
 import StudentCvSection from "../components/student/StudentCvSection";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
+import { formatPracticeStatus } from "../utils/formatPracticeStatus";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -703,6 +704,7 @@ export default function StudentDashboard() {
                     // setPracticeStatus={setPracticeStatus}
                     // hasPracticeStatusChanged={hasPracticeStatusChanged}
                     // handleUpdatePracticeStatus={handleUpdatePracticeStatus}
+                    formatPracticeStatus={formatPracticeStatus}
                     message={message}
                 />
             )}

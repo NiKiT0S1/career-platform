@@ -30,8 +30,12 @@ export default function StudentProfileSection({
     // setPracticeStatus,
     // hasPracticeStatusChanged,
     // handleUpdatePracticeStatus,
+    formatPracticeStatus,
     message,
 }) {
+
+
+
     return (
         <div className="student-profile-page">
             <h1 className="student-profile-page__title">Profile</h1>
@@ -140,7 +144,8 @@ export default function StudentProfileSection({
 
                     <div className="student-detail-row student-detail-row--status">
                         <span className="student-detail-icon">🧍</span>
-                        <span>Status: {student.practiceStatus || "-"}</span>
+                        {/* <span>Status: {student.practiceStatus || "-"}</span> */}
+                        <span>Status: {formatPracticeStatus(student.practiceStatus)}</span>
 
                         {/* <div className="student-status-inline">
                             <select

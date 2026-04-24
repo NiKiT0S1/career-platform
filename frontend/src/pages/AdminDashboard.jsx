@@ -148,7 +148,8 @@ export default function AdminDashboard() {
     const [editingCell, setEditingCell] = useState({ studentId: null, field: null });
     const [editingValue, setEditingValue] = useState("");
 
-    const selectEditableFields = ["groupName", "course", "educationalProgram", "practiceStatus"];
+    // const selectEditableFields = ["groupName", "course", "educationalProgram", "practiceStatus"];
+    const selectEditableFields = ["groupName", "course", "educationalProgram"];
 
     const currentBlock = Math.floor(currentPage / pagesPerBlock);
     const startPage = currentBlock * pagesPerBlock;
@@ -164,7 +165,7 @@ export default function AdminDashboard() {
         !!filters.practiceStatus ||
         !!filters.minGpa;
 
-    const [practieModalOpen, setPracticeModalOpen] = useState(false);
+    const [practiceModalOpen, setPracticeModalOpen] = useState(false);
     const [practiceStudent, setPracticeStudent] = useState(null);
     const [practiceData, setPracticeData] = useState(null);
     const [practiceStatusMessage, setPracticeStatusMessage] = useState("");
@@ -983,6 +984,9 @@ export default function AdminDashboard() {
         try {
             await updateStudentPractice(practiceStudent.id, payload);
             setPracticeStatusMessage("Practice data updated successfully");
+
+            await refreshStudentsForPolling();
+
             handleClosePracticeModal();
         }
         catch (error) {
@@ -1130,7 +1134,7 @@ export default function AdminDashboard() {
                         />
 
                         <AdminPracticeModal
-                            isOpen={practieModalOpen}
+                            isOpen={practiceModalOpen}
                             student={practiceStudent}
                             practice={practiceData}
                             onClose={handleClosePracticeModal}
