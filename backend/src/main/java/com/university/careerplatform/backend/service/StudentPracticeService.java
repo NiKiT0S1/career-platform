@@ -67,6 +67,17 @@ public class StudentPracticeService {
         practice.setPracticeStartDate(request.getPracticeStartDate());
         practice.setPracticeEndDate(request.getPracticeEndDate());
 
+        // SYNC WITH LEGACY FIELD
+        Student student = practice.getStudent();
+
+        if (request.getCompanyName() != null) {
+            student.setCompanyName(request.getCompanyName());
+        }
+
+        if (request.getPracticeStatus() != null) {
+            student.setPracticeStatus(request.getPracticeStatus());
+        }
+
         return  studentPracticeRepository.save(practice);
     }
 

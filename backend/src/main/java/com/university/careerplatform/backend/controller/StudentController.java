@@ -60,12 +60,37 @@ public class StudentController {
             response.setEducationalProgram(student.getEducationalProgram());
             response.setEmail(student.getEmail());
 
-            response.setCompanyName(student.getCompanyName());
-            response.setPracticeStatus(
-                    student.getPracticeStatus() != null
-                            ? student.getPracticeStatus().name()
-                            : null
-            );
+//            response.setCompanyName(student.getCompanyName());
+//            response.setPracticeStatus(
+//                    student.getPracticeStatus() != null
+//                            ? student.getPracticeStatus().name()
+//                            : null
+//            );
+
+            if (student.getPractice() != null) {
+                response.setCompanyName(
+                        student.getPractice().getCompanyName() != null
+                                ? student.getPractice().getCompanyName()
+                                : student.getCompanyName()
+                );
+
+                response.setPracticeStatus(
+                        student.getPractice().getPracticeStatus() != null
+                                ? student.getPractice().getPracticeStatus().name()
+                                : student.getPracticeStatus() != null
+                                        ? student.getPracticeStatus().name()
+                                        : null
+                );
+            }
+            else {
+                response.setCompanyName(student.getCompanyName());
+
+                response.setPracticeStatus(
+                        student.getPracticeStatus() != null
+                                ? student.getPracticeStatus().name()
+                                : null
+                );
+            }
 
             response.setResumePath(student.getResumePath());
 
