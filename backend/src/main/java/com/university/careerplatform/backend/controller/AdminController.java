@@ -215,11 +215,11 @@ public class AdminController {
         }
     }
 
-    @PostMapping("/students/sync-practice-statuses")
-    public ResponseEntity<String> syncPracticeStatuses() {
-        int updated = studentService.syncPracticeStatusesByCompanyName();
-        return ResponseEntity.ok("Updated students: " + updated);
-    }
+//    @PostMapping("/students/sync-practice-statuses")
+//    public ResponseEntity<String> syncPracticeStatuses() {
+//        int updated = studentService.syncPracticeStatusesByCompanyName();
+//        return ResponseEntity.ok("Updated students: " + updated);
+//    }
 
     @GetMapping("/templates")
     public ResponseEntity<List<TemplateDocument>> getAllTemplates() {

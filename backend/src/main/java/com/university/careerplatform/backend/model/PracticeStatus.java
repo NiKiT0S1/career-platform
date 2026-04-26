@@ -21,8 +21,8 @@
 package com.university.careerplatform.backend.model;
 
 public enum PracticeStatus {
-    EMPLOYED, // legacy
-    NOT_FOUND, // legacy
+//    EMPLOYED, // legacy
+//    NOT_FOUND, // legacy
 
     IN_PRACTICE, // НА ПРАКТИКЕ
     NOT_ASSIGNED, // НЕ НАЗНАЧЕНО

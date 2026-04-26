@@ -6,8 +6,8 @@
 package com.university.careerplatform.backend.controller;
 
 import com.university.careerplatform.backend.dto.ChangePasswordRequest;
-import com.university.careerplatform.backend.dto.CompanyUpdateRequest;
-import com.university.careerplatform.backend.dto.PracticeStatusUpdateRequest;
+//import com.university.careerplatform.backend.dto.CompanyUpdateRequest;
+//import com.university.careerplatform.backend.dto.PracticeStatusUpdateRequest;
 import com.university.careerplatform.backend.dto.StudentProfileResponse;
 import com.university.careerplatform.backend.entity.Notification;
 import com.university.careerplatform.backend.entity.Student;
@@ -67,29 +67,42 @@ public class StudentController {
 //                            : null
 //            );
 
-            if (student.getPractice() != null) {
-                response.setCompanyName(
-                        student.getPractice().getCompanyName() != null
-                                ? student.getPractice().getCompanyName()
-                                : student.getCompanyName()
-                );
+//            if (student.getPractice() != null) {
+//                response.setCompanyName(
+//                        student.getPractice().getCompanyName() != null
+//                                ? student.getPractice().getCompanyName()
+//                                : student.getCompanyName()
+//                );
+//
+//                response.setPracticeStatus(
+//                        student.getPractice().getPracticeStatus() != null
+//                                ? student.getPractice().getPracticeStatus().name()
+//                                : student.getPracticeStatus() != null
+//                                        ? student.getPracticeStatus().name()
+//                                        : null
+//                );
+//            }
+//            else {
+//                response.setCompanyName(student.getCompanyName());
+//
+//                response.setPracticeStatus(
+//                        student.getPracticeStatus() != null
+//                                ? student.getPracticeStatus().name()
+//                                : null
+//                );
+//            }
 
+            if (student.getPractice() != null) {
+                response.setCompanyName(student.getPractice().getCompanyName());
                 response.setPracticeStatus(
                         student.getPractice().getPracticeStatus() != null
                                 ? student.getPractice().getPracticeStatus().name()
-                                : student.getPracticeStatus() != null
-                                        ? student.getPracticeStatus().name()
-                                        : null
+                                : null
                 );
             }
             else {
-                response.setCompanyName(student.getCompanyName());
-
-                response.setPracticeStatus(
-                        student.getPracticeStatus() != null
-                                ? student.getPracticeStatus().name()
-                                : null
-                );
+                response.setCompanyName(null);
+                response.setPracticeStatus(null);
             }
 
             response.setResumePath(student.getResumePath());
@@ -120,18 +133,20 @@ public class StudentController {
 //            return ResponseEntity.notFound().build();
 //        }
 //    }
-    @PutMapping("/company")
-    public ResponseEntity<Student> updateCompanyName(Authentication authentication,
-                                                     @RequestBody CompanyUpdateRequest request) {
-        try {
-            String email = authentication.getName();
-            Student updatedStudent = studentService.updateCompanyByEmail(email, request.getCompanyName());
-            return ResponseEntity.ok(updatedStudent);
-        }
-        catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
+
+//    # LEGACY ENDPOINT #
+//    @PutMapping("/company")
+//    public ResponseEntity<Student> updateCompanyName(Authentication authentication,
+//                                                     @RequestBody CompanyUpdateRequest request) {
+//        try {
+//            String email = authentication.getName();
+//            Student updatedStudent = studentService.updateCompanyByEmail(email, request.getCompanyName());
+//            return ResponseEntity.ok(updatedStudent);
+//        }
+//        catch (RuntimeException e) {
+//            return ResponseEntity.notFound().build();
+//        }
+//    }
 
 //    @PutMapping("/practice-status/{studentId}")
 //    public ResponseEntity<Student> updatePracticeStatus(@PathVariable Long studentId,
@@ -144,18 +159,20 @@ public class StudentController {
 //            return ResponseEntity.notFound().build();
 //        }
 //    }
-    @PutMapping("/practice-status")
-    public ResponseEntity<Student> updatePracticeStatus(Authentication authentication,
-                                                        @RequestBody PracticeStatusUpdateRequest request) {
-        try {
-            String email = authentication.getName();
-            Student updatedStudent = studentService.updatePracticeStatusByEmail(email, request.getPracticeStatus());
-            return ResponseEntity.ok(updatedStudent);
-        }
-        catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
+
+//    # LEGACY ENDPOINT #
+//    @PutMapping("/practice-status")
+//    public ResponseEntity<Student> updatePracticeStatus(Authentication authentication,
+//                                                        @RequestBody PracticeStatusUpdateRequest request) {
+//        try {
+//            String email = authentication.getName();
+//            Student updatedStudent = studentService.updatePracticeStatusByEmail(email, request.getPracticeStatus());
+//            return ResponseEntity.ok(updatedStudent);
+//        }
+//        catch (RuntimeException e) {
+//            return ResponseEntity.badRequest().build();
+//        }
+//    }
 
 //    @GetMapping("/notifications/{studentId}")
 //    public ResponseEntity<List<Notification>> getStudentNotifications(@PathVariable Long studentId) {

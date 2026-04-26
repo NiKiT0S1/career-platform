@@ -6,7 +6,7 @@
 package com.university.careerplatform.backend.service;
 
 import com.university.careerplatform.backend.entity.Student;
-import com.university.careerplatform.backend.model.PracticeStatus;
+//import com.university.careerplatform.backend.model.PracticeStatus;
 import com.university.careerplatform.backend.repository.StudentRepository;
 import com.university.careerplatform.backend.specification.StudentSpecification;
 import org.springframework.data.domain.Page;
@@ -97,9 +97,9 @@ public class StudentService {
         return studentRepository.findByGpaGreaterThanEqual(gpa);
     }
 
-    public List<Student> getStudentsByPracticeStatus(PracticeStatus practiceStatus) {
-        return studentRepository.findByPracticeStatus(practiceStatus);
-    }
+//    public List<Student> getStudentsByPracticeStatus(PracticeStatus practiceStatus) {
+//        return studentRepository.findByPracticeStatus(practiceStatus);
+//    }
 
     public Student saveStudent(Student student) {
         return studentRepository.save(student);
@@ -114,11 +114,11 @@ public class StudentService {
 //        return studentRepository.save(student);
 //    }
 
-    public Student updateCompanyByEmail(String email, String companyName) {
-        Student student = getCurrentStudent(email);
-        student.setCompanyName(companyName);
-        return studentRepository.save(student);
-    }
+//    public Student updateCompanyByEmail(String email, String companyName) {
+//        Student student = getCurrentStudent(email);
+//        student.setCompanyName(companyName);
+//        return studentRepository.save(student);
+//    }
 
 //    ## OLD METHOD ##
 //    public Student updatePracticeStatus(Long studentId, String practiceStatus) {
@@ -129,18 +129,18 @@ public class StudentService {
 //        return studentRepository.save(student);
 //    }
 
-    public Student updatePracticeStatusByEmail(String email, String practiceStatus) {
-        Student student = getCurrentStudent(email);
-
-        try {
-            PracticeStatus status = PracticeStatus.valueOf(practiceStatus);
-            student.setPracticeStatus(status);
-            return studentRepository.save(student);
-        }
-        catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid practice status");
-        }
-    }
+//    public Student updatePracticeStatusByEmail(String email, String practiceStatus) {
+//        Student student = getCurrentStudent(email);
+//
+//        try {
+//            PracticeStatus status = PracticeStatus.valueOf(practiceStatus);
+//            student.setPracticeStatus(status);
+//            return studentRepository.save(student);
+//        }
+//        catch (IllegalArgumentException e) {
+//            throw new RuntimeException("Invalid practice status");
+//        }
+//    }
 
     public Page<Student> filterStudents(String fullName,
                                         String educationalProgram,
@@ -216,12 +216,12 @@ public class StudentService {
         student.setPassword(passwordEncoder.encode(newPassword));
         studentRepository.save(student);
     }
-    @Transactional
-    public int syncPracticeStatusesByCompanyName() {
-        int employedUpdated = studentRepository.markStudentsAsInPractice();
-        int notFoundUpdated = studentRepository.markStudentsAsNotAssigned();
-        return employedUpdated + notFoundUpdated;
-    }
+//    @Transactional
+//    public int syncPracticeStatusesByCompanyName() {
+//        int employedUpdated = studentRepository.markStudentsAsInPractice();
+//        int notFoundUpdated = studentRepository.markStudentsAsNotAssigned();
+//        return employedUpdated + notFoundUpdated;
+//    }
 
     @Transactional
     public Student updateStudentField(Long studentId, String field, String value) {
@@ -234,8 +234,8 @@ public class StudentService {
             case "course" -> student.setCourse(Integer.parseInt(value));
             case "educationalProgram" -> student.setEducationalProgram(value.trim());
             case "phone" -> student.setPhone(value.trim());
-            case "companyName" -> student.setCompanyName(value.trim());
-            case "practiceStatus" -> student.setPracticeStatus(PracticeStatus.valueOf(value.trim()));
+//            case "companyName" -> student.setCompanyName(value.trim());
+//            case "practiceStatus" -> student.setPracticeStatus(PracticeStatus.valueOf(value.trim()));
             default -> throw new RuntimeException("Unsupported field: " + field);
         }
 

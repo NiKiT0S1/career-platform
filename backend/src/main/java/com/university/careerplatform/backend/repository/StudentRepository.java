@@ -6,7 +6,7 @@
 package com.university.careerplatform.backend.repository;
 
 import com.university.careerplatform.backend.entity.Student;
-import com.university.careerplatform.backend.model.PracticeStatus;
+//import com.university.careerplatform.backend.model.PracticeStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -30,7 +30,7 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
 
     List<Student> findByGpaGreaterThanEqual(Double gpa);
 
-    List<Student> findByPracticeStatus(PracticeStatus practiceStatus);
+//    List<Student> findByPracticeStatus(PracticeStatus practiceStatus);
 
     @Query("SELECT DISTINCT s.educationalProgram FROM Student s WHERE s.educationalProgram IS NOT NULL ORDER BY s.educationalProgram")
     List<String> findDistinctEducationalProgram();
@@ -56,14 +56,14 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
 //    """)
 //    int markStudentsAsInPractice();
 
-    @Modifying
-    @Query("""
-        UPDATE Student s
-        SET s.practiceStatus = 'IN_PRACTICE'
-        WHERE s.companyName IS NOT NULL
-            AND TRIM(s.companyName) <> ''
-    """)
-    int markStudentsAsInPractice();
+//    @Modifying
+//    @Query("""
+//        UPDATE Student s
+//        SET s.practiceStatus = 'IN_PRACTICE'
+//        WHERE s.companyName IS NOT NULL
+//            AND TRIM(s.companyName) <> ''
+//    """)
+//    int markStudentsAsInPractice();
 
 //    @Modifying
 //    @Query("""
@@ -74,12 +74,12 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
 //    """)
 //    int markStudentsAsNotAssigned();
 
-    @Modifying
-    @Query("""
-        UPDATE Student s
-        SET s.practiceStatus = 'NOT_ASSIGNED'
-        WHERE s.companyName IS NULL
-            OR TRIM(s.companyName) = ''
-    """)
-    int markStudentsAsNotAssigned();
+//    @Modifying
+//    @Query("""
+//        UPDATE Student s
+//        SET s.practiceStatus = 'NOT_ASSIGNED'
+//        WHERE s.companyName IS NULL
+//            OR TRIM(s.companyName) = ''
+//    """)
+//    int markStudentsAsNotAssigned();
 }

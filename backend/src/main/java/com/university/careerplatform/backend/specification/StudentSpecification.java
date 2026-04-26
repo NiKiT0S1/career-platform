@@ -6,7 +6,10 @@
 package com.university.careerplatform.backend.specification;
 
 import com.university.careerplatform.backend.entity.Student;
+import com.university.careerplatform.backend.entity.StudentPractice;
 import com.university.careerplatform.backend.model.PracticeStatus;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 
 public class StudentSpecification {
@@ -70,9 +73,14 @@ public class StudentSpecification {
             if (practiceStatus != null && !practiceStatus.isBlank()) {
                 try {
                     PracticeStatus status = PracticeStatus.valueOf(practiceStatus);
+
+                    Join<Student, StudentPractice> practiceJoin = root.join("practice", JoinType.LEFT);
+
                     predicate = criteriaBuilder.and(
                             predicate,
-                            criteriaBuilder.equal(root.get("practiceStatus"), status)
+//                            criteriaBuilder.equal(root.get("practiceStatus"), status)
+                            criteriaBuilder.equal(practiceJoin.get("practiceStatus"), status)
+
                     );
                 }
                 catch (IllegalArgumentException e) {

@@ -5,7 +5,7 @@
 
 package com.university.careerplatform.backend.entity;
 
-import com.university.careerplatform.backend.model.PracticeStatus;
+//import com.university.careerplatform.backend.model.PracticeStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
@@ -45,10 +45,10 @@ public class Student {
 
     private Double gpa;
 
-    private String companyName;  // legacy
-
-    @Enumerated(EnumType.STRING)
-    private PracticeStatus practiceStatus;  // legacy
+//    private String companyName;  // legacy
+//
+//    @Enumerated(EnumType.STRING)
+//    private PracticeStatus practiceStatus;  // legacy
 
     @OneToOne(mappedBy = "student", cascade = CascadeType.ALL)
     private StudentPractice practice;
