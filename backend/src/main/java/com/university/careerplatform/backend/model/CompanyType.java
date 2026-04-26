@@ -38,5 +38,16 @@ public enum CompanyType {
     ROO,  // РОО
     GZI,  // ҒЗИ
     OO,  // ОО
-    ZTB  // ЗТБ
+    ZTB,  // ЗТБ
+
+    MEKEME,  // Мекеме
+    EB_AK,  // ЕБ АҚ
+    RMKK_PGO, // РМҚК РҒО
+    RMKK,  // РМҚК
+    OOO,  // OOO
+    SHZHK_MKK, // ШЖҚ МКК
+    KMM,  // КММ
+    MM,  // ММ
+    RKB, // РҚБ
+    RMM  // РММ
 }
