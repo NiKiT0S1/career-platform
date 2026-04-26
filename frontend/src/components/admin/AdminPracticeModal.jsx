@@ -228,8 +228,8 @@ export default function AdminPracticeModal({
                             }
                         >
                             <option value="" disabled>Select practice status</option>
-                            <option value="EMPLOYED">EMPLOYED</option>
-                            <option value="NOT_FOUND">NOT FOUND</option>
+                            {/* <option value="EMPLOYED">EMPLOYED</option>
+                            <option value="NOT_FOUND">NOT FOUND</option> */}
                             <option value="IN_PRACTICE">IN PRACTICE</option>
                             <option value="NOT_ASSIGNED">NOT ASSIGNED</option>
                             <option value="EARLY_COMPLETION">EARLY COMPLETION</option>

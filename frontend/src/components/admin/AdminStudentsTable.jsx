@@ -101,7 +101,8 @@ export default function AdminStudentsTable({
                     {students.map((student) => (
                         <tr
                             key={student.id}
-                            style={getRowStyle(student.practiceStatus)}
+                            // style={getRowStyle(student.practiceStatus)}
+                            style={getRowStyle(student.practice?.practiceStatus)}
                             className={clickedStudentId === student.id ? "admin-row-selected" : ""}
                             onClick={() => setClickedStudentId(student.id)}
                         >
@@ -353,8 +354,12 @@ export default function AdminStudentsTable({
                                 )}
                             </td> */}
 
-                            <td title={student.companyName || "Not specified"}>
+                            {/* <td title={student.companyName || "Not specified"}>
                                 {student.companyName || "Not specified"}
+                            </td> */}
+
+                            <td title={student.practice?.companyName || "Not specified"}>
+                                {student.practice?.companyName || "Not specified"}
                             </td>
 
                             {/* <td
@@ -398,8 +403,12 @@ export default function AdminStudentsTable({
                                 )}
                             </td> */}
 
-                            <td title={formatPracticeStatus(student.practiceStatus) || "Not specified"}>
+                            {/* <td title={formatPracticeStatus(student.practiceStatus) || "Not specified"}>
                                 {formatPracticeStatus(student.practiceStatus) || "Not specified"}
+                            </td> */}
+
+                            <td title={formatPracticeStatus(student.practice?.practiceStatus) || "Not specified"}>
+                                {formatPracticeStatus(student.practice?.practiceStatus) || "Not specified"}
                             </td>
 
                             <td style={{ textAlign: "center" }}>

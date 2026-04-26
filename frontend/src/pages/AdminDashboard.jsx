@@ -1010,8 +1010,24 @@ export default function AdminDashboard() {
     const handleOpenPracticeModal = async (student) => {
         try {
             const practice = await getStudentPractice(student.id);
+
+            const preparedPractice = {
+                ...practice,
+                companyName: practice?.companyName || "",
+                practiceStatus: practice?.practiceStatus || "",
+                companyType: practice?.companyType || "",
+                practiceMode: practice?.practiceMode || "",
+                documentType: practice?.documentType || "",
+                letterSent: practice?.letterSent ?? null,
+                contractNumber: practice?.contractNumber || "",
+                contractDate: practice?.contractDate || "",
+                practiceStartDate: practice?.practiceStartDate || "",
+                practiceEndDate: practice?.practiceEndDate || "",
+            };
+
             setPracticeStudent(student);
-            setPracticeData(practice);
+            // setPracticeData(practice);
+            setPracticeData(preparedPractice);
             setPracticeModalOpen(true);
         }
         catch (error) {
