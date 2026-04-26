@@ -61,6 +61,8 @@ import { formatPracticeStatus } from "../utils/formatPracticeStatus";
 import { getPracticeStatusRowStyle } from "../utils/getPracticeStatusRowStyle";
 import { getDisplayFileName } from "../utils/fileUtils";
 import AdminPracticeModal from "../components/admin/AdminPracticeModal";
+import { formatCompanyType } from "../utils/formatCompanyType";
+import { formatDocumentType } from "../utils/formatDocumentType";
 
 export default function AdminDashboard() {
     // 2. state
@@ -1200,6 +1202,8 @@ export default function AdminDashboard() {
                             practice={practiceData}
                             onClose={handleClosePracticeModal}
                             onSave={handleSavePractice}
+                            formatCompanyType={formatCompanyType}
+                            formatDocumentType={formatDocumentType}
                         />
                     </div>
                 </div>

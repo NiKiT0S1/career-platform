@@ -7,6 +7,8 @@ export default function AdminPracticeModal({
     practice,
     onClose,
     onSave,
+    formatCompanyType,
+    formatDocumentType,
 }) {
     const [localPractice, setLocalPractice] = useState({});
     const [companySuggestions, setCompanySuggestions] = useState([]);
@@ -163,8 +165,10 @@ export default function AdminPracticeModal({
                                             {company.companyName}
                                         </div>
                                         <div className="admin-practice-modal__suggestion-meta">
-                                            {company.companyType || "—"} ·{" "}
-                                            {company.defaultDocumentType || "—"}
+                                            {/* {company.companyType || "—"} ·{" "}
+                                            {company.defaultDocumentType || "—"} */}
+                                            {formatCompanyType(company.companyType)} ·{" "}
+                                            {formatDocumentType(company.defaultDocumentType)}
                                         </div>
                                     </button>
                                 ))}
@@ -196,6 +200,17 @@ export default function AdminPracticeModal({
                             <option value="GZI">ҒЗИ</option>
                             <option value="OO">ОО</option>
                             <option value="ZTB">ЗТБ</option>
+
+                            <option value="MEKEME">Мекеме</option>
+                            <option value="EB_AK">ЕБ АҚ</option>
+                            <option value="RMKK_PGO">РМҚК РҒО</option>
+                            <option value="RMKK">РМҚК</option>
+                            <option value="OOO">OOO</option>
+                            <option value="SHZHK_MKK">ШЖҚ МКК</option>
+                            <option value="KMM">КММ</option>
+                            <option value="MM">ММ</option>
+                            <option value="RKB">РҚБ</option>
+                            <option value="RMM">РММ</option>
                         </select>
                     </div>
 
