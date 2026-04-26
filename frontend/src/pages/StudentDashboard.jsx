@@ -641,14 +641,41 @@ export default function StudentDashboard() {
             onClearNotifications={handleMarkAllAsRead}
 
             accountOpen={accountOpen}
+            // onToggleAccount={() => {
+            //     setAccountOpen((prev) => !prev);
+            //     setNotificationsOpen(false);
+            // }}
+
             onToggleAccount={() => {
-                setAccountOpen((prev) => !prev);
-                setNotificationsOpen(false);
+                if (accountOpen) {
+                    setAccountOpen(false);
+                    setShowPasswordForm(false);
+
+                    setCurrentPassword("");
+                    setNewPassword("");
+                    setShowAccountPassword(false);
+                    setAccountPasswordMessage("");
+                } else {
+                    setAccountOpen(true);
+                    setNotificationsOpen(false);
+                }
             }}
+
+            // onCloseAccount={() => {
+            //     setAccountOpen(false);
+            //     setShowPasswordForm(false);
+            // }}
+
             onCloseAccount={() => {
                 setAccountOpen(false);
                 setShowPasswordForm(false);
+
+                setCurrentPassword("");
+                setNewPassword("");
+                setShowAccountPassword(false);
+                setAccountPasswordMessage("");
             }}
+
             renderAccountDropdown={() => (
                 <StudentAccountDropdown
                     showPasswordForm={showPasswordForm}

@@ -9,6 +9,7 @@ export default function AdminPracticeModal({
     onSave,
     formatCompanyType,
     formatDocumentType,
+    practiceSettings,
 }) {
     const [localPractice, setLocalPractice] = useState({});
     const [companySuggestions, setCompanySuggestions] = useState([]);
@@ -221,9 +222,27 @@ export default function AdminPracticeModal({
                         <select
                             className="admin-practice-modal__input"
                             value={localPractice.practiceMode || ""}
-                            onChange={(e) =>
-                                updateField("practiceMode", e.target.value || null)
-                            }
+                            // onChange={(e) =>
+                            //     updateField("practiceMode", e.target.value || null)
+                            // }
+                            onChange={(e) => {
+                                const value = e.target.value || null;
+
+                                setLocalPractice((prev) => ({
+                                    ...prev,
+                                    practiceMode: value,
+
+                                    practiceStartDate:
+                                        value === "REGULAR_PRACTICE"
+                                            ? practiceSettings?.regularPracticeStartDate || ""
+                                            : prev.practiceStartDate,
+
+                                    practiceEndDate:
+                                        value === "REGULAR_PRACTICE"
+                                            ? practiceSettings?.regularPracticeEndDate || ""
+                                            : prev.practiceEndDate,
+                                }));
+                            }}
                         >
                             <option value="" disabled>Select practice mode</option>
                             <option value="REGULAR_PRACTICE">Regular Practice</option>
@@ -336,6 +355,7 @@ export default function AdminPracticeModal({
                             className="admin-practice-modal__input"
                             type="date"
                             value={localPractice.practiceStartDate || ""}
+                            readOnly={localPractice.practiceMode === "REGULAR_PRACTICE"}
                             onChange={(e) =>
                                 updateField("practiceStartDate", e.target.value || null)
                             }
@@ -350,6 +370,7 @@ export default function AdminPracticeModal({
                             className="admin-practice-modal__input"
                             type="date"
                             value={localPractice.practiceEndDate || ""}
+                            readOnly={localPractice.practiceMode === "REGULAR_PRACTICE"}
                             onChange={(e) =>
                                 updateField("practiceEndDate", e.target.value || null)
                             }

@@ -43,6 +43,8 @@ import {
     getCourses,
     getStudentPractice,
     updateStudentPractice,
+    getPracticeSettings,
+    updatePracticeSettings,
 } from "../api/adminApi";
 import { logout } from "../auth/auth";
 import { useNavigate, useParams } from "react-router-dom";
@@ -173,6 +175,12 @@ export default function AdminDashboard() {
     const [practiceData, setPracticeData] = useState(null);
     const [practiceStatusMessage, setPracticeStatusMessage] = useState("");
 
+    const [practiceSettings, setPracticeSettings] = useState(null);
+    const [showPracticeSettingsForm, setShowPracticeSettingsForm] = useState(false);
+    const [regularPracticeStartDate, setRegularPracticeStartDate] = useState("");
+    const [regularPracticeEndDate, setRegularPracticeEndDate] = useState("");
+    const [practiceSettingsMessage, setPracticeSettingsMessage] = useState("");
+
     // 3. refs
     const templateFileInputRef = useRef(null);
     const replaceFileInputRef = useRef({});
@@ -187,6 +195,7 @@ export default function AdminDashboard() {
         loadEducationalPrograms();
         loadGroups();
         loadTemplatesAdmin();
+        loadPracticeSettings();
     }, []);
 
     useEffect(() => {
@@ -519,6 +528,19 @@ export default function AdminDashboard() {
         try {
             const data = await getTemplatesAdmin();
             setTemplates(data);
+        }
+        catch (error) {
+            console.error(error);
+        }
+    };
+
+    const loadPracticeSettings = async () => {
+        try {
+            const data = await getPracticeSettings();
+
+            setPracticeSettings(data);
+            setRegularPracticeStartDate(data.regularPracticeStartDate || "");
+            setRegularPracticeEndDate(data.regularPracticeEndDate || "");
         }
         catch (error) {
             console.error(error);
@@ -890,6 +912,27 @@ export default function AdminDashboard() {
         return sortDir === "asc" ? "▲" : "▼";
     };
 
+    const resetPasswordForm = () => {
+        setCurrentPassword("");
+        setNewPassword("");
+        setAccountPasswordMessage("");
+        setShowAdminPassword(false);
+    };
+
+    const resetPracticeSettingsForm = () => {
+        setRegularPracticeStartDate(practiceSettings?.regularPracticeStartDate || "");
+        setRegularPracticeEndDate(practiceSettings?.regularPracticeEndDate || "");
+        setPracticeSettingsMessage("");
+    };
+
+    const closeAccountDropdown = () => {
+        setAccountOpen(false);
+        setShowPasswordForm(false);
+        setShowPracticeSettingsForm(false);
+        resetPasswordForm();
+        resetPracticeSettingsForm();
+    };
+    
     const handleChangePassword = async () => {
         if (!currentPassword.trim() || !newPassword.trim()) {
             setAccountPasswordMessage("Both password fields are required");
@@ -1060,6 +1103,65 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleSavePracticeSettings = async () => {
+        if (!regularPracticeStartDate || !regularPracticeEndDate) {
+            setPracticeSettingsMessage("Both dates are required");
+
+            setTimeout(() => {
+                setPracticeSettingsMessage("");
+            }, 2500);
+
+            return;
+        }
+
+        if (
+            regularPracticeStartDate === (practiceSettings?.regularPracticeStartDate || "") &&
+            regularPracticeEndDate === (practiceSettings?.regularPracticeEndDate || "")
+        ) {
+            setPracticeSettingsMessage("No changes to save");
+
+            setTimeout(() => {
+                setPracticeSettingsMessage("");
+            }, 2500);
+
+            return;
+        }
+
+        if (regularPracticeStartDate > regularPracticeEndDate) {
+            setPracticeSettingsMessage("Start date cannot be after end date");
+
+            setTimeout(() => {
+                setPracticeSettingsMessage("");
+            }, 2500);
+
+            return;
+        }
+
+        try {
+            const data = await updatePracticeSettings({
+                regularPracticeStartDate,
+                regularPracticeEndDate,
+            });
+
+            setPracticeSettings(data);
+            setPracticeSettingsMessage("Regular practice dates updated successfully");
+
+            setTimeout(() => {
+                setPracticeSettingsMessage("");
+                setShowPracticeSettingsForm(false);
+                setAccountOpen(false);
+            }, 1500);
+        }
+        catch (error) {
+            console.error(error);
+            setPracticeSettingsMessage("Failed to update practice dates");
+
+            setTimeout(() => {
+                setPracticeSettingsMessage("");
+            }, 2500);
+        }
+    };
+
     const navigate = useNavigate();
 
     const handleLogout = async () => {
@@ -1112,15 +1214,49 @@ export default function AdminDashboard() {
             onClearNotifications={() => {}}
 
             accountOpen={accountOpen}
+            // onToggleAccount={() => {
+            //     setAccountOpen((prev) => !prev);
+            //     setShowPasswordForm(false);
+            //     setAccountPasswordMessage("");
+            // }}
             onToggleAccount={() => {
-                setAccountOpen((prev) => !prev);
-                setShowPasswordForm(false);
-                setAccountPasswordMessage("");
+                if (accountOpen) {
+                    setAccountOpen(false);
+                    setShowPasswordForm(false);
+                    setShowPracticeSettingsForm(false);
+
+                    setCurrentPassword("");
+                    setNewPassword("");
+                    setShowAdminPassword(false);
+                    setAccountPasswordMessage("");
+
+                    setRegularPracticeStartDate(practiceSettings?.regularPracticeStartDate || "");
+                    setRegularPracticeEndDate(practiceSettings?.regularPracticeEndDate || "");
+                    setPracticeSettingsMessage("");
+                } else {
+                    setAccountOpen(true);
+                }
             }}
+
+
+            // onCloseAccount={() => {
+            //     setAccountOpen(false);
+            //     setShowPasswordForm(false);
+            //     setAccountPasswordMessage("");
+            // }}
             onCloseAccount={() => {
                 setAccountOpen(false);
                 setShowPasswordForm(false);
+                setShowPracticeSettingsForm(false);
+
+                setCurrentPassword("");
+                setNewPassword("");
+                setShowAdminPassword(false);
                 setAccountPasswordMessage("");
+
+                setRegularPracticeStartDate(practiceSettings?.regularPracticeStartDate || "");
+                setRegularPracticeEndDate(practiceSettings?.regularPracticeEndDate || "");
+                setPracticeSettingsMessage("");
             }}
 
             renderAccountDropdown={() => (
@@ -1139,6 +1275,16 @@ export default function AdminDashboard() {
                     setShowAdminPassword={setShowAdminPassword}
                     handleChangePassword={handleChangePassword}
                     accountPasswordMessage={accountPasswordMessage}
+
+                    showPracticeSettingsForm={showPracticeSettingsForm}
+                    setShowPracticeSettingsForm={setShowPracticeSettingsForm}
+                    regularPracticeStartDate={regularPracticeStartDate}
+                    setRegularPracticeStartDate={setRegularPracticeStartDate}
+                    regularPracticeEndDate={regularPracticeEndDate}
+                    setRegularPracticeEndDate={setRegularPracticeEndDate}
+                    handleSavePracticeSettings={handleSavePracticeSettings}
+                    practiceSettingsMessage={practiceSettingsMessage}
+
                     handleLogout={handleLogout}
                 />
             )}
@@ -1208,6 +1354,7 @@ export default function AdminDashboard() {
                             onSave={handleSavePractice}
                             formatCompanyType={formatCompanyType}
                             formatDocumentType={formatDocumentType}
+                            practiceSettings={practiceSettings}
                         />
                     </div>
                 </div>

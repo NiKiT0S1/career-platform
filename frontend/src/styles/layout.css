@@ -493,6 +493,28 @@ input[type="password"]::-webkit-textfield-decoration-container {
   box-shadow: 0 8px 18px rgba(75, 100, 240, 0.18);
 }
 
+.student-account-password-box__back {
+    background: #e5e7eb;
+    color: #1f2937;
+}
+
+.student-account-password-box__label {
+    font-size: 12px;
+    margin-bottom: 4px;
+    display: block;
+    color: #6b7280;
+}
+
+.practice-dates__row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.practice-dates__label {
+    width: 160px;
+}
+
 .student-account-password-box__message {
   margin: 0;
   font-size: 13px;

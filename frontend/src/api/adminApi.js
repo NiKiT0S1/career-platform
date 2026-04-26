@@ -193,3 +193,13 @@ export const searchCompanies = async (query) => {
 
     return response.data;
 };
+
+export const getPracticeSettings = async () => {
+    const response = await api.get("/api/admin/practice-settings");
+    return response.data;
+};
+
+export const updatePracticeSettings = async (payload) => {
+    const response = await api.put("/api/admin/practice-settings", payload);
+    return response.data;
+};
