@@ -108,8 +108,9 @@ export default function AdminDashboard() {
 
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
-    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-    const [showNewPassword, setShowNewPassword] = useState(false);
+    // const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    // const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showAdminPassword, setShowAdminPassword] = useState(false);
 
     const [templates, setTemplates] = useState([]);
     const [templateFile, setTemplateFile] = useState(null);
@@ -906,8 +907,9 @@ export default function AdminDashboard() {
             setAccountPasswordMessage(response || "Password changed successfully");
             setCurrentPassword("");
             setNewPassword("");
-            setShowCurrentPassword(false);
-            setShowNewPassword(false);
+            // setShowCurrentPassword(false);
+            // setShowNewPassword(false);
+            setShowAdminPassword(false);
         } 
         catch (error) {
             console.error(error);
@@ -1129,10 +1131,12 @@ export default function AdminDashboard() {
                     setCurrentPassword={setCurrentPassword}
                     newPassword={newPassword}
                     setNewPassword={setNewPassword}
-                    showCurrentPassword={showCurrentPassword}
-                    setShowCurrentPassword={setShowCurrentPassword}
-                    showNewPassword={showNewPassword}
-                    setShowNewPassword={setShowNewPassword}
+                    // showCurrentPassword={showCurrentPassword}
+                    // setShowCurrentPassword={setShowCurrentPassword}
+                    // showNewPassword={showNewPassword}
+                    // setShowNewPassword={setShowNewPassword}
+                    showAdminPassword={showAdminPassword}
+                    setShowAdminPassword={setShowAdminPassword}
                     handleChangePassword={handleChangePassword}
                     accountPasswordMessage={accountPasswordMessage}
                     handleLogout={handleLogout}

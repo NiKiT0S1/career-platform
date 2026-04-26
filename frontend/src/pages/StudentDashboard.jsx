@@ -74,8 +74,11 @@ export default function StudentDashboard() {
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
 
-    const [showAccountCurrentPassword, setShowAccountCurrentPassword] = useState(false);
-    const [showAccountNewPassword, setShowAccountNewPassword] = useState(false);
+    // const [showAccountCurrentPassword, setShowAccountCurrentPassword] = useState(false);
+    // const [showAccountNewPassword, setShowAccountNewPassword] = useState(false);
+
+    const [showAccountPassword, setShowAccountPassword] = useState(false);
+
     const [accountPasswordMessage, setAccountPasswordMessage] = useState("");
 
     const [pageWidth, setPageWidth] = useState(700);
@@ -533,8 +536,9 @@ export default function StudentDashboard() {
             setAccountPasswordMessage(response || "Password changed successfully");
             setCurrentPassword("");
             setNewPassword("");
-            setShowAccountCurrentPassword(false);
-            setShowAccountNewPassword(false);
+            // setShowAccountCurrentPassword(false);
+            // setShowAccountNewPassword(false);
+            setShowAccountPassword(false);
         } 
         catch (error) {
             console.error(error);
@@ -653,10 +657,12 @@ export default function StudentDashboard() {
                     setCurrentPassword={setCurrentPassword}
                     newPassword={newPassword}
                     setNewPassword={setNewPassword}
-                    showAccountCurrentPassword={showAccountCurrentPassword}
-                    setShowAccountCurrentPassword={setShowAccountCurrentPassword}
-                    showAccountNewPassword={showAccountNewPassword}
-                    setShowAccountNewPassword={setShowAccountNewPassword}
+                    // showAccountCurrentPassword={showAccountCurrentPassword}
+                    // setShowAccountCurrentPassword={setShowAccountCurrentPassword}
+                    // showAccountNewPassword={showAccountNewPassword}
+                    // setShowAccountNewPassword={setShowAccountNewPassword}
+                    showAccountPassword={showAccountPassword}
+                    setShowAccountPassword={setShowAccountPassword}
                     handleChangePassword={handleChangePassword}
                     accountPasswordMessage={accountPasswordMessage}
                 />

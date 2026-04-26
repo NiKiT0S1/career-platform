@@ -20,10 +20,12 @@ export default function StudentAccountDropdown({
     setCurrentPassword,
     newPassword,
     setNewPassword,
-    showAccountCurrentPassword,
-    setShowAccountCurrentPassword,
-    showAccountNewPassword,
-    setShowAccountNewPassword,
+    // showAccountCurrentPassword,
+    // setShowAccountCurrentPassword,
+    // showAccountNewPassword,
+    // setShowAccountNewPassword,
+    showAccountPassword,
+    setShowAccountPassword,
     handleChangePassword,
     accountPasswordMessage,
 }) {
@@ -45,24 +47,26 @@ export default function StudentAccountDropdown({
 
                     <div className="student-account-password-box__field">
                         <input
-                            type={showAccountCurrentPassword ? "text" : "password"}
+                            // type={showAccountCurrentPassword ? "text" : "password"}
+                            type={showAccountPassword ? "text" : "password"}
                             className="student-account-password-box__input"
                             placeholder="Current Password"
                             value={currentPassword}
                             onChange={(e) => setCurrentPassword(e.target.value)}
                         />
-                        <button
+                        {/* <button
                             type="button"
                             className="student-account-password-box__toggle"
                             onClick={() => setShowAccountCurrentPassword((prev) => !prev)}
                         >
                             {showAccountCurrentPassword ? "Hide" : "Show"}
-                        </button>
+                        </button> */}
                     </div>
 
                     <div className="student-account-password-box__field">
                         <input
-                            type={showAccountNewPassword ? "text" : "password"}
+                            // type={showAccountNewPassword ? "text" : "password"}
+                            type={showAccountPassword ? "text" : "password"}
                             className="student-account-password-box__input"
                             placeholder="New Password"
                             value={newPassword}
@@ -71,9 +75,11 @@ export default function StudentAccountDropdown({
                         <button
                             type="button"
                             className="student-account-password-box__toggle"
-                            onClick={() => setShowAccountNewPassword((prev) => !prev)}
+                            // onClick={() => setShowAccountNewPassword((prev) => !prev)}
+                            onClick={() => setShowAccountPassword((prev) => !prev)}
                         >
-                            {showAccountNewPassword ? "Hide" : "Show"}
+                            {/* {showAccountNewPassword ? "Hide" : "Show"} */}
+                            {showAccountPassword ? "Hide" : "Show"}
                         </button>
                     </div>
 
