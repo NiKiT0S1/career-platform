@@ -32,6 +32,7 @@ public class AdminController {
     private final TemplateService templateService;
     private final CompanyDirectoryService companyDirectoryService;
     private final StudentPracticeService studentPracticeService;
+    private final PracticeSettingsService practiceSettingsService;
 
     public AdminController(StudentService studentService,
                            NotificationService notificationService,
@@ -39,7 +40,8 @@ public class AdminController {
                            AdminService adminService,
                            TemplateService templateService,
                            CompanyDirectoryService companyDirectoryService,
-                           StudentPracticeService studentPracticeService) {
+                           StudentPracticeService studentPracticeService,
+                           PracticeSettingsService practiceSettingsService) {
         this.studentService = studentService;
         this.notificationService = notificationService;
         this.resumeService = resumeService;
@@ -47,6 +49,7 @@ public class AdminController {
         this.templateService = templateService;
         this.companyDirectoryService = companyDirectoryService;
         this.studentPracticeService = studentPracticeService;
+        this.practiceSettingsService = practiceSettingsService;
     }
 
     @GetMapping("/me")
@@ -356,5 +359,17 @@ public class AdminController {
         catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @GetMapping("/practice-settings")
+    public ResponseEntity<PracticeSettings> getPracticeSettings() {
+        return ResponseEntity.ok(practiceSettingsService.getSettings());
+    }
+
+    @PutMapping("/practice-settings")
+    public ResponseEntity<PracticeSettings> updatePracticeSettings(
+            @RequestBody PracticeSettingsRequest request
+    ) {
+        return ResponseEntity.ok(practiceSettingsService.updateSettings(request));
     }
 }

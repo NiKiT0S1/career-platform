@@ -73,6 +73,7 @@ src/main/java/com/university/careerplatform/backend
 │   ├── ChangePasswordRequest.java
 │   ├── CompanyUpdateRequest.java
 │   ├── LoginRequest.java
+│   ├── PracticeSettingsRequest.java
 │   ├── PracticeStatusUpdateRequest.java
 │   ├── SendNotificationByFilterRequest.java
 │   ├── SendNotificationRequest.java
@@ -85,6 +86,7 @@ src/main/java/com/university/careerplatform/backend
 │   ├── Admin.java
 │   ├── CompanyDirectory.java
 │   ├── Notification.java
+│   ├── PracticeSettings.java
 │   ├── Student.java
 │   ├── StudentPractice.java
 │   └── TemplateDocument.java
@@ -100,6 +102,7 @@ src/main/java/com/university/careerplatform/backend
 │   ├── AdminRepository.java
 │   ├── CompanyDirectoryRepository.java
 │   ├── NotificationRepository.java
+│   ├── PracticeSettingsRepository.java
 │   ├── StudentPracticeRepository.java
 │   ├── StudentRepository.java
 │   └── TemplateDocumentRepository.java
@@ -114,6 +117,7 @@ src/main/java/com/university/careerplatform/backend
 │   ├── AuthService.java
 │   ├── CompanyDirectoryService.java
 │   ├── NotificationService.java
+│   ├── PracticeSettingsService.java
 │   ├── ResumeService.java
 │   ├── StudentPracticeService.java
 │   ├── StudentService.java
@@ -144,6 +148,7 @@ Examples:
 * `TemplateDocument`
 * `StudentPractice`
 * `CompanyDirectory`
+* `PracticeSettings`
 
 ### Repository
 
@@ -157,6 +162,7 @@ Examples:
 * `TemplateDocumentRepository`
 * `CompanyDirectoryRepository`
 * `StudentPracticeRepository`
+* `PracticeSettingsRepository`
 
 ### Service
 
@@ -172,6 +178,7 @@ Examples:
 * `TemplateService`
 * `CompanyDirectoryService`
 * `StudentPracticeService`
+* `PracticeSettingsService`
 
 ### Controller
 
@@ -201,6 +208,7 @@ Examples:
 * `UpdateTemplateDisplayNameRequest`
 * `UpdateTemplateCategoryRequest`
 * `UpdatePracticeRequest`
+* `PracticeSettingsRequest`
 
 ### Security
 
