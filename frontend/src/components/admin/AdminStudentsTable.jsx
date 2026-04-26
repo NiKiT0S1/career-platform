@@ -54,12 +54,12 @@ export default function AdminStudentsTable({
                     <col style={{ width: "45px" }} />
                     
                     {/* Practice */}
-                    <col style={{ width: "90px" }} />
+                    <col style={{ width: "70px" }} />
 
-                    <col style={{ width: "120px" }} />
-                    <col style={{ width: "75px" }} />
+                    <col style={{ width: "115px" }} />
+                    <col style={{ width: "100px" }} />
                     <col style={{ width: "55px" }} />
-                    <col style={{ width: "95px" }} />
+                    <col style={{ width: "80px" }} />
                 </colgroup>
 
                 <thead>
