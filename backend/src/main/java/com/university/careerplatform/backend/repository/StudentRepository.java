@@ -47,21 +47,39 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
     @Query("select distinct s.course from Student s where s.course is not null order by s.course")
     List<Integer> findAllDistinctCourses();
 
-    @Modifying
-    @Query("""
-        UPDATE Student s
-        SET s.practiceStatus = 'EMPLOYED'
-        WHERE s.companyName IS NOT NULL
-            AND TRIM(s.companyName) <> ''
-    """)
-    int markStudentsAsEmployed();
+//    @Modifying
+//    @Query("""
+//        UPDATE Student s
+//        SET s.practiceStatus = 'EMPLOYED'
+//        WHERE s.companyName IS NOT NULL
+//            AND TRIM(s.companyName) <> ''
+//    """)
+//    int markStudentsAsInPractice();
 
     @Modifying
     @Query("""
         UPDATE Student s
-        SET s.practiceStatus = 'NOT_FOUND'
+        SET s.practiceStatus = 'IN_PRACTICE'
+        WHERE s.companyName IS NOT NULL
+            AND TRIM(s.companyName) <> ''
+    """)
+    int markStudentsAsInPractice();
+
+//    @Modifying
+//    @Query("""
+//        UPDATE Student s
+//        SET s.practiceStatus = 'NOT_FOUND'
+//        WHERE s.companyName IS NULL
+//            OR TRIM(s.companyName) = ''
+//    """)
+//    int markStudentsAsNotAssigned();
+
+    @Modifying
+    @Query("""
+        UPDATE Student s
+        SET s.practiceStatus = 'NOT_ASSIGNED'
         WHERE s.companyName IS NULL
             OR TRIM(s.companyName) = ''
-""")
-    int markStudentsAsNotFound();
+    """)
+    int markStudentsAsNotAssigned();
 }

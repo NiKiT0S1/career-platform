@@ -218,8 +218,8 @@ public class StudentService {
     }
     @Transactional
     public int syncPracticeStatusesByCompanyName() {
-        int employedUpdated = studentRepository.markStudentsAsEmployed();
-        int notFoundUpdated = studentRepository.markStudentsAsNotFound();
+        int employedUpdated = studentRepository.markStudentsAsInPractice();
+        int notFoundUpdated = studentRepository.markStudentsAsNotAssigned();
         return employedUpdated + notFoundUpdated;
     }
 

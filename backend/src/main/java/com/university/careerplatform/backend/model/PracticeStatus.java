@@ -8,6 +8,7 @@
  * - EMPLOYED          (legacy)
  * - NOT_FOUND         (legacy)
  * - IN_PRACTICE       (active internship)
+ * - NOT_ASSIGNED      (Not assigned)
  * - EARLY_COMPLETION  (early completion)
  * - MOBILITY          (academic mobility)
  *
