@@ -264,6 +264,6 @@ Goal:
 
 ## 👨‍💻 Author
 
-Nikita Bobylev
-Astana IT University
-Software Engineering Student
+* Nikita Bobylev
+* Astana IT University
+* Software Engineering Student
