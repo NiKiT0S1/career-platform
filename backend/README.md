@@ -119,6 +119,7 @@ src/main/java/com/university/careerplatform/backend
 │   ├── NotificationService.java
 │   ├── PracticeSettingsService.java
 │   ├── ResumeService.java
+│   ├── StudentExportService.java
 │   ├── StudentPracticeService.java
 │   ├── StudentService.java
 │   └── TemplateService.java
@@ -179,6 +180,7 @@ Examples:
 * `CompanyDirectoryService`
 * `StudentPracticeService`
 * `PracticeSettingsService`
+* `StudentExportService`
 
 ### Controller
 
