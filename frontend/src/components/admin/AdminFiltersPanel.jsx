@@ -27,6 +27,8 @@ export default function AdminFiltersPanel({
     setMessage,
     handleNotificationAction,
     statusMessage,
+    handleExportStudents,
+    isExportingStudents,
 }) {
     return (
         <div className="admin-filter-panel">
@@ -155,6 +157,15 @@ export default function AdminFiltersPanel({
             <div className="admin-filter-actions admin-filter-actions--single">
                 <button className="admin-pill-btn" onClick={handleResetFilters}>
                     Reset filters
+                </button>
+
+                <button
+                    className="admin-pill-btn"
+                    onClick={handleExportStudents}
+                    disabled={isExportingStudents}
+                >
+                    {/* Export Excel */}
+                    {isExportingStudents ? "Downloading..." : "Export Excel"}
                 </button>
             </div>
 

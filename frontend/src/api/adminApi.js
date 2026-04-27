@@ -203,3 +203,24 @@ export const updatePracticeSettings = async (payload) => {
     const response = await api.put("/api/admin/practice-settings", payload);
     return response.data;
 };
+
+export const exportStudentsToExcel = async (filters, sortBy, sortDir, selectedStudentIds = []) => {
+    const response = await api.get("/api/admin/students/export", {
+        params: {
+            fullName: filters.fullName || undefined,
+            educationalProgram: filters.educationalProgram || undefined,
+            groupName: filters.groupName || undefined,
+            course: filters.course || undefined,
+            practiceStatus: filters.practiceStatus || undefined,
+            minGpa: filters.minGpa || undefined,
+            sortBy: sortBy || undefined,
+            sortDir: sortBy ? sortDir : undefined,
+            selectedIds: selectedStudentIds.length > 0
+                ? selectedStudentIds.join(",")
+                : undefined,
+        },
+        responseType: "blob",
+    });
+
+    return response.data;
+};

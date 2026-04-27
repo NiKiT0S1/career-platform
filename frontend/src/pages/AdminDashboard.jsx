@@ -45,6 +45,7 @@ import {
     updateStudentPractice,
     getPracticeSettings,
     updatePracticeSettings,
+    exportStudentsToExcel,
 } from "../api/adminApi";
 import { logout } from "../auth/auth";
 import { useNavigate, useParams } from "react-router-dom";
@@ -180,6 +181,8 @@ export default function AdminDashboard() {
     const [regularPracticeStartDate, setRegularPracticeStartDate] = useState("");
     const [regularPracticeEndDate, setRegularPracticeEndDate] = useState("");
     const [practiceSettingsMessage, setPracticeSettingsMessage] = useState("");
+
+    const [isExportingStudents, setIsExportingStudents] = useState(false);
 
     // 3. refs
     const templateFileInputRef = useRef(null);
@@ -1162,6 +1165,41 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleExportStudents = async () => {
+        if (isExportingStudents) return;
+        
+        try {
+            setIsExportingStudents(true);
+            setStatusMessage("Downloading Excel...");
+
+            const blob = await exportStudentsToExcel(filters, sortBy, sortDir, selectedStudentIds);
+
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+
+            link.href = url;
+            // link.download = "students_export.xlsx";
+            link.download = selectedStudentIds.length > 0
+                ? "selected_students_export.xlsx"
+                : "students_export.xlsx";
+
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            window.URL.revokeObjectURL(url);
+
+            setStatusMessage("Excel downloaded successfully");
+        }
+        catch (error) {
+            console.error(error);
+            setStatusMessage("Failed to export students");
+        }
+        finally {
+            setIsExportingStudents(false);
+        }
+    };
+
     const navigate = useNavigate();
 
     const handleLogout = async () => {
@@ -1304,6 +1342,8 @@ export default function AdminDashboard() {
                         setMessage={setMessage}
                         handleNotificationAction={handleNotificationAction}
                         statusMessage={statusMessage}
+                        handleExportStudents={handleExportStudents}
+                        isExportingStudents={isExportingStudents}
                     />
 
                     <div className="admin-table-panel">

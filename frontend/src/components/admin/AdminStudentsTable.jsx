@@ -71,16 +71,16 @@ export default function AdminStudentsTable({
                         >
                             Full name {getSortIcon("fullName")}
                         </th>
-                        <th>Email</th>
-                        <th>Group</th>
+                        <th><strong>Email</strong></th>
+                        <th><strong>Group</strong></th>
                         <th
                             onClick={() => handleSort("course")}
                             style={{ cursor: "pointer", userSelect: "none" }}
                         >
-                            Course {getSortIcon("course")}
+                            <strong>Course</strong> {getSortIcon("course")}
                         </th>
-                        <th>Educational Program</th>
-                        <th>Phone</th>
+                        <th><strong>Educational Program</strong></th>
+                        <th><strong>Phone</strong></th>
                         <th
                             onClick={() => handleSort("gpa")}
                             style={{ cursor: "pointer", userSelect: "none" }}
