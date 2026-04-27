@@ -82,4 +82,21 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
 //            OR TRIM(s.companyName) = ''
 //    """)
 //    int markStudentsAsNotAssigned();
+
+    List<Student> findByIdIn(List<Long> ids);
+
+    @Query("""
+        SELECT DISTINCT s
+        FROM Student s
+        LEFT JOIN FETCH s.practice
+    """)
+    List<Student> findAllWithPractice();
+
+    @Query("""
+        SELECT DISTINCT s
+        FROM Student s
+        LEFT JOIN FETCH s.practice
+        WHERE s.id IN :ids
+    """)
+    List<Student> findByIdInWithPractice(@Param("ids") List<Long> ids);
 }

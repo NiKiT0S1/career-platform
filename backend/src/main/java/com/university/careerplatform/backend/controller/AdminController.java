@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -33,6 +34,7 @@ public class AdminController {
     private final CompanyDirectoryService companyDirectoryService;
     private final StudentPracticeService studentPracticeService;
     private final PracticeSettingsService practiceSettingsService;
+    private final StudentExportService studentExportService;
 
     public AdminController(StudentService studentService,
                            NotificationService notificationService,
@@ -41,7 +43,8 @@ public class AdminController {
                            TemplateService templateService,
                            CompanyDirectoryService companyDirectoryService,
                            StudentPracticeService studentPracticeService,
-                           PracticeSettingsService practiceSettingsService) {
+                           PracticeSettingsService practiceSettingsService,
+                           StudentExportService studentExportService) {
         this.studentService = studentService;
         this.notificationService = notificationService;
         this.resumeService = resumeService;
@@ -50,6 +53,7 @@ public class AdminController {
         this.companyDirectoryService = companyDirectoryService;
         this.studentPracticeService = studentPracticeService;
         this.practiceSettingsService = practiceSettingsService;
+        this.studentExportService = studentExportService;
     }
 
     @GetMapping("/me")
@@ -371,5 +375,60 @@ public class AdminController {
             @RequestBody PracticeSettingsRequest request
     ) {
         return ResponseEntity.ok(practiceSettingsService.updateSettings(request));
+    }
+
+    @GetMapping("/students/export")
+    public ResponseEntity<byte[]> exportStudents(
+            @RequestParam(required = false) String fullName,
+            @RequestParam(required = false) String educationalProgram,
+            @RequestParam(required = false) String groupName,
+            @RequestParam(required = false) Integer course,
+            @RequestParam(required = false) String practiceStatus,
+            @RequestParam(required = false) Double minGpa,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir,
+            @RequestParam(required = false) String selectedIds
+    ) {
+        List<Student> students;
+
+        if (selectedIds != null && !selectedIds.isBlank()) {
+            List<Long> ids = Arrays.stream(selectedIds.split(","))
+                    .map(String::trim)
+                    .filter(id -> !id.isBlank())
+                    .map(Long::parseLong)
+                    .toList();
+
+            students = studentService.getStudentsForExportByIds(ids);
+        }
+        else {
+            students = studentService.getStudentsForExport(
+                    fullName,
+                    educationalProgram,
+                    groupName,
+                    course,
+                    practiceStatus,
+                    minGpa,
+                    sortBy,
+                    sortDir
+            );
+        }
+
+//        List<Student> students = studentService.getStudentsForExport(
+//                fullName,
+//                educationalProgram,
+//                groupName,
+//                course,
+//                practiceStatus,
+//                minGpa,
+//                sortBy,
+//                sortDir
+//        );
+
+        byte[] excelFile = studentExportService.exportStudentsToExcel(students);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"students_export.xlsx\"")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excelFile);
     }
 }

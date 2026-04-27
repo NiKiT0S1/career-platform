@@ -20,6 +20,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Arrays;
 
 @Validated
 @Service
@@ -240,5 +241,65 @@ public class StudentService {
         }
 
         return studentRepository.save(student);
+    }
+
+    public List<Student> getStudentsForExport(String fullName,
+                                              String educationalProgram,
+                                              String groupName,
+                                              Integer course,
+                                              String practiceStatus,
+                                              Double minGpa,
+                                              String sortBy,
+                                              String sortDir) {
+        Sort sort = Sort.unsorted();
+
+        if (sortBy != null && !sortBy.isBlank()) {
+            sort = "desc".equalsIgnoreCase(sortDir)
+                    ? Sort.by(sortBy).descending()
+                    : Sort.by(sortBy).ascending();
+        }
+
+        boolean hasAnyFilters =
+                fullName != null && !fullName.isBlank()
+                        || educationalProgram != null && !educationalProgram.isBlank()
+                        || groupName != null && !groupName.isBlank()
+                        || course != null
+                        || practiceStatus != null && !practiceStatus.isBlank()
+                        || minGpa != null;
+
+//        if (hasAnyFilters) {
+//            return studentRepository.findAll(
+//                    StudentSpecification.filterStudents(
+//                            fullName,
+//                            educationalProgram,
+//                            groupName,
+//                            course,
+//                            practiceStatus,
+//                            minGpa
+//                    ),
+//                    sort
+//            );
+//        }
+
+        if (!hasAnyFilters && (sortBy == null || sortBy.isBlank())) {
+            return studentRepository.findAllWithPractice();
+        }
+
+//        return studentRepository.findAll(sort);
+        return studentRepository.findAll(
+                StudentSpecification.filterStudents(
+                        fullName,
+                        educationalProgram,
+                        groupName,
+                        course,
+                        practiceStatus,
+                        minGpa
+                ),
+                sort
+        );
+    }
+
+    public List<Student> getStudentsForExportByIds(List<Long> ids) {
+        return studentRepository.findByIdInWithPractice(ids);
     }
 }
