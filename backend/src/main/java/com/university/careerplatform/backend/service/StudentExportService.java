@@ -22,6 +22,7 @@ package com.university.careerplatform.backend.service;
 import com.university.careerplatform.backend.entity.Student;
 import com.university.careerplatform.backend.entity.StudentPractice;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +33,8 @@ import java.util.List;
 public class StudentExportService {
 
     public byte[] exportStudentsToExcel(List<Student> students) {
-        try (Workbook workbook = new XSSFWorkbook();
+//        try (Workbook workbook = new XSSFWorkbook();
+        try (SXSSFWorkbook workbook = new SXSSFWorkbook(100);
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
             Sheet sheet = workbook.createSheet("Students");
@@ -108,6 +110,9 @@ public class StudentExportService {
             }
 
             workbook.write(outputStream);
+
+            workbook.dispose();
+
             return outputStream.toByteArray();
         }
         catch (Exception e) {
