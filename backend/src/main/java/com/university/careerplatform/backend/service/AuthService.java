@@ -13,7 +13,7 @@ import com.university.careerplatform.backend.entity.Admin;
 import com.university.careerplatform.backend.entity.PasswordResetCode;
 import com.university.careerplatform.backend.entity.Student;
 import com.university.careerplatform.backend.repository.AdminRepository;
-import com.university.careerplatform.backend.repository.PasswordResetRepository;
+import com.university.careerplatform.backend.repository.PasswordResetCodeRepository;
 import com.university.careerplatform.backend.repository.StudentRepository;
 import com.university.careerplatform.backend.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +33,7 @@ public class AuthService {
     private final AdminRepository adminRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
-    private final PasswordResetRepository passwordResetRepository;
+    private final PasswordResetCodeRepository passwordResetCodeRepository;
     private final EmailService emailService;
 
     private static final int RESET_CODE_EXPIRATION_MINUTES = 10;
@@ -42,13 +43,13 @@ public class AuthService {
                        AdminRepository adminRepository,
                        JwtService jwtService,
                        PasswordEncoder passwordEncoder,
-                       PasswordResetRepository passwordResetRepository,
+                       PasswordResetCodeRepository passwordResetCodeRepository,
                        EmailService emailService) {
         this.studentRepository = studentRepository;
         this.adminRepository = adminRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
-        this.passwordResetRepository = passwordResetRepository;
+        this.passwordResetCodeRepository = passwordResetCodeRepository;
         this.emailService = emailService;
     }
 
@@ -85,10 +86,10 @@ public class AuthService {
         String normalizedEmail = normalizeEmail(email);
 
         List<PasswordResetCode> oldCodes =
-                passwordResetRepository.findByEmailAndUsedFalse(normalizedEmail);
+                passwordResetCodeRepository.findByEmailAndUsedFalse(normalizedEmail);
 
         oldCodes.forEach(code -> code.setUsed(true));
-        passwordResetRepository.saveAll(oldCodes);
+        passwordResetCodeRepository.saveAll(oldCodes);
 
         if (!userExists(normalizedEmail)) {
             return;
@@ -99,11 +100,12 @@ public class AuthService {
         PasswordResetCode resetCode = new PasswordResetCode();
         resetCode.setEmail(normalizedEmail);
         resetCode.setCodeHash(passwordEncoder.encode(code));
-        resetCode.setExpiresAt(LocalDateTime.now().plusMinutes(RESET_CODE_EXPIRATION_MINUTES));
+//        resetCode.setExpiresAt(LocalDateTime.now().plusMinutes(RESET_CODE_EXPIRATION_MINUTES));
+        resetCode.setExpiresAt(Instant.now().plusSeconds(RESET_CODE_EXPIRATION_MINUTES * 60L));
         resetCode.setUsed(false);
         resetCode.setAttempts(0);
 
-        passwordResetRepository.save(resetCode);
+        passwordResetCodeRepository.save(resetCode);
 
         emailService.sendPasswordResetCode(normalizedEmail, code);
     }
@@ -116,7 +118,7 @@ public class AuthService {
         );
 
         resetCode.setAttempts(resetCode.getAttempts());
-        passwordResetRepository.save(resetCode);
+        passwordResetCodeRepository.save(resetCode);
     }
 
     public void resetPassword(ResetPasswordRequest request) {
@@ -148,7 +150,7 @@ public class AuthService {
             adminRepository.save(admin);
 
             resetCode.setUsed(true);
-            passwordResetRepository.save(resetCode);
+            passwordResetCodeRepository.save(resetCode);
             return;
         }
 
@@ -165,7 +167,7 @@ public class AuthService {
             studentRepository.save(student);
 
             resetCode.setUsed(true);
-            passwordResetRepository.save(resetCode);
+            passwordResetCodeRepository.save(resetCode);
             return;
         }
 
@@ -173,7 +175,7 @@ public class AuthService {
     }
 
     private PasswordResetCode getValidResetCode(String email, String rawCode) {
-        PasswordResetCode resetCode = passwordResetRepository
+        PasswordResetCode resetCode = passwordResetCodeRepository
                 .findTopByEmailOrderByCreatedAtDesc(email)
                 .orElseThrow(() -> new RuntimeException("Invalid or expired code"));
 
@@ -181,7 +183,8 @@ public class AuthService {
             throw new RuntimeException("Invalid or expired code");
         }
 
-        if (resetCode.getExpiresAt().isBefore(LocalDateTime.now())) {
+//        if (resetCode.getExpiresAt().isBefore(LocalDateTime.now())) {
+        if (resetCode.getExpiresAt().isBefore(Instant.now())) {
             throw new RuntimeException("Invalid or expired code");
         }
 
@@ -191,7 +194,7 @@ public class AuthService {
 
         if (!passwordEncoder.matches(rawCode, resetCode.getCodeHash())) {
             resetCode.setAttempts(resetCode.getAttempts() + 1);
-            passwordResetRepository.save(resetCode);
+            passwordResetCodeRepository.save(resetCode);
             throw new RuntimeException("Invalid code");
         }
 

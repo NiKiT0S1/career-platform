@@ -21,6 +21,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -40,7 +41,8 @@ public class PasswordResetCode {
     private String codeHash;
 
     @Column(nullable = false)
-    private LocalDateTime expiresAt;
+//    private LocalDateTime expiresAt;
+    private Instant expiresAt;
 
     @Column(nullable = false)
     private boolean used = false;
@@ -49,10 +51,12 @@ public class PasswordResetCode {
     private int attempts = 0;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+//    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @PrePersist
     public void prePersist() {
-        this.createdAt = LocalDateTime.now();
+//        this.createdAt = LocalDateTime.now();
+        this.createdAt = Instant.now();
     }
 }
