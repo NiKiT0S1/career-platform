@@ -389,13 +389,13 @@ export default function LoginPage() {
                 {isResetLoading ? "Saving..." : "Confirm"}
             </button>
 
-            <button
+            {/* <button
                 type="button"
                 className="app-auth-text-button"
                 onClick={resetForgotPasswordState}
             >
                 Back to Login
-            </button>
+            </button> */}
 
             {resetMessage && (
                 <div className="app-auth-success">{resetMessage}</div>
