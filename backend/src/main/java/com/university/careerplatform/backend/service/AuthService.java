@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -82,6 +83,12 @@ public class AuthService {
     @Transactional
     public void requestPasswordResetCode(String email) {
         String normalizedEmail = normalizeEmail(email);
+
+        List<PasswordResetCode> oldCodes =
+                passwordResetRepository.findByEmailAndUsedFalse(normalizedEmail);
+
+        oldCodes.forEach(code -> code.setUsed(true));
+        passwordResetRepository.saveAll(oldCodes);
 
         if (!userExists(normalizedEmail)) {
             return;
