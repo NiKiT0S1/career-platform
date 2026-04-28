@@ -556,3 +556,62 @@ input[type="password"]::-webkit-textfield-decoration-container {
 .student-account-password-box__message.error {
   color: #d92d20;
 }
+
+.app-auth-text-button {
+    margin-top: 14px;
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.app-auth-text-button:hover {
+    color: #1464c8;
+}
+
+.app-auth-text-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.app-auth-text-button--active {
+    color: #1464c8;
+}
+
+.app-auth-reset-box {
+    width: 100%;
+    text-align: center;
+}
+
+.app-auth-reset-title {
+    margin: 0 0 12px;
+    color: #17213f;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.app-auth-reset-text {
+    margin: 0 0 16px;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.app-auth-reset-timer {
+    margin-bottom: 8px;
+    color: #17213f;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.app-auth-success {
+    margin-top: 14px;
+    color: #16a34a;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+}
