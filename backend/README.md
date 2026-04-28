@@ -72,20 +72,24 @@ src/main/java/com/university/careerplatform/backend
 │   ├── AuthResponse.java
 │   ├── ChangePasswordRequest.java
 │   ├── CompanyUpdateRequest.java
+│   ├── ForgotPasswordRequest.java
 │   ├── LoginRequest.java
 │   ├── PracticeSettingsRequest.java
 │   ├── PracticeStatusUpdateRequest.java
+│   ├── ResetPasswordRequest.java
 │   ├── SendNotificationByFilterRequest.java
 │   ├── SendNotificationRequest.java
 │   ├── UpdatePracticeRequest.java
 │   ├── UpdateStudentFieldRequest.java
 │   ├── UpdateTemplateCategoryRequest.java
-│   └── UpdateTemplateDisplayNameRequest.java
+│   ├── UpdateTemplateDisplayNameRequest.java
+│   └── VerifyResetCodeRequest.java
 │
 ├── entity
 │   ├── Admin.java
 │   ├── CompanyDirectory.java
 │   ├── Notification.java
+│   ├── PasswordResetCode.java
 │   ├── PracticeSettings.java
 │   ├── Student.java
 │   ├── StudentPractice.java
@@ -102,6 +106,7 @@ src/main/java/com/university/careerplatform/backend
 │   ├── AdminRepository.java
 │   ├── CompanyDirectoryRepository.java
 │   ├── NotificationRepository.java
+│   ├── PasswordResetRepository.java
 │   ├── PracticeSettingsRepository.java
 │   ├── StudentPracticeRepository.java
 │   ├── StudentRepository.java
@@ -116,6 +121,7 @@ src/main/java/com/university/careerplatform/backend
 │   ├── AdminService.java
 │   ├── AuthService.java
 │   ├── CompanyDirectoryService.java
+│   ├── EmailService.java
 │   ├── NotificationService.java
 │   ├── PracticeSettingsService.java
 │   ├── ResumeService.java
@@ -150,6 +156,7 @@ Examples:
 * `StudentPractice`
 * `CompanyDirectory`
 * `PracticeSettings`
+* `PasswordResetCode`
 
 ### Repository
 
@@ -164,6 +171,7 @@ Examples:
 * `CompanyDirectoryRepository`
 * `StudentPracticeRepository`
 * `PracticeSettingsRepository`
+* `PasswordResetRepository`
 
 ### Service
 
@@ -181,6 +189,7 @@ Examples:
 * `StudentPracticeService`
 * `PracticeSettingsService`
 * `StudentExportService`
+* `EmailService`
 
 ### Controller
 
@@ -211,6 +220,9 @@ Examples:
 * `UpdateTemplateCategoryRequest`
 * `UpdatePracticeRequest`
 * `PracticeSettingsRequest`
+* `ForgotPasswordRequest`
+* `ResetPasswordRequest`
+* `VerifyResetCodeRequest`
 
 ### Security
 

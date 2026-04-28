@@ -4,8 +4,7 @@
 
 package com.university.careerplatform.backend.controller;
 
-import com.university.careerplatform.backend.dto.AuthResponse;
-import com.university.careerplatform.backend.dto.LoginRequest;
+import com.university.careerplatform.backend.dto.*;
 import com.university.careerplatform.backend.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
@@ -53,10 +52,10 @@ public class AuthController {
 
             ResponseCookie cookie = ResponseCookie.from("token", authResponse.getToken())
                     .httpOnly(true)
-//                    .secure(false) // FOR LOCAL
-//                    .sameSite("Lax") // FOR LOCAL
-                    .secure(true) // FOR PROD
-                    .sameSite("None") // FOR PROD
+                    .secure(false) // FOR LOCAL
+                    .sameSite("Lax") // FOR LOCAL
+//                    .secure(true) // FOR PROD
+//                    .sameSite("None") // FOR PROD
                     .path("/")
                     .maxAge(Duration.ofDays(1))
                     .build();
@@ -74,10 +73,10 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("token", "")
                 .httpOnly(true)
-//                .secure(false) // FOR LOCAL
-//                .sameSite("Lax") // FOR LOCAL
-                .secure(true) // FOR PROD
-                .sameSite("None") // FOR PROD
+                .secure(false) // FOR LOCAL
+                .sameSite("Lax") // FOR LOCAL
+//                .secure(true) // FOR PROD
+//                .sameSite("None") // FOR PROD
                 .path("/")
                 .maxAge(0)
                 .build();
@@ -85,5 +84,45 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         return ResponseEntity.ok("Logged out successfully");
+    }
+
+    @PostMapping("/forgot-password/request-code")
+    public ResponseEntity<?> requestPasswordResetCode(
+            @RequestBody ForgotPasswordRequest request
+    ) {
+        try {
+            authService.requestPasswordResetCode(request.getEmail());
+
+            return ResponseEntity.ok("If this email exists, password reset code has been sent");
+        }
+        catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/forgot-password/verify-code")
+    public ResponseEntity<?> verifyPasswordResetCode(
+            @RequestBody VerifyResetCodeRequest request
+    ) {
+        try {
+            authService.verifyPasswordResetCode(request);
+            return ResponseEntity.ok("Code verified successfully");
+        }
+        catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/forgot-password/reset")
+    public ResponseEntity<?> resetPassword(
+            @RequestBody ResetPasswordRequest request
+    ) {
+        try {
+            authService.resetPassword(request);
+            return ResponseEntity.ok("Password reset successfully");
+        }
+        catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
