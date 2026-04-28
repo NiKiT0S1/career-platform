@@ -179,6 +179,22 @@ public class AuthService {
                 .findTopByEmailOrderByCreatedAtDesc(email)
                 .orElseThrow(() -> new RuntimeException("Invalid or expired code"));
 
+        System.out.println("=== PASSWORD RESET VERIFY DEBUG ===");
+        System.out.println("EMAIL FROM REQUEST: " + email);
+        System.out.println("CODE FROM REQUEST: " + rawCode);
+        System.out.println("FOUND RECORD: " + (resetCode != null));
+
+        if (resetCode != null) {
+            System.out.println("RECORD ID: " + resetCode.getId());
+            System.out.println("RECORD EMAIL: " + resetCode.getEmail());
+            System.out.println("USED: " + resetCode.isUsed());
+            System.out.println("ATTEMPTS: " + resetCode.getAttempts());
+            System.out.println("EXPIRES AT: " + resetCode.getExpiresAt());
+            System.out.println("NOW: " + java.time.Instant.now());
+            System.out.println("MATCHES: " + passwordEncoder.matches(rawCode, resetCode.getCodeHash()));
+        }
+        System.out.println("===================================");
+
         if (resetCode.isUsed()) {
             throw new RuntimeException("Invalid or expired code");
         }
