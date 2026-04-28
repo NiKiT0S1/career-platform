@@ -66,6 +66,16 @@ export default function LoginPage() {
         return () => clearTimeout(timeout);
     }, [resetMessage, resetError]);
 
+    useEffect(() => {
+        if (!error) return;
+
+        const timeout = setTimeout(() => {
+            setError("");
+        }, 2500);
+
+        return () => clearTimeout(timeout);
+    }, [error]);
+
     if (loading) {
         return (
             <div className="app-page-loader">
@@ -136,6 +146,7 @@ export default function LoginPage() {
             setResetMessage("Reset code has been sent");
         }
         catch (err) {
+            setError("");
             setResetError(err?.response?.data || "Failed to send reset code");
         }
         finally {
@@ -244,7 +255,13 @@ export default function LoginPage() {
                         type="email"
                         placeholder="Login"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        // onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                            setEmail(e.target.value);
+                            setError("");
+                            setResetError("");
+                            setResetMessage("");
+                        }}
                     />
                 </div>
             </div>
@@ -284,6 +301,8 @@ export default function LoginPage() {
             </button>
 
             {error && <div className="app-auth-error">{error}</div>}
+            {resetError && <div className="app-auth-error">{resetError}</div>}
+            {resetMessage && <div className="app-auth-success">{resetMessage}</div>}
         </form>
     );
 
