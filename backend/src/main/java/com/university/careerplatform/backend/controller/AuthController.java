@@ -52,10 +52,10 @@ public class AuthController {
 
             ResponseCookie cookie = ResponseCookie.from("token", authResponse.getToken())
                     .httpOnly(true)
-                    .secure(false) // FOR LOCAL
-                    .sameSite("Lax") // FOR LOCAL
-//                    .secure(true) // FOR PROD
-//                    .sameSite("None") // FOR PROD
+//                    .secure(false) // FOR LOCAL
+//                    .sameSite("Lax") // FOR LOCAL
+                    .secure(true) // FOR PROD
+                    .sameSite("None") // FOR PROD
                     .path("/")
                     .maxAge(Duration.ofDays(1))
                     .build();
@@ -73,10 +73,10 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("token", "")
                 .httpOnly(true)
-                .secure(false) // FOR LOCAL
-                .sameSite("Lax") // FOR LOCAL
-//                .secure(true) // FOR PROD
-//                .sameSite("None") // FOR PROD
+//                .secure(false) // FOR LOCAL
+//                .sameSite("Lax") // FOR LOCAL
+                .secure(true) // FOR PROD
+                .sameSite("None") // FOR PROD
                 .path("/")
                 .maxAge(0)
                 .build();
