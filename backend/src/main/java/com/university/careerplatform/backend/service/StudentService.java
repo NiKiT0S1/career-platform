@@ -302,4 +302,8 @@ public class StudentService {
     public List<Student> getStudentsForExportByIds(List<Long> ids) {
         return studentRepository.findByIdInWithPractice(ids);
     }
+
+    public List<Long> getAllStudentIds() {
+        return studentRepository.findAllStudentIds();
+    }
 }

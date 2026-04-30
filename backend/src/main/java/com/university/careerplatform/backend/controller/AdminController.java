@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -430,5 +431,27 @@ public class AdminController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"students_export.xlsx\"")
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(excelFile);
+    }
+
+    @GetMapping("/students/ids")
+    public ResponseEntity<List<Long>> getAllStudentIds() {
+        return ResponseEntity.ok(studentService.getAllStudentIds());
+    }
+
+    @GetMapping("/students/selected")
+    public ResponseEntity<List<Student>> getSelectedStudents(
+            @RequestParam String selectedIds
+    ) {
+        if (selectedIds == null || selectedIds.isBlank()) {
+            return ResponseEntity.ok(List.of());
+        }
+
+        List<Long> ids = Arrays.stream(selectedIds.split(","))
+                .map(String::trim)
+                .filter(id -> !id.isBlank())
+                .map(Long::parseLong)
+                .toList();
+
+        return ResponseEntity.ok(studentService.getStudentsForExportByIds(ids));
     }
 }

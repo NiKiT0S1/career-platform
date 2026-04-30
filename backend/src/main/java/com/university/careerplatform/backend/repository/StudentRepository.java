@@ -99,4 +99,11 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
         WHERE s.id IN :ids
     """)
     List<Student> findByIdInWithPractice(@Param("ids") List<Long> ids);
+
+    @Query("""
+        SELECT s.id 
+        FROM Student s 
+        ORDER BY s.id
+""")
+    List<Long> findAllStudentIds();
 }
