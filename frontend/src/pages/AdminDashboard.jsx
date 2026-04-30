@@ -325,8 +325,9 @@ export default function AdminDashboard() {
                     console.error(error);
                 }
             }
+        }, filters.fullName ? 350 : 0);
         // }, filters.fullName ? 500 : 0);
-        }, 350);
+        // }, 350);
 
         return () => {
             isCancelled = true;
@@ -602,8 +603,9 @@ export default function AdminDashboard() {
         setSelectedStudentIds([]);
         setMessage("");
 
-        await loadGroups();
-        await loadStudentsPage(0);
+        // await loadGroups();
+        loadGroups();
+        // await loadStudentsPage(0);
     };
 
     // const handleSort = (field) => {
