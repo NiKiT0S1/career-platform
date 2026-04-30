@@ -82,6 +82,10 @@ public class StudentSpecification {
                             criteriaBuilder.equal(practiceJoin.get("practiceStatus"), status)
 
                     );
+
+                    if (!Long.class.equals(query.getResultType())) {
+                        query.distinct(true);
+                    }
                 }
                 catch (IllegalArgumentException e) {
                     throw new RuntimeException("Invalid practice status");

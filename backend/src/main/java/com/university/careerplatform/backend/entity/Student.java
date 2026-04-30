@@ -12,7 +12,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "students")
+//@Table(name = "students")
+@Table(name = "students", indexes = {
+        @Index(name = "idx_student_full_name", columnList = "fullName"),
+        @Index(name = "idx_student_course", columnList = "course"),
+        @Index(name = "idx_student_gpa", columnList = "gpa"),
+        @Index(name = "idx_student_educational_program", columnList = "educational_program"),
+})
 @Getter
 @Setter
 public class Student {
