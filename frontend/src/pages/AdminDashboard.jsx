@@ -19,7 +19,7 @@
  */
 
 // 1. imports
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { formatDateTime } from "../utils/formatDateTime";
 import {
     getStudentsPage,
@@ -46,6 +46,8 @@ import {
     getPracticeSettings,
     updatePracticeSettings,
     exportStudentsToExcel,
+    getAllStudentIds,
+    getSelectedStudentsByIds,
 } from "../api/adminApi";
 import { logout } from "../auth/auth";
 import { useNavigate, useParams } from "react-router-dom";
@@ -66,6 +68,7 @@ import { getDisplayFileName } from "../utils/fileUtils";
 import AdminPracticeModal from "../components/admin/AdminPracticeModal";
 import { formatCompanyType } from "../utils/formatCompanyType";
 import { formatDocumentType } from "../utils/formatDocumentType";
+import AdminSelectedStudentsModal from "../components/admin/AdminSelectedStudentsModal";
 
 export default function AdminDashboard() {
     // 2. state
@@ -163,6 +166,11 @@ export default function AdminDashboard() {
 
     const hasSelectedStudent = selectedStudentIds.length > 0;
 
+    const selectedStudentIdsSet = useMemo(
+        () => new Set(selectedStudentIds),
+        [selectedStudentIds]
+    );
+
     const hasActiveFilters = 
         !!filters.fullName ||
         !!filters.educationalProgram ||
@@ -183,6 +191,9 @@ export default function AdminDashboard() {
     const [practiceSettingsMessage, setPracticeSettingsMessage] = useState("");
 
     const [isExportingStudents, setIsExportingStudents] = useState(false);
+
+    const [selectedStudentsModalOpen, setSelectedStudentsModalOpen] = useState(false);
+    const [selectedStudentsPreview, setSelectedStudentsPreview] = useState([]);
 
     // 3. refs
     const templateFileInputRef = useRef(null);
@@ -314,7 +325,8 @@ export default function AdminDashboard() {
                     console.error(error);
                 }
             }
-        }, filters.fullName ? 500 : 0);
+        // }, filters.fullName ? 500 : 0);
+        }, 350);
 
         return () => {
             isCancelled = true;
@@ -594,20 +606,38 @@ export default function AdminDashboard() {
         await loadStudentsPage(0);
     };
 
+    // const handleSort = (field) => {
+    //     if (sortBy !== field) {
+    //         setSortBy(field);
+    //         setSortDir("asc");
+    //     }
+    //     else if (sortDir === "asc") {
+    //         setSortDir("desc");
+    //     }
+    //     else {
+    //         setSortBy("");
+    //         setSortDir("asc");
+    //     }
+
+    //     setCurrentPage(0);
+    // };
+
     const handleSort = (field) => {
+        setCurrentPage(0);
+
         if (sortBy !== field) {
             setSortBy(field);
             setSortDir("asc");
-        }
-        else if (sortDir === "asc") {
-            setSortDir("desc");
-        }
-        else {
-            setSortBy("");
-            setSortDir("asc");
+            return;
         }
 
-        setCurrentPage(0);
+        if (sortDir === "asc") {
+            setSortDir("desc");
+            return;
+        }
+
+        setSortBy("");
+        setSortDir("asc");
     };
 
     const handlePageChange = async (page) => {
@@ -1200,6 +1230,62 @@ export default function AdminDashboard() {
         }
     };
 
+    const isAllStudentsSelected = 
+        totalStudentsCount > 0 &&
+        selectedStudentIds.length === totalStudentsCount;
+
+    const handleToggleSelectAllStudents = async () => {
+        try {
+            if (isAllStudentsSelected) {
+                setSelectedStudentIds([]);
+                setSelectedStudentsPreview([]);
+                return;
+            }
+
+            const ids = await getAllStudentIds();
+            setSelectedStudentIds(ids);
+        }
+        catch (error) {
+            console.error(error);
+            setStatusMessage("Failed to select all students");
+        }
+    };
+
+    const handleOpenSelectedStudentsModal = async () => {
+        if (selectedStudentIds.length === 0) {
+            setStatusMessage("No students selected");
+            return;
+        }
+
+        try {
+            const data = await getSelectedStudentsByIds(selectedStudentIds);
+
+            const orderMap = new Map(
+                selectedStudentIds.map((id, index) => [id, index])
+            );
+
+            const orderedData = [...data].sort(
+                (a, b) => orderMap.get(a.id) - orderMap.get(b.id)
+            );
+
+            setSelectedStudentsPreview(orderedData);
+            setSelectedStudentsModalOpen(true);
+        }
+        catch (error) {
+            console.error(error);
+            setStatusMessage("Failed to load selected students");
+        }
+    };
+
+    const handleRemoveSelectedStudent = async (studentId) => {
+        setSelectedStudentIds((prev) => prev.filter((id) => id !== studentId));
+        setSelectedStudentsPreview((prev) => prev.filter((student) => student.id !== studentId));
+    };
+
+    const handleEditPracticeForSelected = () => {
+        setStatusMessage("Bulk Edit Practice will be implemented soon!");
+    };
+    
     const navigate = useNavigate();
 
     const handleLogout = async () => {
@@ -1347,9 +1433,43 @@ export default function AdminDashboard() {
                     />
 
                     <div className="admin-table-panel">
-                        <div className="admin-table-meta">
-                            <span>Selected students: {selectedStudentIds.length}</span>
+                        {/* <span className="admin-selected-meta">
+                            <span>Selected Students: {selectedStudentIds.length}</span>
+
+                            {selectedStudentIds.length > 0 && (
+                                <button
+                                    type="button"
+                                    className="admin-view-selected-btn"
+                                    onClick={handleOpenSelectedStudentsModal}
+                                >
+                                    📋
+                                </button>
+                            )}
+
                             <span>Total Students: {totalStudentsCount}</span>
+                        </span> */}
+
+                        <div className="admin-table-meta">
+                            <div className="admin-table-meta-left">
+                                <span className="admin-selected-meta">
+                                    Selected Students: {selectedStudentIds.length}
+
+                                    {selectedStudentIds.length > 0 && (
+                                        <button
+                                            type="button"
+                                            className="admin-selected-icon-btn"
+                                            onClick={handleOpenSelectedStudentsModal}
+                                            title="View selected students"
+                                        >
+                                            ☰
+                                        </button>
+                                    )}
+                                </span>
+                            </div>
+
+                            <div className="admin-table-meta-right">
+                                <span>Total Students: {totalStudentsCount}</span>
+                            </div>
                         </div>
 
                         <AdminStudentsTable
@@ -1375,6 +1495,10 @@ export default function AdminDashboard() {
                             handleDownloadResume={handleDownloadResume}
                             handleViewNotifications={handleViewNotifications}
                             handleOpenPracticeModal={handleOpenPracticeModal}
+                            isAllStudentsSelected={isAllStudentsSelected}
+                            handleToggleSelectAllStudents={handleToggleSelectAllStudents}
+
+                            selectedStudentIdsSet={selectedStudentIdsSet}
                         />
 
                         <AdminStudentsPagination
@@ -1450,6 +1574,17 @@ export default function AdminDashboard() {
                 currentStudentNotifications={currentStudentNotifications}
                 handleCloseNotificationViewer={handleCloseNotificationViewer}
             />
+
+            {selectedStudentsModalOpen && (
+                <AdminSelectedStudentsModal
+                    selectedStudents={selectedStudentsPreview}
+                    onClose={() => setSelectedStudentsModalOpen(false)}
+                    onRemoveStudent={handleRemoveSelectedStudent}
+                    onDownloadResume={handleDownloadResume}
+                    onEditPracticeSelected={handleEditPracticeForSelected}
+                    formatPracticeStatus={formatPracticeStatus}
+                />
+            )}
         </AdminLayout>
     );
 }

@@ -224,3 +224,18 @@ export const exportStudentsToExcel = async (filters, sortBy, sortDir, selectedSt
 
     return response.data;
 };
+
+export const getAllStudentIds = async () => {
+    const response = await api.get("/api/admin/students/ids");
+    return response.data;
+};
+
+export const getSelectedStudentsByIds = async (selectedStudentIds) => {
+    const response = await api.get("/api/admin/students/selected", {
+        params: {
+            selectedIds: selectedStudentIds.join(","),
+        },
+    });
+
+    return response.data;
+};

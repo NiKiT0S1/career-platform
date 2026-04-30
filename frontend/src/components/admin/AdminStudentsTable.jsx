@@ -39,6 +39,10 @@ export default function AdminStudentsTable({
     handleDownloadResume,
     handleViewNotifications,
     handleOpenPracticeModal,
+    isAllStudentsSelected,
+    handleToggleSelectAllStudents,
+
+    selectedStudentIdsSet,
 }) {
     return (
         <div className="admin-table-wrapper">
@@ -48,7 +52,7 @@ export default function AdminStudentsTable({
                     <col style={{ width: "110px" }} />
                     <col style={{ width: "160px" }} />
                     <col style={{ width: "65px" }} />
-                    <col style={{ width: "50px" }} />
+                    <col style={{ width: "60px" }} />
                     <col style={{ width: "170px" }} />
                     <col style={{ width: "100px" }} />
                     <col style={{ width: "45px" }} />
@@ -64,7 +68,21 @@ export default function AdminStudentsTable({
 
                 <thead>
                     <tr>
-                        <th>Select</th>
+                        {/* <th>Select</th> */}
+                        
+                        <th className="admin-select-th">
+                            {/* <div className="admin-select-header"> */}
+                            <div className="admin-select-header-vertical">
+                                <span>Select</span>
+                                <input
+                                    type="checkbox"
+                                    checked={isAllStudentsSelected}
+                                    onChange={handleToggleSelectAllStudents}
+                                    title="Select all students"
+                                />
+                            </div>
+                        </th>
+
                         <th
                             onClick={() => handleSort("fullName")}
                             style={{ cursor: "pointer", userSelect: "none" }}
@@ -109,7 +127,8 @@ export default function AdminStudentsTable({
                             <td>
                                 <input
                                     type="checkbox"
-                                    checked={selectedStudentIds.includes(student.id)}
+                                    // checked={selectedStudentIds.includes(student.id)}
+                                    checked={selectedStudentIdsSet.has(student.id)}
                                     onClick={(e) => e.stopPropagation()}
                                     onChange={() => handleSelectStudent(student.id)}
                                 />
