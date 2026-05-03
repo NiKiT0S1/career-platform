@@ -112,6 +112,8 @@ export default function StudentDashboard() {
 
     // const hasPracticeStatusChanged = practiceStatus !== (student?.practiceStatus || "");
 
+    const [downloadingTemplateId, setDownloadingTemplateId] = useState(null);
+
     // 3. refs
     const resumeFileInputRef = useRef(null);
     const previewContainerRef = useRef(null);
@@ -500,6 +502,8 @@ export default function StudentDashboard() {
 
     const handleDownloadTemplate = async (templateId, fileName) => {
         try {
+            setDownloadingTemplateId(templateId);
+            
             const blob = await downloadTemplate(templateId);
 
             const url = window.URL.createObjectURL(blob);
@@ -516,6 +520,9 @@ export default function StudentDashboard() {
         }
         catch (error) {
             console.error(error);
+        }
+        finally {
+            setDownloadingTemplateId(null);
         }
     };
 
@@ -773,6 +780,7 @@ export default function StudentDashboard() {
                     templates={templates}
                     handleDownloadTemplate={handleDownloadTemplate}
                     getDisplayFileName={getDisplayFileName}
+                    downloadingTemplateId={downloadingTemplateId}
                 />
             )}
 

@@ -46,7 +46,7 @@ import {
     getPracticeSettings,
     updatePracticeSettings,
     exportStudentsToExcel,
-    getAllStudentIds,
+    // getAllStudentIds,
     getSelectedStudentsByIds,
 } from "../api/adminApi";
 import { logout } from "../auth/auth";
@@ -194,6 +194,15 @@ export default function AdminDashboard() {
 
     const [selectedStudentsModalOpen, setSelectedStudentsModalOpen] = useState(false);
     const [selectedStudentsPreview, setSelectedStudentsPreview] = useState([]);
+
+    const [isSelectedStudentsLoading, setIsSelectedStudentsLoading] = useState(false);
+    const [downloadingResumeStudentId, setDownloadingResumeStudentId] = useState(null);
+    const [isSendingNotification, setIsSendingNotification] = useState(false);
+
+    const SELECTED_MODAL_LIMIT = 100;
+
+    const isSelectedModalLimitExceeded =
+        selectedStudentIds.length > SELECTED_MODAL_LIMIT;
 
     // 3. refs
     const templateFileInputRef = useRef(null);
@@ -600,7 +609,7 @@ export default function AdminDashboard() {
             minGpa: "",
         });
         setCurrentPage(0);
-        setSelectedStudentIds([]);
+        // setSelectedStudentIds([]);
         setMessage("");
 
         // await loadGroups();
@@ -707,40 +716,97 @@ export default function AdminDashboard() {
         }
     };
 
+    // const handleNotificationAction = async () => {
+    //     if (!message.trim()) {
+    //         setStatusMessage("Message cannot be empty");
+    //         return;
+    //     }
+
+    //     if (hasSelectedStudent) {
+    //         await handleSendNotification();
+    //     }
+    //     else {
+    //         await handleSendNotificationToFiltered();
+    //     }
+    // };
+
     const handleNotificationAction = async () => {
+        if (isSendingNotification) return;
+
         if (!message.trim()) {
             setStatusMessage("Message cannot be empty");
             return;
         }
 
-        if (hasSelectedStudent) {
-            await handleSendNotification();
+        try {
+            setIsSendingNotification(true);
+
+            if (hasSelectedStudent) {
+                await handleSendNotification();
+            }
+            else {
+                await handleSendNotificationToFiltered();
+            }
         }
-        else {
-            await handleSendNotificationToFiltered();
+        finally {
+            setIsSendingNotification(false);
         }
     };
 
+    // const handleDownloadResume = async (studentId) => {
+    //     try {
+    //         const blob = await downloadStudentResume(studentId);
+    //         const url = window.URL.createObjectURL(blob);
+
+    //         const student = students.find((s) => s.id === studentId);
+    //         const safeName = student.fullName.replace(/\s+/g, "_");
+
+    //         const link = document.createElement("a");
+    //         link.href = url;
+    //         link.download = `student-${safeName}-CV.pdf`;
+    //         document.body.appendChild(link);
+    //         link.click();
+    //         link.remove();
+
+    //         window.URL.revokeObjectURL(url);
+    //     } 
+    //     catch (error) {
+    //         console.error(error);
+    //         setStatusMessage("CV not found or failed to download");
+    //     }
+    // };
+
     const handleDownloadResume = async (studentId) => {
         try {
+            setDownloadingResumeStudentId(studentId);
+
             const blob = await downloadStudentResume(studentId);
             const url = window.URL.createObjectURL(blob);
 
-            const student = students.find((s) => s.id === studentId);
-            const safeName = student.fullName.replace(/\s+/g, "_");
+            const student =
+                students.find((s) => s.id === studentId) ||
+                selectedStudentsPreview.find((s) => s.id === studentId);
+
+            const safeName = student?.fullName
+                ? student.fullName.replace(/\s+/g, "_")
+                : `student-${studentId}`;
 
             const link = document.createElement("a");
             link.href = url;
             link.download = `student-${safeName}-CV.pdf`;
+
             document.body.appendChild(link);
             link.click();
             link.remove();
 
             window.URL.revokeObjectURL(url);
-        } 
+        }
         catch (error) {
             console.error(error);
             setStatusMessage("CV not found or failed to download");
+        }
+        finally {
+            setDownloadingResumeStudentId(null);
         }
     };
 
@@ -1233,25 +1299,81 @@ export default function AdminDashboard() {
     };
 
     const isAllStudentsSelected = 
-        totalStudentsCount > 0 &&
-        selectedStudentIds.length === totalStudentsCount;
+        // totalStudentsCount > 0 &&
+        // selectedStudentIds.length === totalStudentsCount;
+        students.length > 0 &&
+        students.every((student) => selectedStudentIdsSet.has(student.id));
 
-    const handleToggleSelectAllStudents = async () => {
-        try {
-            if (isAllStudentsSelected) {
-                setSelectedStudentIds([]);
-                setSelectedStudentsPreview([]);
-                return;
-            }
+    // const handleToggleSelectAllStudents = async () => {
+    //     try {
+    //         if (isAllStudentsSelected) {
+    //             setSelectedStudentIds([]);
+    //             setSelectedStudentsPreview([]);
+    //             return;
+    //         }
 
-            const ids = await getAllStudentIds();
-            setSelectedStudentIds(ids);
+    //         const ids = await getAllStudentIds();
+    //         setSelectedStudentIds(ids);
+    //     }
+    //     catch (error) {
+    //         console.error(error);
+    //         setStatusMessage("Failed to select all students");
+    //     }
+    // };
+
+    const handleToggleSelectAllStudents = () => {
+        const currentPageStudentIds = students.map((student) => student.id);
+
+        const areAllCurrentPageStudentsSelected =
+            currentPageStudentIds.length > 0 &&
+            currentPageStudentIds.every((id) => selectedStudentIdsSet.has(id));
+
+        if (areAllCurrentPageStudentsSelected) {
+            setSelectedStudentIds((prev) =>
+                prev.filter((id) => !currentPageStudentIds.includes(id))
+            );
+
+            setSelectedStudentsPreview((prev) =>
+                prev.filter((student) => !currentPageStudentIds.includes(student.id))
+            );
+
+            return;
         }
-        catch (error) {
-            console.error(error);
-            setStatusMessage("Failed to select all students");
-        }
+
+        setSelectedStudentIds((prev) => {
+            const merged = new Set(prev);
+
+            currentPageStudentIds.forEach((id) => merged.add(id));
+
+            return Array.from(merged);
+        });
     };
+
+    // const handleOpenSelectedStudentsModal = async () => {
+    //     if (selectedStudentIds.length === 0) {
+    //         setStatusMessage("No students selected");
+    //         return;
+    //     }
+
+    //     try {
+    //         const data = await getSelectedStudentsByIds(selectedStudentIds);
+
+    //         const orderMap = new Map(
+    //             selectedStudentIds.map((id, index) => [id, index])
+    //         );
+
+    //         const orderedData = [...data].sort(
+    //             (a, b) => orderMap.get(a.id) - orderMap.get(b.id)
+    //         );
+
+    //         setSelectedStudentsPreview(orderedData);
+    //         setSelectedStudentsModalOpen(true);
+    //     }
+    //     catch (error) {
+    //         console.error(error);
+    //         setStatusMessage("Failed to load selected students");
+    //     }
+    // };
 
     const handleOpenSelectedStudentsModal = async () => {
         if (selectedStudentIds.length === 0) {
@@ -1259,7 +1381,20 @@ export default function AdminDashboard() {
             return;
         }
 
+        // if (selectedStudentIds.length > SELECTED_MODAL_LIMIT) {
+        //     setStatusMessage(
+        //         `Too many students selected (${selectedStudentIds.length}). Please keep selected list under ${SELECTED_MODAL_LIMIT} students to open preview.`
+        //     );
+        //     return;
+        // }
+
+        if (selectedStudentIds.length > SELECTED_MODAL_LIMIT) {
+            return;
+        }
+
         try {
+            setIsSelectedStudentsLoading(true);
+
             const data = await getSelectedStudentsByIds(selectedStudentIds);
 
             const orderMap = new Map(
@@ -1277,11 +1412,36 @@ export default function AdminDashboard() {
             console.error(error);
             setStatusMessage("Failed to load selected students");
         }
+        finally {
+            setIsSelectedStudentsLoading(false);
+        }
     };
 
-    const handleRemoveSelectedStudent = async (studentId) => {
-        setSelectedStudentIds((prev) => prev.filter((id) => id !== studentId));
-        setSelectedStudentsPreview((prev) => prev.filter((student) => student.id !== studentId));
+    // const handleRemoveSelectedStudent = async (studentId) => {
+    //     setSelectedStudentIds((prev) => prev.filter((id) => id !== studentId));
+    //     setSelectedStudentsPreview((prev) => prev.filter((student) => student.id !== studentId));
+    // };
+
+    const handleRemoveSelectedStudent = (studentId) => {
+        setSelectedStudentIds((prev) =>
+            prev.filter((id) => id !== studentId)
+        );
+
+        setSelectedStudentsPreview((prev) => {
+            const next = prev.filter((student) => student.id !== studentId);
+
+            if (next.length === 0) {
+                setSelectedStudentsModalOpen(false);
+            }
+
+            return next;
+        });
+    };
+
+    const handleClearSelectedStudents = () => {
+        setSelectedStudentIds([]);
+        setSelectedStudentsPreview([]);
+        setSelectedStudentsModalOpen(false);
     };
 
     const handleEditPracticeForSelected = () => {
@@ -1432,6 +1592,7 @@ export default function AdminDashboard() {
                         statusMessage={statusMessage}
                         handleExportStudents={handleExportStudents}
                         isExportingStudents={isExportingStudents}
+                        isSendingNotification={isSendingNotification}
                     />
 
                     <div className="admin-table-panel">
@@ -1457,14 +1618,33 @@ export default function AdminDashboard() {
                                     Selected Students: {selectedStudentIds.length}
 
                                     {selectedStudentIds.length > 0 && (
-                                        <button
-                                            type="button"
-                                            className="admin-selected-icon-btn"
-                                            onClick={handleOpenSelectedStudentsModal}
-                                            title="View selected students"
-                                        >
-                                            ☰
-                                        </button>
+                                        <>
+                                            <button
+                                                type="button"
+                                                className="admin-selected-icon-btn"
+                                                onClick={handleOpenSelectedStudentsModal}
+                                                title="View selected students"
+                                                disabled={isSelectedStudentsLoading || isSelectedModalLimitExceeded}
+                                            >
+                                                {/* ☰ */}
+                                                {isSelectedStudentsLoading ? "…" : "☰"}
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="admin-selected-clear-btn"
+                                                onClick={handleClearSelectedStudents}
+                                                title="Clear selected students"
+                                            >
+                                                ×
+                                            </button>
+                                        </>
+                                    )}
+
+                                    {isSelectedModalLimitExceeded && (
+                                        <span className="admin-selected-limit-warning">
+                                            Too many students selected: {selectedStudentIds.length}. Limit: {SELECTED_MODAL_LIMIT}.
+                                        </span>
                                     )}
                                 </span>
                             </div>
@@ -1585,6 +1765,7 @@ export default function AdminDashboard() {
                     onDownloadResume={handleDownloadResume}
                     onEditPracticeSelected={handleEditPracticeForSelected}
                     formatPracticeStatus={formatPracticeStatus}
+                    downloadingResumeStudentId={downloadingResumeStudentId}
                 />
             )}
         </AdminLayout>

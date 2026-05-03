@@ -17,6 +17,7 @@ export default function StudentTemplatesSection({
     templates,
     handleDownloadTemplate,
     getDisplayFileName,
+    downloadingTemplateId,
 }) {
     return (
         <div className="student-templates-page">
@@ -27,18 +28,39 @@ export default function StudentTemplatesSection({
                     <p>No templates available</p>
                 ) : (
                     templates.map((template) => (
+                        // <button
+                        //     key={template.id}
+                        //     type="button"
+                        //     className="student-template-card"
+                        //     onClick={() => handleDownloadTemplate(template.id, template.fileName)}
+                        // >
+                        //     <div className="student-template-card__preview">📄</div>
+                        //     <div
+                        //         className="student-template-card__name"
+                        //         title={template.displayName}
+                        //     >
+                        //         {getDisplayFileName(template.displayName, 20)}
+                        //     </div>
+                        // </button>
+
                         <button
                             key={template.id}
                             type="button"
                             className="student-template-card"
                             onClick={() => handleDownloadTemplate(template.id, template.fileName)}
+                            disabled={downloadingTemplateId === template.id}
                         >
-                            <div className="student-template-card__preview">📄</div>
+                            <div className="student-template-card__preview">
+                                {downloadingTemplateId === template.id ? "⏳" : "📄"}
+                            </div>
+
                             <div
                                 className="student-template-card__name"
                                 title={template.displayName}
                             >
-                                {getDisplayFileName(template.displayName, 20)}
+                                {downloadingTemplateId === template.id
+                                    ? "Downloading..."
+                                    : getDisplayFileName(template.displayName, 20)}
                             </div>
                         </button>
                     ))

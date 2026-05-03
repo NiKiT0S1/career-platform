@@ -5,6 +5,7 @@ export default function AdminSelectedStudentsModal({
     onDownloadResume,
     onEditPracticeSelected,
     formatPracticeStatus,
+    downloadingResumeStudentId,
 }) {
     return (
         <div
@@ -88,8 +89,10 @@ export default function AdminSelectedStudentsModal({
                                                 type="button"
                                                 className="admin-selected-modal__small-btn"
                                                 onClick={() => onDownloadResume(student.id)}
+                                                disabled={downloadingResumeStudentId === student.id}
                                             >
-                                                Download
+                                                {/* Download */}
+                                                {downloadingResumeStudentId === student.id ? "Loading..." : "Download"}
                                             </button>
                                         ) : (
                                             "—"

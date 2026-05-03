@@ -29,6 +29,7 @@ export default function AdminFiltersPanel({
     statusMessage,
     handleExportStudents,
     isExportingStudents,
+    isSendingNotification,
 }) {
     return (
         <div className="admin-filter-panel">
@@ -179,8 +180,13 @@ export default function AdminFiltersPanel({
                 />
             </div>
 
-            <button className="admin-send-btn" onClick={handleNotificationAction}>
-                Send
+            <button 
+                className="admin-send-btn" 
+                onClick={handleNotificationAction}
+                disabled={isSendingNotification}
+            >
+                {/* Send */}
+                {isSendingNotification ? "Sending..." : "Send"}
             </button>
 
             {statusMessage && <p className="admin-inline-message">{statusMessage}</p>}
