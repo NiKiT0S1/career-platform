@@ -366,6 +366,18 @@ public class AdminController {
         }
     }
 
+    @PatchMapping("/students/practice/bulk")
+    public ResponseEntity<List<StudentPractice>> bulkUpdateStudentPractice(
+            @RequestBody BulkUpdatePracticeRequest request
+    ) {
+        try {
+            return ResponseEntity.ok(studentPracticeService.bulkUpdatePractice(request));
+        }
+        catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @GetMapping("/practice-settings")
     public ResponseEntity<PracticeSettings> getPracticeSettings() {
         return ResponseEntity.ok(practiceSettingsService.getSettings());

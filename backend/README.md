@@ -70,6 +70,7 @@ src/main/java/com/university/careerplatform/backend
 │
 ├── dto
 │   ├── AuthResponse.java
+│   ├── BulkUpdatePracticeRequest.java
 │   ├── ChangePasswordRequest.java
 │   ├── CompanyUpdateRequest.java
 │   ├── ForgotPasswordRequest.java
@@ -79,6 +80,7 @@ src/main/java/com/university/careerplatform/backend
 │   ├── ResetPasswordRequest.java
 │   ├── SendNotificationByFilterRequest.java
 │   ├── SendNotificationRequest.java
+│   ├── StudentProfileResponse.java
 │   ├── UpdatePracticeRequest.java
 │   ├── UpdateStudentFieldRequest.java
 │   ├── UpdateTemplateCategoryRequest.java
@@ -223,6 +225,7 @@ Examples:
 * `ForgotPasswordRequest`
 * `ResetPasswordRequest`
 * `VerifyResetCodeRequest`
+* `BulkUpdatePracticeRequest`
 
 ### Security
 

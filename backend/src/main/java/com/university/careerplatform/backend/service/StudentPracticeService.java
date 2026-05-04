@@ -13,6 +13,7 @@
 
 package com.university.careerplatform.backend.service;
 
+import com.university.careerplatform.backend.dto.BulkUpdatePracticeRequest;
 import com.university.careerplatform.backend.dto.UpdatePracticeRequest;
 import com.university.careerplatform.backend.entity.Student;
 import com.university.careerplatform.backend.entity.StudentPractice;
@@ -20,6 +21,9 @@ import com.university.careerplatform.backend.repository.StudentPracticeRepositor
 import com.university.careerplatform.backend.repository.StudentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class StudentPracticeService {
@@ -107,5 +111,66 @@ public class StudentPracticeService {
 
                     return practice;
                 });
+    }
+
+    @Transactional
+    public List<StudentPractice> bulkUpdatePractice(BulkUpdatePracticeRequest request) {
+        if (request.getStudentIds() == null || request.getStudentIds().isEmpty()) {
+            throw new RuntimeException("Student IDs list cannot be empty");
+        }
+
+        List<StudentPractice> updatedPractices = new ArrayList<>();
+
+        for (Long studentId : request.getStudentIds()) {
+            StudentPractice practice = createIfAbsent(studentId);
+
+            applyPartialUpdate(practice, request);
+
+            updatedPractices.add(studentPracticeRepository.save(practice));
+        }
+
+        return updatedPractices;
+    }
+
+    private void applyPartialUpdate(StudentPractice practice, UpdatePracticeRequest request) {
+        if (request.getCompanyName() != null && !request.getCompanyName().isBlank()) {
+            practice.setCompanyName(request.getCompanyName());
+        }
+
+        if (request.getCompanyType() != null) {
+            practice.setCompanyType(request.getCompanyType());
+        }
+
+        if (request.getPracticeStatus() != null) {
+            practice.setPracticeStatus(request.getPracticeStatus());
+        }
+
+        if (request.getPracticeMode() != null) {
+            practice.setPracticeMode(request.getPracticeMode());
+        }
+
+        if (request.getDocumentType() != null) {
+            practice.setDocumentType(request.getDocumentType());
+        }
+
+        if (request.getLetterSent() != null) {
+            practice.setLetterSent(request.getLetterSent());
+        }
+
+        if (request.getContractNumber() != null && !request.getContractNumber().isBlank()) {
+            practice.setContractNumber(request.getContractNumber());
+        }
+
+        if (request.getContractDate() != null) {
+            practice.setContractDate(request.getContractDate());
+        }
+
+        if (request.getPracticeStartDate() != null) {
+            practice.setPracticeStartDate(request.getPracticeStartDate());
+        }
+
+        if (request.getPracticeEndDate() != null) {
+            practice.setPracticeEndDate(request.getPracticeEndDate());
+        }
     }
 }
