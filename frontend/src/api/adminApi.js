@@ -239,3 +239,8 @@ export const getSelectedStudentsByIds = async (selectedStudentIds) => {
 
     return response.data;
 };
+
+export const bulkUpdateStudentPractice = async (payload) => {
+    const response = await api.patch("/api/admin/students/practice/bulk", payload);
+    return response.data;
+};

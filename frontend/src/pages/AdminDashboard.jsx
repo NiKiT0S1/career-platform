@@ -48,6 +48,7 @@ import {
     exportStudentsToExcel,
     // getAllStudentIds,
     getSelectedStudentsByIds,
+    bulkUpdateStudentPractice,
 } from "../api/adminApi";
 import { logout } from "../auth/auth";
 import { useNavigate, useParams } from "react-router-dom";
@@ -69,6 +70,7 @@ import AdminPracticeModal from "../components/admin/AdminPracticeModal";
 import { formatCompanyType } from "../utils/formatCompanyType";
 import { formatDocumentType } from "../utils/formatDocumentType";
 import AdminSelectedStudentsModal from "../components/admin/AdminSelectedStudentsModal";
+import AdminBulkPracticeModal from "../components/admin/AdminBulkPracticeModal";
 
 export default function AdminDashboard() {
     // 2. state
@@ -203,6 +205,9 @@ export default function AdminDashboard() {
 
     const isSelectedModalLimitExceeded =
         selectedStudentIds.length > SELECTED_MODAL_LIMIT;
+
+    const [bulkPracticeModalOpen, setBulkPracticeModalOpen] = useState(false);
+    const [isBulkPracticeSaving, setIsBulkPracticeSaving] = useState(false);
 
     // 3. refs
     const templateFileInputRef = useRef(null);
@@ -1444,8 +1449,46 @@ export default function AdminDashboard() {
         setSelectedStudentsModalOpen(false);
     };
 
+    // const handleEditPracticeForSelected = () => {
+    //     setStatusMessage("Bulk Edit Practice will be implemented soon!");
+    // };
+
     const handleEditPracticeForSelected = () => {
-        setStatusMessage("Bulk Edit Practice will be implemented soon!");
+        if (selectedStudentIds.length === 0) {
+            setStatusMessage("Please select at least one student");
+            return;
+        }
+
+        setSelectedStudentsModalOpen(false);
+        setBulkPracticeModalOpen(true);
+    };
+
+    const handleSaveBulkPractice = async (payload) => {
+        try {
+            setIsBulkPracticeSaving(true);
+
+            await bulkUpdateStudentPractice({
+                studentIds: selectedStudentIds,
+                ...payload,
+            });
+
+            setStatusMessage(
+                `Practice data updated for ${selectedStudentIds.length} selected students`
+            );
+
+            setBulkPracticeModalOpen(false);
+            setSelectedStudentsModalOpen(false);
+            setSelectedStudentsPreview([]);
+
+            await refreshStudentsForPolling();
+        }
+        catch (error) {
+            console.error(error);
+            setStatusMessage("Failed to update practice data for selected student");
+        }
+        finally {
+            setIsBulkPracticeSaving(false);
+        }
     };
     
     const navigate = useNavigate();
@@ -1766,6 +1809,19 @@ export default function AdminDashboard() {
                     onEditPracticeSelected={handleEditPracticeForSelected}
                     formatPracticeStatus={formatPracticeStatus}
                     downloadingResumeStudentId={downloadingResumeStudentId}
+                />
+            )}
+
+            {bulkPracticeModalOpen && (
+                <AdminBulkPracticeModal
+                    isOpen={bulkPracticeModalOpen}
+                    selectedCount={selectedStudentIds.length}
+                    onClose={() => setBulkPracticeModalOpen(false)}
+                    onSave={handleSaveBulkPractice}
+                    formatCompanyType={formatCompanyType}
+                    formatDocumentType={formatDocumentType}
+                    practiceSettings={practiceSettings}
+                    isSaving={isBulkPracticeSaving}
                 />
             )}
         </AdminLayout>
