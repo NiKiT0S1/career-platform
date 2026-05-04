@@ -96,18 +96,25 @@ export default function AdminBulkPracticeModal({
     };
 
     const handleSelectCompany = (company) => {
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+
         setBulkPractice((prev) => ({
             ...prev,
             companyName: company.companyName || "",
             companyType: company.companyType || "",
             documentType: company.defaultDocumentType || "",
         }));
+
+        setCompanySuggestions([]);
+        setShowSuggestions(false);
     };
 
     const buildPayload = () => {
         const payload = {};
 
-        Object.entries(buildPayload).forEach(([key, value]) => {
+        Object.entries(bulkPractice).forEach(([key, value]) => {
             if (value !== "" && value !== null && value !== undefined) {
                 payload[key] = value;
             }
@@ -179,7 +186,10 @@ export default function AdminBulkPracticeModal({
                                         key={company.id}
                                         type="button"
                                         className="admin-practice-modal__suggestion-item"
-                                        onClick={() => handleSelectCompany(company)}
+                                        onMouseDown={(e) => {
+                                            e.preventDefault();
+                                            handleSelectCompany(company);
+                                        }}
                                     >
                                         <div className="admin-practice-modal__suggestion-name">
                                             {company.companyName}

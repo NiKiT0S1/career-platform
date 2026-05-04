@@ -99,6 +99,10 @@ export default function AdminPracticeModal({
     };
 
     const handleSelectCompany = (company) => {
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+
         setLocalPractice((prev) => ({
             ...prev,
             companyName: company.companyName || "",
@@ -108,6 +112,21 @@ export default function AdminPracticeModal({
 
         setCompanySuggestions([]);
         setShowSuggestions(false);
+    };
+
+    const buildPayload = () => {
+        return {
+            companyName: localPractice.companyName?.trim() || null,
+            companyType: localPractice.companyType || null,
+            practiceStatus: localPractice.practiceStatus || null,
+            practiceMode: localPractice.practiceMode || null,
+            documentType: localPractice.documentType || null,
+            letterSent: localPractice.letterSent ?? null,
+            contractNumber: localPractice.contractNumber?.trim() || null,
+            contractDate: localPractice.contractDate || null,
+            practiceStartDate: localPractice.practiceStartDate || null,
+            practiceEndDate: localPractice.practiceEndDate || null,
+        };
     };
 
     return (
@@ -160,7 +179,10 @@ export default function AdminPracticeModal({
                                         key={company.id}
                                         type="button"
                                         className="admin-practice-modal__suggestion-item"
-                                        onClick={() => handleSelectCompany(company)}
+                                        onMouseDown={(e) => {
+                                            e.preventDefault();
+                                            handleSelectCompany(company);
+                                        }}
                                     >
                                         <div className="admin-practice-modal__suggestion-name">
                                             {company.companyName}
@@ -382,8 +404,11 @@ export default function AdminPracticeModal({
                     <button
                         type="button"
                         className="admin-practice-modal__save"
-                        onClick={async () => {
-                            await onSave(localPractice);
+                        onClick={async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            await onSave(buildPayload());
                         }}
                     >
                         Save

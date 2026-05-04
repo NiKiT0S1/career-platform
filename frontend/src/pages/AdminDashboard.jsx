@@ -1479,12 +1479,13 @@ export default function AdminDashboard() {
             setBulkPracticeModalOpen(false);
             setSelectedStudentsModalOpen(false);
             setSelectedStudentsPreview([]);
+            setSelectedStudentIds([]);
 
             await refreshStudentsForPolling();
         }
         catch (error) {
             console.error(error);
-            setStatusMessage("Failed to update practice data for selected student");
+            setStatusMessage("Failed to update practice data for selected students");
         }
         finally {
             setIsBulkPracticeSaving(false);
