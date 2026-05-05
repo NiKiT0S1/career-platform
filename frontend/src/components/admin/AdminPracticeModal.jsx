@@ -10,6 +10,7 @@ export default function AdminPracticeModal({
     formatCompanyType,
     formatDocumentType,
     practiceSettings,
+    nextContractNumber,
 }) {
     const [localPractice, setLocalPractice] = useState({});
     const [companySuggestions, setCompanySuggestions] = useState([]);
@@ -348,11 +349,22 @@ export default function AdminPracticeModal({
                         <input
                             className="admin-practice-modal__input"
                             type="text"
+                            placeholder={nextContractNumber || ""}
                             value={localPractice.contractNumber || ""}
                             onChange={(e) =>
                                 updateField("contractNumber", e.target.value)
                             }
                         />
+
+                        {nextContractNumber && (
+                            <button
+                                type="button"
+                                className="admin-practice-modal__helper-btn"
+                                onClick={() => updateField("contractNumber", nextContractNumber)}
+                            >
+                                Use next number
+                            </button>
+                        )}
                     </div>
 
                     <div className="admin-practice-modal__field">

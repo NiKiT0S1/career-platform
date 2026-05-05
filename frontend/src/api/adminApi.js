@@ -244,3 +244,8 @@ export const bulkUpdateStudentPractice = async (payload) => {
     const response = await api.patch("/api/admin/students/practice/bulk", payload);
     return response.data;
 };
+
+export const getNextContractNumber = async () => {
+    const response = await api.get("/api/admin/practice/contract-number/next");
+    return response.data;
+};

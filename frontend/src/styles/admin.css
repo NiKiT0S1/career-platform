@@ -806,6 +806,29 @@
     color: #6e7a99;
 }
 
+.admin-practice-modal__helper-btn {
+    margin-top: 8px;
+    border: none;
+    background: transparent;
+    color: #4f6df5;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    text-align: left;
+}
+
+.admin-practice-modal__helper-btn:hover {
+    text-decoration: underline;
+}
+
+.admin-practice-modal__hint {
+    margin: 6px 0 0;
+    font-size: 12px;
+    line-height: 1.35;
+    color: #5f6b85;
+}
+
 .admin-view-selected-btn {
     border: 1px solid #d7def0;
     border-radius: 999px;

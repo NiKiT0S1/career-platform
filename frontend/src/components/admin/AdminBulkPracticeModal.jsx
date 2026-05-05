@@ -10,10 +10,13 @@ export default function AdminBulkPracticeModal({
     formatDocumentType,
     practiceSettings,
     isSaving,
+    nextContractNumber,
 }) {
     const [bulkPractice, setBulkPractice] = useState({});
     const [companySuggestions, setCompanySuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+
+    const [useSequentialContractNumbers, setUseSequentialContractNumbers] = useState(false);
 
     const searchTimeoutRef = useRef(null);
     const suggestionBoxRef = useRef(null);
@@ -23,6 +26,7 @@ export default function AdminBulkPracticeModal({
             setBulkPractice({});
             setCompanySuggestions([]);
             setShowSuggestions(false);
+            setUseSequentialContractNumbers(false);
             return;
         }
 
@@ -38,6 +42,8 @@ export default function AdminBulkPracticeModal({
             practiceStartDate: "",
             practiceEndDate: "",
         });
+
+        setUseSequentialContractNumbers(false);
     }, [isOpen]);
 
     useEffect(() => {
@@ -128,12 +134,37 @@ export default function AdminBulkPracticeModal({
             payload.letterSent = false;
         }
 
+        if (useSequentialContractNumbers) {
+            payload.assignSequentialContractNumbers = true;
+            delete payload.contractNumber;
+        }
+
         return payload;
     };
 
-     const hasAtLeastOneField = Object.values(bulkPractice).some(
-        (value) => value !== "" && value !== null && value !== undefined
-    );
+    // const hasAtLeastOneField = Object.values(bulkPractice).some(
+    //     (value) => value !== "" && value !== null && value !== undefined
+    // );
+
+    const hasAtLeastOneField = 
+        useSequentialContractNumbers ||
+        Object.values(bulkPractice).some(
+            (value) => value !== "" && value !== null && value !== undefined
+        );
+
+    const getLastSequentialContractNumber = () => {
+        if (!nextContractNumber || !selectedCount) return "";
+
+        const [sequencePart, yearCode] = nextContractNumber.split("-");
+        const firstSequence = Number(sequencePart);
+
+        if (!firstSequence || !yearCode) return "";
+
+        const lastSequence = firstSequence + selectedCount - 1;
+        const paddedLastSequence = String(lastSequence).padStart(sequencePart.length, "0");
+
+        return `${paddedLastSequence}-${yearCode}`;
+    };
 
     return (
         <div className="admin-practice-modal-backdrop" onClick={onClose}>
@@ -311,13 +342,65 @@ export default function AdminBulkPracticeModal({
                     </div>
 
                     <div className="admin-practice-modal__field">
-                        <label className="admin-practice-modal__label">Contract Number</label>
+                        <label className="admin-practice-modal__label">
+                            Contract Number
+                        </label>
+                        {/* <input
+                            className="admin-practice-modal__input"
+                            type="text"
+                            placeholder={
+                                useSequentialContractNumbers
+                                ? `Starts from ${nextContractNumber || "next number"}`
+                                : nextContractNumber || ""
+                            }
+                            value={bulkPractice.contractNumber || ""}
+                            disabled={useSequentialContractNumbers}
+                            onChange={(e) => updateField("contractNumber", e.target.value)}
+                        /> */}
                         <input
                             className="admin-practice-modal__input"
                             type="text"
-                            value={bulkPractice.contractNumber || ""}
-                            onChange={(e) => updateField("contractNumber", e.target.value)}
+                            placeholder={nextContractNumber || "Sequential numbering is not available"}
+                            value={useSequentialContractNumbers ? nextContractNumber || "" : ""}
+                            disabled
+                            readOnly
                         />
+
+                        {nextContractNumber && (
+                            <button
+                                type="button"
+                                className="admin-practice-modal__helper-btn"
+                                onClick={() => {
+                                    setUseSequentialContractNumbers((prev) => !prev);
+
+                                    setBulkPractice((prev) => ({
+                                        ...prev,
+                                        contractNumber: "",
+                                    }));
+                                }}
+                            >
+                                {useSequentialContractNumbers
+                                    ? "Cancel sequential numbers"
+                                    : "Use sequential numbers"}
+                            </button>
+                        )}
+
+                        {/* {useSequentialContractNumbers && nextContractNumber && (
+                            <p className="admin-practice-modal__hint">
+                                Numbers will be assigned automatically starting from {nextContractNumber}.
+                            </p>
+                        )} */}
+                        {useSequentialContractNumbers && nextContractNumber && (
+                            <p className="admin-practice-modal__hint">
+                                First number: {nextContractNumber}. Last number: {getLastSequentialContractNumber()}.
+                            </p>
+                        )}
+
+                        {!useSequentialContractNumbers && nextContractNumber && (
+                            <p className="admin-practice-modal__hint">
+                                Enable sequential numbers to assign contract numbers from {nextContractNumber}.
+                            </p>
+                        )}
                     </div>
 
                     <div className="admin-practice-modal__field">

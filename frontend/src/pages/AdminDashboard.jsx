@@ -49,6 +49,7 @@ import {
     // getAllStudentIds,
     getSelectedStudentsByIds,
     bulkUpdateStudentPractice,
+    getNextContractNumber,
 } from "../api/adminApi";
 import { logout } from "../auth/auth";
 import { useNavigate, useParams } from "react-router-dom";
@@ -210,6 +211,8 @@ export default function AdminDashboard() {
 
     const [bulkPracticeModalOpen, setBulkPracticeModalOpen] = useState(false);
     const [isBulkPracticeSaving, setIsBulkPracticeSaving] = useState(false);
+
+    const [nextContractNumber, setNextContractNumber] = useState("");
 
     // 3. refs
     const templateFileInputRef = useRef(null);
@@ -577,6 +580,17 @@ export default function AdminDashboard() {
         }
         catch (error) {
             console.error(error);
+        }
+    };
+
+    const loadNextContractNumber = async () => {
+        try {
+            const data = await getNextContractNumber();
+            setNextContractNumber(data.nextContractNumber || "");
+        }
+        catch (error) {
+            console.error(error);
+            setNextContractNumber("");
         }
     };
 
@@ -1188,6 +1202,7 @@ export default function AdminDashboard() {
             // setPracticeData(practice);
             setPracticeData(preparedPractice);
             setPracticeModalOpen(true);
+            await loadNextContractNumber();
         }
         catch (error) {
             console.error(error);
@@ -1489,6 +1504,7 @@ export default function AdminDashboard() {
         }
 
         setSelectedStudentsModalOpen(false);
+        loadNextContractNumber();
         setBulkPracticeModalOpen(true);
     };
 
@@ -1783,6 +1799,7 @@ export default function AdminDashboard() {
                             formatCompanyType={formatCompanyType}
                             formatDocumentType={formatDocumentType}
                             practiceSettings={practiceSettings}
+                            nextContractNumber={nextContractNumber}
                         />
                     </div>
                 </div>
@@ -1861,6 +1878,7 @@ export default function AdminDashboard() {
                     formatDocumentType={formatDocumentType}
                     practiceSettings={practiceSettings}
                     isSaving={isBulkPracticeSaving}
+                    nextContractNumber={nextContractNumber}
                 />
             )}
         </AdminLayout>
