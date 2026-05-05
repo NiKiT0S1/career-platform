@@ -511,6 +511,28 @@ input[type="password"]::-webkit-textfield-decoration-container {
     gap: 12px;
 }
 
+/* .practice-dates__row {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 12px;
+    align-items: center;
+} */
+
+.practice-dates__control {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.practice-dates__hint {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.3;
+    color: #5f6b85;
+    white-space: normal;
+}
+
 .practice-dates__label {
     width: 160px;
 }

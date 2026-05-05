@@ -38,8 +38,21 @@ export default function AdminAccountDropdown({
     handleSavePracticeSettings,
     practiceSettingsMessage,
 
+    academicYearStart,
+    setAcademicYearStart,
+
     handleLogout,
 }) {
+
+    const getAcademicYearCode = (startYear) => {
+        if (!startYear || String(startYear).length !== 4) return "";
+
+        const start = Number(startYear);
+        const end = start + 1;
+
+        return `${String(start).slice(-2)}${String(end).slice(-2)}`;
+    };
+
     return (
         <div className="student-account-menu">
             {!showPasswordForm && !showPracticeSettingsForm && (
@@ -65,7 +78,7 @@ export default function AdminAccountDropdown({
                             setShowPasswordForm(false);
                         }}
                     >
-                        Regular Practice Dates
+                        Practice Settings
                     </button>
 
                     <br /><br />
@@ -150,7 +163,7 @@ export default function AdminAccountDropdown({
             {showPracticeSettingsForm && (
                 <div className="student-account-password-box">
                     <h4 className="student-account-password-box__title">
-                        Regular Practice Dates
+                        Practice Settings
                     </h4>
 
                     <div className="practice-dates__row">
@@ -177,12 +190,39 @@ export default function AdminAccountDropdown({
                         />
                     </div>
 
+                    <div className="practice-dates__row practice-dates__row--stacked">
+                        <label className="practice-dates__label">
+                            Academic Year Start
+                        </label>
+
+                        <div className="practice-dates__control">
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                maxLength={4}
+                                className="student-account-password-box__input"
+                                placeholder="2026"
+                                value={academicYearStart}
+                                onChange={(e) => {
+                                    const value = e.target.value.replace(/\D/g, "").slice(0, 4);
+                                    setAcademicYearStart(value);
+                                }}
+                            />
+
+                            {getAcademicYearCode(academicYearStart) && (
+                                <p className="practice-dates__hint">
+                                    Contract year code: {getAcademicYearCode(academicYearStart)}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
                     <button
                         type="button"
                         className="student-account-password-box__save"
                         onClick={handleSavePracticeSettings}
                     >
-                        Save Dates
+                        Save Settings
                     </button>
 
                     <button

@@ -192,6 +192,8 @@ export default function AdminDashboard() {
     const [regularPracticeEndDate, setRegularPracticeEndDate] = useState("");
     const [practiceSettingsMessage, setPracticeSettingsMessage] = useState("");
 
+    const [academicYearStart, setAcademicYearStart] = useState("");
+
     const [isExportingStudents, setIsExportingStudents] = useState(false);
 
     const [selectedStudentsModalOpen, setSelectedStudentsModalOpen] = useState(false);
@@ -571,6 +573,7 @@ export default function AdminDashboard() {
             setPracticeSettings(data);
             setRegularPracticeStartDate(data.regularPracticeStartDate || "");
             setRegularPracticeEndDate(data.regularPracticeEndDate || "");
+            setAcademicYearStart(data.academicYearStart || "");
         }
         catch (error) {
             console.error(error);
@@ -1028,6 +1031,9 @@ export default function AdminDashboard() {
     const resetPracticeSettingsForm = () => {
         setRegularPracticeStartDate(practiceSettings?.regularPracticeStartDate || "");
         setRegularPracticeEndDate(practiceSettings?.regularPracticeEndDate || "");
+
+        setAcademicYearStart(practiceSettings?.academicYearStart || "");
+
         setPracticeSettingsMessage("");
     };
 
@@ -1220,9 +1226,30 @@ export default function AdminDashboard() {
             return;
         }
 
+        if (!academicYearStart) {
+            setPracticeSettingsMessage("Academic year start is required");
+
+            setTimeout(() => {
+                setPracticeSettingsMessage("");
+            }, 2500);
+
+            return;
+        }
+
+        if (String(academicYearStart).length !== 4) {
+            setPracticeSettingsMessage("Academic year start must be a 4-digit year");
+
+            setTimeout(() => {
+                setPracticeSettingsMessage("");
+            }, 2500);
+
+            return;
+        }
+
         if (
             regularPracticeStartDate === (practiceSettings?.regularPracticeStartDate || "") &&
-            regularPracticeEndDate === (practiceSettings?.regularPracticeEndDate || "")
+            regularPracticeEndDate === (practiceSettings?.regularPracticeEndDate || "") &&
+            Number(academicYearStart) === practiceSettings?.academicYearStart
         ) {
             setPracticeSettingsMessage("No changes to save");
 
@@ -1247,10 +1274,12 @@ export default function AdminDashboard() {
             const data = await updatePracticeSettings({
                 regularPracticeStartDate,
                 regularPracticeEndDate,
+                academicYearStart: Number(academicYearStart),
             });
 
             setPracticeSettings(data);
-            setPracticeSettingsMessage("Regular practice dates updated successfully");
+            setAcademicYearStart(data.academicYearStart || "");
+            setPracticeSettingsMessage("Practice settings updated successfully");
 
             setTimeout(() => {
                 setPracticeSettingsMessage("");
@@ -1562,6 +1591,9 @@ export default function AdminDashboard() {
 
                     setRegularPracticeStartDate(practiceSettings?.regularPracticeStartDate || "");
                     setRegularPracticeEndDate(practiceSettings?.regularPracticeEndDate || "");
+
+                    setAcademicYearStart(practiceSettings?.academicYearStart || "");
+
                     setPracticeSettingsMessage("");
                 } else {
                     setAccountOpen(true);
@@ -1586,6 +1618,9 @@ export default function AdminDashboard() {
 
                 setRegularPracticeStartDate(practiceSettings?.regularPracticeStartDate || "");
                 setRegularPracticeEndDate(practiceSettings?.regularPracticeEndDate || "");
+
+                setAcademicYearStart(practiceSettings?.academicYearStart || "");
+
                 setPracticeSettingsMessage("");
             }}
 
@@ -1614,6 +1649,9 @@ export default function AdminDashboard() {
                     setRegularPracticeEndDate={setRegularPracticeEndDate}
                     handleSavePracticeSettings={handleSavePracticeSettings}
                     practiceSettingsMessage={practiceSettingsMessage}
+
+                    academicYearStart={academicYearStart}
+                    setAcademicYearStart={setAcademicYearStart}
 
                     handleLogout={handleLogout}
                 />
