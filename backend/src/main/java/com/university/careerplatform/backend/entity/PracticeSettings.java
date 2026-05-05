@@ -37,4 +37,6 @@ public class PracticeSettings {
     private LocalDate regularPracticeStartDate;
 
     private LocalDate regularPracticeEndDate;
+
+    private Integer academicYearStart;
 }

@@ -36,6 +36,7 @@ public class PracticeSettingsService {
                 .orElseGet(() -> {
                     PracticeSettings settings = new PracticeSettings();
                     settings.setId(1L);
+                    settings.setAcademicYearStart(2026);
                     return practiceSettingsRepository.save(settings);
                 });
     }
@@ -46,6 +47,8 @@ public class PracticeSettingsService {
 
         settings.setRegularPracticeStartDate(request.getRegularPracticeStartDate());
         settings.setRegularPracticeEndDate(request.getRegularPracticeEndDate());
+
+        settings.setAcademicYearStart(request.getAcademicYearStart());
 
         return  practiceSettingsRepository.save(settings);
     }
