@@ -4,6 +4,9 @@ import { searchCompanies } from "../../api/adminApi";
 export default function AdminBulkPracticeModal({
     isOpen,
     selectedCount,
+
+    selectedStudents,
+
     onClose,
     onSave,
     formatCompanyType,
@@ -18,6 +21,8 @@ export default function AdminBulkPracticeModal({
 
     const [useSequentialContractNumbers, setUseSequentialContractNumbers] = useState(false);
 
+    const [showSequentialConfirm, setShowSequentialConfirm] = useState(false);
+
     const searchTimeoutRef = useRef(null);
     const suggestionBoxRef = useRef(null);
 
@@ -27,6 +32,7 @@ export default function AdminBulkPracticeModal({
             setCompanySuggestions([]);
             setShowSuggestions(false);
             setUseSequentialContractNumbers(false);
+            setShowSequentialConfirm(false);
             return;
         }
 
@@ -164,6 +170,58 @@ export default function AdminBulkPracticeModal({
         const paddedLastSequence = String(lastSequence).padStart(sequencePart.length, "0");
 
         return `${paddedLastSequence}-${yearCode}`;
+    };
+
+    const studentsWithContractNumbers = (selectedStudents || []).filter(
+        (student) => student.practice?.contractNumber
+    );
+
+    const studentsWithoutContractNumbersCount =
+        selectedCount - studentsWithContractNumbers.length;
+
+    const allSelectedStudentsHaveContractNumbers =
+        selectedCount > 0 && studentsWithoutContractNumbersCount === 0;
+
+    const getLastSequentialContractNumberForAssignableStudents = () => {
+        if (!nextContractNumber || studentsWithoutContractNumbersCount <= 0) return "";
+
+        const [sequencePart, yearCode] = nextContractNumber.split("-");
+        const firstSequence = Number(sequencePart);
+
+        if (!firstSequence || !yearCode) return "";
+
+        const lastSequence = firstSequence + studentsWithoutContractNumbersCount - 1;
+        const paddedLastSequence = String(lastSequence).padStart(sequencePart.length, "0");
+
+        return `${paddedLastSequence}-${yearCode}`;
+    };
+
+    const handleToggleSequentialNumbers = () => {
+        if (allSelectedStudentsHaveContractNumbers) {
+            return;
+        }
+
+        if (!useSequentialContractNumbers && studentsWithContractNumbers.length > 0) {
+            setShowSequentialConfirm(true);
+            return;
+        }
+
+        setUseSequentialContractNumbers((prev) => !prev);
+
+        setBulkPractice((prev) => ({
+            ...prev,
+            contractNumber: "",
+        }));
+    };
+
+    const handleConfirmSequentialNumbers = () => {
+        setShowSequentialConfirm(false);
+        setUseSequentialContractNumbers(true);
+
+        setBulkPractice((prev) => ({
+            ...prev,
+            contractNumber: "",
+        }));
     };
 
     return (
@@ -370,14 +428,8 @@ export default function AdminBulkPracticeModal({
                             <button
                                 type="button"
                                 className="admin-practice-modal__helper-btn"
-                                onClick={() => {
-                                    setUseSequentialContractNumbers((prev) => !prev);
-
-                                    setBulkPractice((prev) => ({
-                                        ...prev,
-                                        contractNumber: "",
-                                    }));
-                                }}
+                                onClick={handleToggleSequentialNumbers}
+                                disabled={allSelectedStudentsHaveContractNumbers}
                             >
                                 {useSequentialContractNumbers
                                     ? "Cancel sequential numbers"
@@ -392,13 +444,19 @@ export default function AdminBulkPracticeModal({
                         )} */}
                         {useSequentialContractNumbers && nextContractNumber && (
                             <p className="admin-practice-modal__hint">
-                                First number: {nextContractNumber}. Last number: {getLastSequentialContractNumber()}.
+                                First number: {nextContractNumber}. Last number: {getLastSequentialContractNumberForAssignableStudents()}.
                             </p>
                         )}
 
-                        {!useSequentialContractNumbers && nextContractNumber && (
+                        {!useSequentialContractNumbers && nextContractNumber && !allSelectedStudentsHaveContractNumbers && (
                             <p className="admin-practice-modal__hint">
                                 Enable sequential numbers to assign contract numbers from {nextContractNumber}.
+                            </p>
+                        )}
+
+                        {allSelectedStudentsHaveContractNumbers && (
+                            <p className="admin-practice-modal__hint admin-practice-modal__hint--warning">
+                                All selected students already have contract numbers. Sequential numbering is not available.
                             </p>
                         )}
                     </div>
@@ -455,6 +513,55 @@ export default function AdminBulkPracticeModal({
                         Cancel
                     </button>
                 </div>
+
+                {showSequentialConfirm && (
+                    <div className="admin-practice-confirm">
+                        <div className="admin-practice-confirm__box">
+                            <h4 className="admin-practice-confirm__title">
+                                Existing contract numbers found
+                            </h4>
+
+                            <p className="admin-practice-confirm__text">
+                                Some selected students already have contract numbers. Sequential numbers will be assigned only to students without contract numbers.
+                            </p>
+
+                            <div className="admin-practice-confirm__list">
+                                {studentsWithContractNumbers.map((student) => (
+                                    <div
+                                        key={student.id}
+                                        className="admin-practice-confirm__item"
+                                    >
+                                        <span>{student.fullName}</span>
+                                        <strong>{student.practice?.contractNumber}</strong>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <p className="admin-practice-confirm__text">
+                                First assigned number: <strong>{nextContractNumber}</strong><br />
+                                Last assigned number: <strong>{getLastSequentialContractNumberForAssignableStudents()}</strong>
+                            </p>
+
+                            <div className="admin-practice-confirm__actions">
+                                <button
+                                    type="button"
+                                    className="admin-practice-modal__cancel"
+                                    onClick={() => setShowSequentialConfirm(false)}
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="admin-practice-modal__save"
+                                    onClick={handleConfirmSequentialNumbers}
+                                >
+                                    Continue
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

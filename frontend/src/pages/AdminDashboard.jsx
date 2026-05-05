@@ -1879,6 +1879,8 @@ export default function AdminDashboard() {
                     practiceSettings={practiceSettings}
                     isSaving={isBulkPracticeSaving}
                     nextContractNumber={nextContractNumber}
+
+                    selectedStudents={selectedStudentsPreview}
                 />
             )}
         </AdminLayout>

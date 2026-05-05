@@ -829,6 +829,88 @@
     color: #5f6b85;
 }
 
+.admin-practice-modal__helper-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    text-decoration: none;
+}
+
+.admin-practice-modal__hint--warning {
+    color: #b42318;
+}
+
+.admin-practice-confirm {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    background: rgba(15, 23, 42, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.admin-practice-confirm__box {
+    width: min(520px, 100%);
+    max-height: 80vh;
+    overflow-y: auto;
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+}
+
+.admin-practice-confirm__title {
+    margin: 0 0 10px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #1d2b4f;
+}
+
+.admin-practice-confirm__text {
+    margin: 0 0 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #5f6b85;
+}
+
+.admin-practice-confirm__list {
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid #e5e9f5;
+    border-radius: 12px;
+    margin: 12px 0;
+}
+
+.admin-practice-confirm__item {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 12px;
+    font-size: 13px;
+    border-bottom: 1px solid #eef1f8;
+}
+
+.admin-practice-confirm__item:last-child {
+    border-bottom: none;
+}
+
+.admin-practice-confirm__item span {
+    color: #1d2b4f;
+}
+
+.admin-practice-confirm__item strong {
+    color: #4f6df5;
+    white-space: nowrap;
+}
+
+.admin-practice-confirm__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 16px;
+}
+
 .admin-view-selected-btn {
     border: 1px solid #d7def0;
     border-radius: 999px;
