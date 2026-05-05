@@ -10,4 +10,6 @@ import java.util.List;
 public class BulkUpdatePracticeRequest extends UpdatePracticeRequest {
 
     private List<Long> studentIds;
+
+    private Boolean assignSequentialContractNumbers;
 }

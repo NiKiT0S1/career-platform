@@ -36,6 +36,7 @@ public class AdminController {
     private final StudentPracticeService studentPracticeService;
     private final PracticeSettingsService practiceSettingsService;
     private final StudentExportService studentExportService;
+    private final ContractNumberService contractNumberService;
 
     public AdminController(StudentService studentService,
                            NotificationService notificationService,
@@ -45,7 +46,8 @@ public class AdminController {
                            CompanyDirectoryService companyDirectoryService,
                            StudentPracticeService studentPracticeService,
                            PracticeSettingsService practiceSettingsService,
-                           StudentExportService studentExportService) {
+                           StudentExportService studentExportService,
+                           ContractNumberService contractNumberService) {
         this.studentService = studentService;
         this.notificationService = notificationService;
         this.resumeService = resumeService;
@@ -55,6 +57,7 @@ public class AdminController {
         this.studentPracticeService = studentPracticeService;
         this.practiceSettingsService = practiceSettingsService;
         this.studentExportService = studentExportService;
+        this.contractNumberService = contractNumberService;
     }
 
     @GetMapping("/me")
@@ -465,5 +468,12 @@ public class AdminController {
                 .toList();
 
         return ResponseEntity.ok(studentService.getStudentsForExportByIds(ids));
+    }
+
+    @GetMapping("/practice/contract-number/next")
+    public ResponseEntity<NextContractNumberResponse> getNextContractNumber() {
+        return ResponseEntity.ok(
+                new NextContractNumberResponse(contractNumberService.getNextContractNumber())
+        );
     }
 }

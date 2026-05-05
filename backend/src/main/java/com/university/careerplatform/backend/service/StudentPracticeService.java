@@ -30,11 +30,14 @@ public class StudentPracticeService {
 
     private final StudentPracticeRepository studentPracticeRepository;
     private final StudentRepository studentRepository;
+    private final ContractNumberService contractNumberService;
 
     public StudentPracticeService(StudentPracticeRepository studentPracticeRepository,
-                                  StudentRepository studentRepository) {
+                                  StudentRepository studentRepository,
+                                  ContractNumberService contractNumberService) {
         this.studentPracticeRepository = studentPracticeRepository;
         this.studentRepository = studentRepository;
+        this.contractNumberService = contractNumberService;
     }
 
     public StudentPractice getByStudentId(Long studentId) {
@@ -119,12 +122,33 @@ public class StudentPracticeService {
             throw new RuntimeException("Student IDs list cannot be empty");
         }
 
+        boolean assignSequentialContractNumbers =
+                Boolean.TRUE.equals(request.getAssignSequentialContractNumbers());
+
+        List<String> generatedContractNumbers = assignSequentialContractNumbers
+                ? contractNumberService.generateNextContractNumbers(request.getStudentIds().size())
+                : List.of();
+
         List<StudentPractice> updatedPractices = new ArrayList<>();
 
-        for (Long studentId : request.getStudentIds()) {
+//        for (Long studentId : request.getStudentIds()) {
+//            StudentPractice practice = createIfAbsent(studentId);
+//
+//            applyPartialUpdate(practice, request);
+//
+//            updatedPractices.add(studentPracticeRepository.save(practice));
+//        }
+
+        for (int i = 0; i < request.getStudentIds().size(); i++) {
+            Long studentId = request.getStudentIds().get(i);
+
             StudentPractice practice = createIfAbsent(studentId);
 
             applyPartialUpdate(practice, request);
+
+            if (assignSequentialContractNumbers) {
+                practice.setContractNumber(generatedContractNumbers.get(i));
+            }
 
             updatedPractices.add(studentPracticeRepository.save(practice));
         }

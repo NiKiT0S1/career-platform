@@ -75,6 +75,7 @@ src/main/java/com/university/careerplatform/backend
 │   ├── CompanyUpdateRequest.java
 │   ├── ForgotPasswordRequest.java
 │   ├── LoginRequest.java
+│   ├── NextContractNumberResponse.java
 │   ├── PracticeSettingsRequest.java
 │   ├── PracticeStatusUpdateRequest.java
 │   ├── ResetPasswordRequest.java
@@ -123,6 +124,7 @@ src/main/java/com/university/careerplatform/backend
 │   ├── AdminService.java
 │   ├── AuthService.java
 │   ├── CompanyDirectoryService.java
+│   ├── ContractNumberService.java
 │   ├── EmailService.java
 │   ├── NotificationService.java
 │   ├── PracticeSettingsService.java
@@ -192,6 +194,7 @@ Examples:
 * `PracticeSettingsService`
 * `StudentExportService`
 * `EmailService`
+* `ContractNumberService`
 
 ### Controller
 
@@ -226,6 +229,7 @@ Examples:
 * `ResetPasswordRequest`
 * `VerifyResetCodeRequest`
 * `BulkUpdatePracticeRequest`
+* `NextContractNumberResponse`
 
 ### Security
 
