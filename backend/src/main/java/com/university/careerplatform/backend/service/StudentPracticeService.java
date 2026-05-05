@@ -125,29 +125,41 @@ public class StudentPracticeService {
         boolean assignSequentialContractNumbers =
                 Boolean.TRUE.equals(request.getAssignSequentialContractNumbers());
 
+        List<Long> studentsWithoutContractNumbers = new ArrayList<>();
+
+        if (assignSequentialContractNumbers) {
+            for (Long studentId : request.getStudentIds()) {
+                StudentPractice practice = createIfAbsent(studentId);
+
+                if (practice.getContractNumber() == null || practice.getContractNumber().isBlank()) {
+                    studentsWithoutContractNumbers.add(studentId);
+                }
+            }
+
+            if (studentsWithoutContractNumbers.isEmpty()) {
+                throw new RuntimeException("All selected students already have contract numbers");
+            }
+        }
+
         List<String> generatedContractNumbers = assignSequentialContractNumbers
-                ? contractNumberService.generateNextContractNumbers(request.getStudentIds().size())
+                ? contractNumberService.generateNextContractNumbers(studentsWithoutContractNumbers.size())
                 : List.of();
+
+        int contractNumberIndex = 0;
 
         List<StudentPractice> updatedPractices = new ArrayList<>();
 
-//        for (Long studentId : request.getStudentIds()) {
-//            StudentPractice practice = createIfAbsent(studentId);
-//
-//            applyPartialUpdate(practice, request);
-//
-//            updatedPractices.add(studentPracticeRepository.save(practice));
-//        }
-
-        for (int i = 0; i < request.getStudentIds().size(); i++) {
-            Long studentId = request.getStudentIds().get(i);
-
+        for (Long studentId : request.getStudentIds()) {
             StudentPractice practice = createIfAbsent(studentId);
 
             applyPartialUpdate(practice, request);
 
-            if (assignSequentialContractNumbers) {
-                practice.setContractNumber(generatedContractNumbers.get(i));
+            if (
+                    assignSequentialContractNumbers &&
+                            (practice.getContractNumber() == null || practice.getContractNumber().isBlank())
+            ) {
+                practice.setContractNumber(generatedContractNumbers.get(contractNumberIndex));
+                contractNumberIndex++;
             }
 
             updatedPractices.add(studentPracticeRepository.save(practice));
